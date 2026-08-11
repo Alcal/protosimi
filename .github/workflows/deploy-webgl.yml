@@ -1,0 +1,97 @@
+name: Deploy WebGL to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "canvases/**"
+      - ".cursor/**"
+      - "**/*.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build WebGL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-WebGL-
+            Library-
+
+      - name: Build WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          unityVersion: 6000.4.2f1
+          buildsPath: build
+          buildName: WebGL
+
+      - name: Fix permissions
+        run: sudo chown -R "$USER:$USER" build || true
+
+      - name: Locate WebGL output and fix Pages paths
+        id: webgl
+        run: |
+          set -euo pipefail
+          INDEX=$(find build -type f -name index.html | head -n 1)
+          if [ -z "$INDEX" ]; then
+            echo "No index.html found under build/"
+            find build -type f | head -n 50 || true
+            exit 1
+          fi
+          OUT_DIR=$(dirname "$INDEX")
+          echo "Using WebGL output: $OUT_DIR"
+          echo "dir=$OUT_DIR" >> "$GITHUB_OUTPUT"
+          python3 scripts/fix-webgl-pages-paths.py "$OUT_DIR"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.webgl.outputs.dir }}
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
