@@ -1,0 +1,27 @@
+---
+description: Orchestrates game inception workflows from docs/inception/STATUS.md. Read STATUS first; enforce phase gates including TAD before plan; one milestone per implementation session.
+alwaysApply: true
+---
+
+# Game Inception
+
+When `docs/inception/STATUS.md` exists in this project:
+
+1. **Read `docs/inception/STATUS.md` first** before any inception work
+2. **Infer phase** from STATUS — do not skip phases:
+   - `design` → use skill `game-inception-design`
+   - `tech` → `game-inception-tech` (Technical Approach Document)
+   - `plan` → `game-inception-plan` (requires approved TAD)
+   - `test-plan` → `game-inception-test-plan`
+   - `implement` → `game-inception-implement` (one milestone only)
+   - Pivot → `game-inception-pivot`
+3. **Bootstrap** if `docs/inception/` missing → `game-inception-bootstrap`
+4. **Unity MCP package:** Every Unity project under inception must have `com.unity.ai.assistant` in `Packages/manifest.json` (required for MCP compatibility). Add it on bootstrap and verify in M-01 if missing.
+5. **Update STATUS** at start and end of every inception session (`last_session`, `next_action`, phase/milestone fields)
+6. **Design artifacts:** Canvas for UI mockups; Mermaid in `docs/inception/design/diagrams/`
+7. **Tech artifacts:** `docs/inception/tech/TAD-vN.md` — architecture, tooling, Rive/Blender/ComfyUI/Unity pipeline, analytics, roadmap constraints
+8. **Gates:** No plan without approved TAD; no implementation without milestone doc + acceptance doc; milestone not `done` until tests pass and user verifies
+9. **Session limit:** One `active_milestone` per implement session — stop at `awaiting_user_verification`
+10. **Pivots:** Read `docs/inception/PIVOT_LOG.md` before implementing after any design/tech change; use versioned `GDD-vN.md` and `TAD-vN.md`
+
+Natural-language entry: user may say "continue" — resume from STATUS `next_action`.

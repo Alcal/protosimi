@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee9a60a02573c70bd8d5b72035c85ff9, type: 3}
+  m_Name: FineTuningVariables
+  m_EditorClassIdentifier: 
+  tapOpenCloseRate: 0.55
+  handsUnderWaterRate: 0.35
+  rubOnHandsRate: 0.4
+  tapRadiusWorld: 1.2
+  minDragDistance: 0.15
+  rubDistancePerPulse: 0.35
+  waf1IdleSeconds: 4
+  waf2IdleSeconds: 8
+  waf3IdleSeconds: 12
+  cameraEaseSeconds: 0.6
+  cameraFocusZ: -10
+  hijackProgressPerSecond: 0.45
+  introDurationSeconds: 1.25
