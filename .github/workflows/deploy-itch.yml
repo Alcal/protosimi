@@ -1,4 +1,4 @@
-name: Deploy WebGL to GitHub Pages
+name: Deploy WebGL to itch.io
 
 on:
   push:
@@ -12,16 +12,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: itch-webgl
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build WebGL
+  build-and-publish:
+    name: Build WebGL and publish to itch.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -64,7 +62,7 @@ jobs:
       - name: Fix permissions
         run: sudo chown -R "$USER:$USER" build || true
 
-      - name: Locate WebGL output and fix Pages paths
+      - name: Locate WebGL output
         id: webgl
         run: |
           set -euo pipefail
@@ -77,21 +75,13 @@ jobs:
           OUT_DIR=$(dirname "$INDEX")
           echo "Using WebGL output: $OUT_DIR"
           echo "dir=$OUT_DIR" >> "$GITHUB_OUTPUT"
-          python3 scripts/fix-webgl-pages-paths.py "$OUT_DIR"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ${{ steps.webgl.outputs.dir }}
+      - name: Setup butler
+        uses: remarkablegames/setup-butler@v3
 
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          butler push "${{ steps.webgl.outputs.dir }}" acidosys/manos-limpias:html \
+            --userversion "${GITHUB_SHA:0:7}"
