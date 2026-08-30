@@ -4,8 +4,8 @@ phase: implement
 design_version: v1
 active_milestone: none
 milestone_status: done
-last_session: 2026-08-07 — Removed runtime GameBootstrap; scaffolded Title + Gameplay as serialized scenes via Unity MCP (RunCommand). Wire-verified.
-next_action: Play from Title scene (Jugar → Gameplay). Export protosimi .riv to Assets/Art/Rive when ready.
+last_session: 2026-08-30 — Imported simi_prototype.riv; typed contracts; mounted main+intro on Gameplay; intro Jugar dismisses overlay.
+next_action: Restart Unity Editor (Vulkan). Play Gameplay; confirm intro Jugar is visible and dismisses overlay.
 
 ## Phase values
 
@@ -29,3 +29,4 @@ next_action: Play from Title scene (Jugar → Gameplay). Export protosimi .riv t
 |------|-------|---------|
 | 2026-08-07 | design→implement | Fast-track GDD/TAD/milestones + initial code |
 | 2026-08-07 | implement | Discarded GameBootstrap; MCP-scaffolded Title/Gameplay scenes with serialized refs |
+| 2026-08-30 | implement | simi_prototype.riv contracts + Gameplay mount (intro overlay, Jugar dismiss) |

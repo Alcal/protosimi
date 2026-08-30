@@ -33,7 +33,6 @@ namespace ManosLimpias.Core
         public GameFlowState State { get; private set; } = GameFlowState.Intro;
 
         float _sessionStart;
-        float _introEndsAt;
 
         void Awake()
         {
@@ -49,10 +48,10 @@ namespace ManosLimpias.Core
             EnterIntro();
         }
 
-        void Update()
+        public void DismissIntro()
         {
-            if (State == GameFlowState.Intro && Time.time >= _introEndsAt)
-                EnterStagePlay();
+            if (State != GameFlowState.Intro) return;
+            EnterStagePlay();
         }
 
         public void OnReplayPressed()
@@ -73,8 +72,6 @@ namespace ManosLimpias.Core
             stages.AcceptingInput = false;
             audioPlayer?.Play("vo_welcome");
             hud?.PulseHostSpeak();
-            float dur = tuning != null ? tuning.introDurationSeconds : 1.25f;
-            _introEndsAt = Time.time + dur;
             cameraFocus?.EaseToStage(0);
             playfield?.SetActiveStage(-1);
             germs?.ResetGerms();
