@@ -53,6 +53,13 @@ namespace ManosLimpias.UI.Rive
                 if (mainWidget.Status == WidgetStatus.Loaded)
                     BindGameplay();
             }
+
+            if (stepIconWidget != null)
+            {
+                stepIconWidget.OnWidgetStatusChanged += OnStepIconStatusChanged;
+                if (stepIconWidget.Status == WidgetStatus.Loaded)
+                    BindGameplay();
+            }
         }
 
         void OnDisable()
@@ -66,6 +73,8 @@ namespace ManosLimpias.UI.Rive
 
             if (mainWidget != null)
                 mainWidget.OnWidgetStatusChanged -= OnMainStatusChanged;
+            if (stepIconWidget != null)
+                stepIconWidget.OnWidgetStatusChanged -= OnStepIconStatusChanged;
         }
 
         void OnIntroStatusChanged()
@@ -77,6 +86,12 @@ namespace ManosLimpias.UI.Rive
         void OnMainStatusChanged()
         {
             if (mainWidget != null && mainWidget.Status == WidgetStatus.Loaded)
+                BindGameplay();
+        }
+
+        void OnStepIconStatusChanged()
+        {
+            if (stepIconWidget != null && stepIconWidget.Status == WidgetStatus.Loaded)
                 BindGameplay();
         }
 

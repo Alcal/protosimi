@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace ManosLimpias.Core
 {
@@ -14,7 +15,13 @@ namespace ManosLimpias.Core
             Services.ProgressBar?.SetProgress(0f);
             Services.StepIcon?.SetState(stepId, active: true, completed: false);
 
-            if (Services.Faucet == null) return;
+            if (Services.Faucet == null)
+            {
+                Debug.LogWarning("[OpenFaucetStage] No Faucet service; cannot subscribe to activation.");
+                return;
+            }
+
+            Debug.Log("[OpenFaucetStage] Entered; subscribed to Faucet.Activated.");
             Services.Faucet.Activated += OnFaucetActivated;
             Services.Faucet.SetEnabled(true);
         }
@@ -28,6 +35,7 @@ namespace ManosLimpias.Core
 
         void OnFaucetActivated(FaucetSide side)
         {
+            Debug.Log($"[OpenFaucetStage] Activated {side} entered={IsEntered}");
             if (!IsEntered) return;
             Services.ProgressBar?.SetProgress(1f);
             Services.StepIcon?.SetState(stepId, active: false, completed: true);

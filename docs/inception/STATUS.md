@@ -4,8 +4,8 @@ phase: implement
 design_version: v2
 active_milestone: M-07b
 milestone_status: awaiting_user_verification
-last_session: 2026-08-30 — M-07b implemented; 6/6 EditMode and 1/1 PlayMode tests pass. Manual Gameplay/Rive verification remains.
-next_action: User runs M-07b acceptance checklist; on approval mark M-07b done and advance the roadmap.
+last_session: 2026-08-31 — Faucet polls nested faucet_L_On / faucet_R_On triggers that the handle listeners fire. 9/9 EditMode.
+next_action: User runs M-07b acceptance checklist; on approve set milestone_status done and advance active_milestone.
 
 ## Phase values
 
@@ -36,3 +36,9 @@ next_action: User runs M-07b acceptance checklist; on approval mark M-07b done a
 | 2026-08-30 | test-plan | M-07b roadmap approved; acceptance criteria and test stubs prepared |
 | 2026-08-30 | implement | M-07b test plan approved; implementation authorized |
 | 2026-08-30 | implement | M-07b implemented; automated tests pass; awaiting user Gameplay/Rive verification |
+| 2026-08-30 | implement | StepIconRive now re-pushes stage state after Rive Bind/load; 8/8 EditMode + 1/1 PlayMode |
+| 2026-08-30 | implement | Nested `step` instance on main now receives isActive/isCompleted; overlay SM Advance(0) |
+| 2026-08-31 | implement | Re-serialized OpenFaucetStage (was null); empty stage list falls back; 9/9 EditMode |
+| 2026-08-31 | implement | Console now logs stage progress on SetProgress and Faucet Rive event names |
+| 2026-08-31 | implement | Bridged nested faucet pointer hits to Faucet.Activated (Triggers ≠ ReportedEvents) |
+| 2026-08-31 | implement | Poll nested faucet_L_On / faucet_R_On triggers; listeners stay Rive-side |

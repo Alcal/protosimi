@@ -4,8 +4,8 @@
 
 1. Open `Assets/Scenes/Gameplay.unity`.
 2. Press Play and confirm the Rive intro is shown.
-3. Press `Jugar`; expect the first configured `GameStage` to enter and Open Water to enable the Rive Faucet.
-4. Activate either the left or right Faucet handle; expect progress to reach 100%, the stage to exit, and the next configured stage to enter.
+3. Press `Jugar`; expect the first configured `GameStage` to enter, Open Water to enable the Rive Faucet, and `StepIconRive` to go active (`step_ID` 1, `isActive` true).
+4. Activate either the left or right Faucet handle; expect progress to reach 100%, `StepIconRive` to mark complete (`isActive` false, `isCompleted` true), the stage to exit, and the next configured stage to enter.
 5. Complete the final configured stage; expect the flow to enter Outro.
 6. Replay; expect Intro to start with fresh stage progress and no duplicate Faucet callbacks.
 
@@ -28,6 +28,6 @@
 
 ## Sign-off
 
-- [x] Automated tests pass: 6/6 EditMode and 1/1 PlayMode.
+- [x] Automated tests pass: 9/9 EditMode. PlayMode AC07 previously 1/1; re-run in Editor Test Runner if needed.
 - [ ] Manual checklist verified.
 - [ ] `docs/inception/STATUS.md` advanced after user verification.

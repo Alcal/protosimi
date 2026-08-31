@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Rive;
 
 namespace ManosLimpias.UI.Rive
@@ -7,6 +10,34 @@ namespace ManosLimpias.UI.Rive
     /// </summary>
     public static class RiveStateMachineInputs
     {
+        static readonly MethodInfo GetInputAtPathMethod = typeof(Artboard).GetMethod(
+            "GetInputAtPath",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            new[] { typeof(string), typeof(string) },
+            null);
+
+        static readonly MethodInfo IsTriggerMethod = typeof(SMIInput).GetMethod(
+            "isSMITrigger",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            new[] { typeof(IntPtr) },
+            null);
+
+        static readonly MethodInfo IsBooleanMethod = typeof(SMIInput).GetMethod(
+            "isSMIBoolean",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            new[] { typeof(IntPtr) },
+            null);
+
+        static readonly MethodInfo GetBoolValueMethod = typeof(SMIBool).GetMethod(
+            "getSMIBoolValueStateMachine",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            new[] { typeof(IntPtr) },
+            null);
+
         public static SMINumber GetNumber(StateMachine stateMachine, string name)
         {
             return stateMachine == null || string.IsNullOrEmpty(name) ? null : stateMachine.GetNumber(name);
@@ -62,5 +93,59 @@ namespace ManosLimpias.UI.Rive
             return true;
         }
 
+        public static bool TryFindNestedInputPath(Artboard artboard, string inputName, IReadOnlyList<string> paths, out string path)
+        {
+            path = null;
+            if (artboard == null || string.IsNullOrEmpty(inputName) || paths == null)
+                return false;
+
+            for (int i = 0; i < paths.Count; i++)
+            {
+                var candidate = paths[i];
+                if (string.IsNullOrEmpty(candidate))
+                    continue;
+                if (GetInputPointer(artboard, inputName, candidate) == IntPtr.Zero)
+                    continue;
+                path = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryReadNestedTrigger(Artboard artboard, string inputName, string path)
+        {
+            if (artboard == null || string.IsNullOrEmpty(inputName) || string.IsNullOrEmpty(path))
+                return false;
+
+            var pointer = GetInputPointer(artboard, inputName, path);
+            if (pointer == IntPtr.Zero)
+                return false;
+            if (!IsTriggerOrBoolean(pointer))
+                return false;
+            return GetNativeBoolValue(pointer);
+        }
+
+        static IntPtr GetInputPointer(Artboard artboard, string inputName, string path)
+        {
+            if (GetInputAtPathMethod == null)
+                return IntPtr.Zero;
+            var result = GetInputAtPathMethod.Invoke(artboard, new object[] { inputName, path });
+            return result is IntPtr pointer ? pointer : IntPtr.Zero;
+        }
+
+        static bool IsTriggerOrBoolean(IntPtr pointer)
+        {
+            if (IsTriggerMethod != null && IsTriggerMethod.Invoke(null, new object[] { pointer }) is bool trigger && trigger)
+                return true;
+            return IsBooleanMethod != null && IsBooleanMethod.Invoke(null, new object[] { pointer }) is bool boolean && boolean;
+        }
+
+        static bool GetNativeBoolValue(IntPtr pointer)
+        {
+            if (GetBoolValueMethod == null)
+                return false;
+            return GetBoolValueMethod.Invoke(null, new object[] { pointer }) is bool value && value;
+        }
     }
 }

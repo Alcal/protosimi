@@ -69,14 +69,36 @@ namespace ManosLimpias.Tests
             stage.Initialize(_services);
             stage.Enter();
 
+            Assert.That(_services.Icon.StepId, Is.EqualTo(1));
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.Icon.Completed, Is.False);
+
             _services.Faucet.Raise(FaucetSide.Left);
             Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
             Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.Icon.Active, Is.False);
             Assert.That(_services.Icon.Completed, Is.True);
 
             stage.Exit();
             _services.Faucet.Raise(FaucetSide.Right);
             Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OpenFaucet_SetsStepIconActive_WhenIntroDismissed()
+        {
+            _flow.stageConfigurations = new List<GameStage> { new OpenFaucetStage() };
+
+            _flow.StartSession();
+            Assert.That(_services.Icon.Active, Is.False);
+            Assert.That(_services.Icon.Completed, Is.False);
+
+            _flow.DismissIntro();
+
+            Assert.That(_flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
+            Assert.That(_services.Icon.StepId, Is.EqualTo(1));
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.Icon.Completed, Is.False);
         }
 
         [Test]
@@ -114,12 +136,45 @@ namespace ManosLimpias.Tests
             _flow.StartSession();
             _flow.DismissIntro();
             ((RecordingStage)_flow.ActiveStage).Complete();
+            _services.Icon.SetState(1, active: false, completed: true);
             _flow.StartSession();
 
             Assert.That(_flow.State, Is.EqualTo(GameFlowState.Intro));
             Assert.That(_flow.ActiveStageIndex, Is.EqualTo(-1));
             Assert.That(_flow.RuntimeStages.Count, Is.EqualTo(1));
             Assert.That(_flow.RuntimeStages[0].IsEntered, Is.False);
+            Assert.That(_services.Icon.Active, Is.False);
+            Assert.That(_services.Icon.Completed, Is.False);
+        }
+
+        [Test]
+        public void StepIconBind_PreservesPendingStageState()
+        {
+            var binderObject = new GameObject("M07b Hud Binder");
+            var binder = binderObject.AddComponent<ManosLimpias.UI.RiveHudBinder>();
+
+            binder.SetState(1, active: true, completed: false);
+            binder.Bind(null, null);
+
+            Assert.That(binder.HasStepState, Is.True);
+            Assert.That(binder.StepId, Is.EqualTo(1));
+            Assert.That(binder.StepActive, Is.True);
+            Assert.That(binder.StepCompleted, Is.False);
+
+            UnityEngine.Object.DestroyImmediate(binderObject);
+        }
+
+        [Test]
+        public void NullStageConfig_DefaultsToOpenFaucet()
+        {
+            _flow.stageConfigurations = new List<GameStage> { null };
+
+            _flow.StartSession();
+            _flow.DismissIntro();
+
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
+            Assert.That(_services.Icon.Active, Is.True);
         }
 
         sealed class RecordingStage : GameStage
@@ -205,10 +260,14 @@ namespace ManosLimpias.Tests
 
         sealed class FakeIcon : IStepIconControl
         {
+            public int StepId { get; private set; }
+            public bool Active { get; private set; }
             public bool Completed { get; private set; }
 
             public void SetState(int stepId, bool active, bool completed)
             {
+                StepId = stepId;
+                Active = active;
                 Completed = completed;
             }
         }

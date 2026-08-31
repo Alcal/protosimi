@@ -37,7 +37,7 @@ namespace ManosLimpias.Core
         public GameObject playRoot;
         public string titleSceneName = "Title";
 
-        [SerializeReference]
+        [SerializeField, SerializeReference]
         public List<GameStage> stageConfigurations = new();
 
         public GameFlowState State { get; private set; } = GameFlowState.Intro;
@@ -106,6 +106,8 @@ namespace ManosLimpias.Core
             cameraFocus?.EaseToStage(0);
             playfield?.SetActiveStage(-1);
             germs?.ResetGerms();
+            _services?.StepIcon?.SetState(1, active: false, completed: false);
+            _services?.ProgressBar?.SetProgress(0f);
         }
 
         void EnterStage(int index)
@@ -223,11 +225,25 @@ namespace ManosLimpias.Core
         void BuildRuntimeStages()
         {
             _runtimeStages.Clear();
-            if (stageConfigurations == null) return;
-            foreach (var configuration in stageConfigurations)
+            if (stageConfigurations != null)
             {
-                if (configuration != null)
+                for (int i = 0; i < stageConfigurations.Count; i++)
+                {
+                    var configuration = stageConfigurations[i];
+                    if (configuration == null)
+                    {
+                        Debug.LogWarning($"[GameFlowController] stageConfigurations[{i}] is null (SerializeReference lost). Skipping.");
+                        continue;
+                    }
+
                     _runtimeStages.Add(configuration.CreateRuntime());
+                }
+            }
+
+            if (_runtimeStages.Count == 0)
+            {
+                Debug.LogWarning("[GameFlowController] No usable stages configured; defaulting to OpenFaucetStage.");
+                _runtimeStages.Add(new OpenFaucetStage());
             }
         }
 

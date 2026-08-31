@@ -3,6 +3,7 @@
     "rootNamespace": "ManosLimpias.Tests",
     "references": [
         "ManosLimpias.Runtime",
+        "Rive.Runtime.Components",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

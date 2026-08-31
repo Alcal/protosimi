@@ -15,6 +15,22 @@ namespace ManosLimpias.UI.Rive
 
         public const string EventIsCompleted = "isCompleted";
 
+        /// <summary>
+        /// Nested instance names inside <c>main</c> that host a stepIcon SM.
+        /// The exported file names the first rail instance <c>step</c>.
+        /// </summary>
+        public static readonly string[] NestedInstancePaths =
+        {
+            "step",
+            "step 2",
+            "step 3",
+            "step 4",
+            Artboard,
+            Artboard + " 2",
+            Artboard + " 3",
+            Artboard + " 4",
+        };
+
         public const string AnimStep1 = "step_1";
         public const string AnimStep2 = "step_ 2";
         public const string AnimStep3 = "step_ 3";
