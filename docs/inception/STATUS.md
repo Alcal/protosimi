@@ -4,7 +4,7 @@ phase: implement
 design_version: v2
 active_milestone: M-07b
 milestone_status: awaiting_user_verification
-last_session: 2026-08-31 — Faucet polls nested faucet_L_On / faucet_R_On triggers that the handle listeners fire. 9/9 EditMode.
+last_session: 2026-08-31 — WebGL Rive render checked; native Initialized and widgets Loaded. Marked resolved.
 next_action: User runs M-07b acceptance checklist; on approve set milestone_status done and advance active_milestone.
 
 ## Phase values
@@ -42,3 +42,4 @@ next_action: User runs M-07b acceptance checklist; on approve set milestone_stat
 | 2026-08-31 | implement | Console now logs stage progress on SetProgress and Faucet Rive event names |
 | 2026-08-31 | implement | Bridged nested faucet pointer hits to Faucet.Activated (Triggers ≠ ReportedEvents) |
 | 2026-08-31 | implement | Poll nested faucet_L_On / faucet_R_On triggers; listeners stay Rive-side |
+| 2026-08-31 | implement | WebGL Rive checked on local player: native Initialized, widgets Loaded; marked resolved |
