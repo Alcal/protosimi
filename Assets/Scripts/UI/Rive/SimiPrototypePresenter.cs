@@ -1,4 +1,5 @@
 using ManosLimpias.Core;
+using ManosLimpias.UI;
 using Rive;
 using Rive.Components;
 using UnityEngine;
@@ -13,6 +14,9 @@ namespace ManosLimpias.UI.Rive
         public GameFlowController flow;
         public RiveWidget mainWidget;
         public RiveWidget introWidget;
+        public RiveWidget stepIconWidget;
+        public RiveHudBinder hudBinder;
+        public Faucet faucet;
 
         static readonly string[] TriggerPaths =
         {
@@ -35,25 +39,51 @@ namespace ManosLimpias.UI.Rive
 
         void OnEnable()
         {
-            if (introWidget == null) return;
-            introWidget.OnWidgetStatusChanged += OnIntroStatusChanged;
-            introWidget.OnRiveEventReported += OnIntroEventReported;
-            if (introWidget.Status == WidgetStatus.Loaded)
-                BindIntro();
+            if (introWidget != null)
+            {
+                introWidget.OnWidgetStatusChanged += OnIntroStatusChanged;
+                introWidget.OnRiveEventReported += OnIntroEventReported;
+                if (introWidget.Status == WidgetStatus.Loaded)
+                    BindIntro();
+            }
+
+            if (mainWidget != null)
+            {
+                mainWidget.OnWidgetStatusChanged += OnMainStatusChanged;
+                if (mainWidget.Status == WidgetStatus.Loaded)
+                    BindGameplay();
+            }
         }
 
         void OnDisable()
         {
             UnbindIntro();
-            if (introWidget == null) return;
-            introWidget.OnWidgetStatusChanged -= OnIntroStatusChanged;
-            introWidget.OnRiveEventReported -= OnIntroEventReported;
+            if (introWidget != null)
+            {
+                introWidget.OnWidgetStatusChanged -= OnIntroStatusChanged;
+                introWidget.OnRiveEventReported -= OnIntroEventReported;
+            }
+
+            if (mainWidget != null)
+                mainWidget.OnWidgetStatusChanged -= OnMainStatusChanged;
         }
 
         void OnIntroStatusChanged()
         {
             if (introWidget != null && introWidget.Status == WidgetStatus.Loaded)
                 BindIntro();
+        }
+
+        void OnMainStatusChanged()
+        {
+            if (mainWidget != null && mainWidget.Status == WidgetStatus.Loaded)
+                BindGameplay();
+        }
+
+        void BindGameplay()
+        {
+            faucet?.Bind(mainWidget);
+            hudBinder?.Bind(mainWidget, stepIconWidget);
         }
 
         void BindIntro()

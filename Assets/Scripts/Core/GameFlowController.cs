@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using ManosLimpias.Analytics;
 using ManosLimpias.Audio;
 using ManosLimpias.UI;
+using ManosLimpias.UI.Rive;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,14 +15,18 @@ namespace ManosLimpias.Core
         Intro,
         Stage,
         Assist,
+        Outro,
         Win
     }
 
     public class GameFlowController : MonoBehaviour
     {
         public FineTuningVariables tuning;
+        // Retained for legacy WAF/input components during the migration.
         public StageController stages;
         public HudPresenter hud;
+        public RiveHudBinder riveHud;
+        public Faucet faucet;
         public AudioPlaceholderPlayer audioPlayer;
         public WafController waf;
         public AssistHijack assist;
@@ -30,19 +37,40 @@ namespace ManosLimpias.Core
         public GameObject playRoot;
         public string titleSceneName = "Title";
 
-        public GameFlowState State { get; private set; } = GameFlowState.Intro;
+        [SerializeReference]
+        public List<GameStage> stageConfigurations = new();
 
+        public GameFlowState State { get; private set; } = GameFlowState.Intro;
+        public int ActiveStageIndex { get; private set; } = -1;
+        public IReadOnlyList<GameStage> RuntimeStages => _runtimeStages;
+        public GameStage ActiveStage =>
+            ActiveStageIndex >= 0 && ActiveStageIndex < _runtimeStages.Count
+                ? _runtimeStages[ActiveStageIndex]
+                : null;
+
+        [NonSerialized] public IGameFlowServices ServicesOverride;
+
+        readonly List<GameStage> _runtimeStages = new();
+        IGameFlowServices _services;
         float _sessionStart;
+        float _stageStart;
 
         void Awake()
         {
-            if (stages == null) stages = GetComponent<StageController>();
             if (waf == null) waf = GetComponent<WafController>();
             if (assist == null) assist = GetComponent<AssistHijack>();
+            _services = new FlowServices(this);
         }
 
         void Start()
         {
+            StartSession();
+        }
+
+        public void StartSession()
+        {
+            if (_services == null || ServicesOverride != null)
+                _services = ServicesOverride ?? new FlowServices(this);
             _sessionStart = Time.time;
             AnalyticsStub.SessionStart();
             EnterIntro();
@@ -51,12 +79,12 @@ namespace ManosLimpias.Core
         public void DismissIntro()
         {
             if (State != GameFlowState.Intro) return;
-            EnterStagePlay();
+            EnterStage(0);
         }
 
         public void OnReplayPressed()
         {
-            SubscribeStages(false);
+            StopActiveStage();
             waf?.StopTracking();
             assist?.Stop();
             SceneManager.LoadScene(titleSceneName);
@@ -64,12 +92,15 @@ namespace ManosLimpias.Core
 
         void EnterIntro()
         {
+            StopActiveStage();
+            BuildRuntimeStages();
             State = GameFlowState.Intro;
+            ActiveStageIndex = -1;
             SetRoots(play: true, win: false);
             hud?.SetHudVisible(false);
+            hud?.SetStageCount(_runtimeStages.Count);
             hud?.SetHost(true, false);
-            stages?.ResetSession();
-            stages.AcceptingInput = false;
+            if (stages != null) stages.AcceptingInput = false;
             audioPlayer?.Play("vo_welcome");
             hud?.PulseHostSpeak();
             cameraFocus?.EaseToStage(0);
@@ -77,111 +108,110 @@ namespace ManosLimpias.Core
             germs?.ResetGerms();
         }
 
-        void EnterStagePlay()
+        void EnterStage(int index)
         {
+            if (index < 0 || index >= _runtimeStages.Count)
+            {
+                EnterOutro();
+                return;
+            }
+
             State = GameFlowState.Stage;
+            ActiveStageIndex = index;
+            _stageStart = Time.time;
             hud?.SetHudVisible(true);
             hud?.SetHost(false, false);
-            stages.Begin(0);
-            WireStage(0);
-            AnalyticsStub.StageStart(0);
-            audioPlayer?.Play("vo_stage_0");
-            hud?.PulseHostSpeak();
-            SubscribeStages(true);
-            waf?.BeginTracking();
-        }
-
-        void WireStage(int index)
-        {
+            hud?.ApplyStage(index, 0f);
             playfield?.SetActiveStage(index);
             cameraFocus?.EaseToStage(index);
-            hud?.ApplyStage(index, stages.Progress);
-            if (index == 2 || index == 3)
-                germs?.EnsureGerms();
-        }
-
-        void SubscribeStages(bool on)
-        {
-            if (stages == null) return;
-            stages.StageStarted -= OnStageStarted;
-            stages.StageCompleted -= OnStageCompleted;
-            stages.ProgressChanged -= OnProgressChanged;
-            stages.AllStagesCompleted -= OnAllComplete;
-            if (!on) return;
-            stages.StageStarted += OnStageStarted;
-            stages.StageCompleted += OnStageCompleted;
-            stages.ProgressChanged += OnProgressChanged;
-            stages.AllStagesCompleted += OnAllComplete;
-        }
-
-        void OnStageStarted(int index)
-        {
-            if (State == GameFlowState.Assist)
-                ExitAssistKeepStage();
+            _runtimeStages[index].Initialize(_services);
+            _runtimeStages[index].Enter();
             AnalyticsStub.StageStart(index);
-            WireStage(index);
             audioPlayer?.Play($"vo_stage_{index}");
             hud?.PulseHostSpeak();
-            waf?.ResetIdle();
         }
 
-        void OnProgressChanged()
+        void Update()
         {
-            hud?.ApplyStage(stages.StageIndex, stages.Progress);
-            waf?.NotifyActivity();
-            if (stages.StageIndex is 2 or 3)
-                germs?.UpdateFromProgress(stages.Progress);
+            if (State == GameFlowState.Stage)
+                ActiveStage?.Tick(Time.deltaTime);
         }
 
-        void OnStageCompleted(int index, float duration)
+        void StopActiveStage()
         {
-            AnalyticsStub.StageComplete(index, duration);
+            ActiveStage?.Exit();
+            ActiveStageIndex = -1;
+        }
+
+        public void RequestStageCompletion(GameStage stage)
+        {
+            if (State != GameFlowState.Stage || stage == null || stage != ActiveStage)
+                return;
+
+            stage.Exit();
+            AnalyticsStub.StageComplete(ActiveStageIndex, Time.time - _stageStart);
             audioPlayer?.Play("sfx_caf_positive");
             audioPlayer?.Play("vo_caf_praise");
             hud?.PulseStageComplete();
             hud?.PulseHostSpeak();
             hud?.SetHost(true, false);
+
+            int nextIndex = ActiveStageIndex + 1;
+            if (nextIndex >= _runtimeStages.Count)
+            {
+                EnterOutro();
+                return;
+            }
+
+            EnterStage(nextIndex);
         }
 
-        void OnAllComplete()
+        void EnterOutro()
         {
-            EnterWin();
+            StopActiveStage();
+            State = GameFlowState.Outro;
+            waf?.StopTracking();
+            assist?.Stop();
+            SetRoots(play: true, win: true);
+            hud?.SetHudVisible(true);
+            hud?.SetHost(true, false);
+            audioPlayer?.Play("vo_complete");
+            hud?.PulseHostSpeak();
+            AnalyticsStub.SessionComplete(Time.time - _sessionStart);
+            playfield?.SetActiveStage(-1);
         }
 
         public void EnterAssist()
         {
             if (State != GameFlowState.Stage) return;
             State = GameFlowState.Assist;
-            AnalyticsStub.AssistHijack(stages.StageIndex);
-            AnalyticsStub.WafTriggered(stages.StageIndex, 3);
+            AnalyticsStub.AssistHijack(ActiveStageIndex);
+            AnalyticsStub.WafTriggered(ActiveStageIndex, 3);
             hud?.SetHost(true, true);
             audioPlayer?.Play("vo_waf_assist");
             hud?.PulseHostSpeak();
-            assist?.StartHijack(stages);
         }
 
-        void ExitAssistKeepStage()
+        public void ResumeActiveStage()
         {
+            if (State != GameFlowState.Assist || ActiveStage == null) return;
             State = GameFlowState.Stage;
-            assist?.Stop();
             hud?.SetHost(false, false);
         }
 
-        void EnterWin()
+        public void TriggerWaf(int level)
         {
-            SubscribeStages(false);
-            State = GameFlowState.Win;
-            waf?.StopTracking();
-            assist?.Stop();
-            stages.AcceptingInput = false;
-            SetRoots(play: true, win: true);
-            hud?.SetHudVisible(true);
-            hud?.MarkAllIconsComplete();
-            hud?.SetHost(true, false);
-            audioPlayer?.Play("vo_complete");
-            hud?.PulseHostSpeak();
-            AnalyticsStub.SessionComplete(Time.time - _sessionStart);
-            playfield?.SetActiveStage(-1);
+            AnalyticsStub.WafTriggered(ActiveStageIndex, level);
+            if (level == 1)
+                hud?.PulseWafHighlight();
+            else if (level == 2)
+            {
+                hud?.SetHost(true, false);
+                audioPlayer?.Play("vo_waf_hint");
+                hud?.PulseHostSpeak();
+            }
+            else if (level >= 3)
+                EnterAssist();
         }
 
         void SetRoots(bool play, bool win)
@@ -190,23 +220,60 @@ namespace ManosLimpias.Core
             if (winRoot) winRoot.SetActive(win);
         }
 
-        public void TriggerWaf(int level)
+        void BuildRuntimeStages()
         {
-            AnalyticsStub.WafTriggered(stages.StageIndex, level);
-            if (level == 1)
+            _runtimeStages.Clear();
+            if (stageConfigurations == null) return;
+            foreach (var configuration in stageConfigurations)
             {
-                hud?.PulseWafHighlight();
+                if (configuration != null)
+                    _runtimeStages.Add(configuration.CreateRuntime());
             }
-            else if (level == 2)
+        }
+
+        sealed class FlowServices : IGameFlowServices
+        {
+            readonly GameFlowController _flow;
+            readonly IProgressBarControl _fallbackProgress;
+            readonly IStepIconControl _fallbackStepIcon;
+
+            public FlowServices(GameFlowController flow)
             {
-                hud?.SetHost(true, false);
-                audioPlayer?.Play("vo_waf_hint");
-                hud?.PulseHostSpeak();
+                _flow = flow;
+                _fallbackProgress = new HudProgressAdapter(flow.hud);
+                _fallbackStepIcon = new NullStepIcon();
             }
-            else if (level >= 3)
+
+            public IFaucetControl Faucet => _flow.faucet;
+            public IProgressBarControl ProgressBar => _flow.riveHud ?? _fallbackProgress;
+            public IStepIconControl StepIcon => _flow.riveHud ?? _fallbackStepIcon;
+
+            public void RequestStageCompletion(GameStage stage)
             {
-                EnterAssist();
+                _flow.RequestStageCompletion(stage);
             }
+        }
+
+        sealed class HudProgressAdapter : IProgressBarControl
+        {
+            readonly HudPresenter _hud;
+            public float Progress { get; private set; }
+
+            public HudProgressAdapter(HudPresenter hud)
+            {
+                _hud = hud;
+            }
+
+            public void SetProgress(float progress)
+            {
+                Progress = Mathf.Clamp01(progress);
+                _hud?.ApplyStage(_hud.StageIndex, Progress);
+            }
+        }
+
+        sealed class NullStepIcon : IStepIconControl
+        {
+            public void SetState(int stepId, bool active, bool completed) { }
         }
     }
 }

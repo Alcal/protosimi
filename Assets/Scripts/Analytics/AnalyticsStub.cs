@@ -4,7 +4,7 @@ namespace ManosLimpias.Analytics
 {
     public static class AnalyticsStub
     {
-        public const string DesignVersion = "v1";
+        public const string DesignVersion = "v2";
 
         public static void SessionStart() =>
             Log("session_start", $"design_version={DesignVersion}");

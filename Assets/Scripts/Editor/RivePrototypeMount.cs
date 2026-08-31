@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using ManosLimpias.Core;
+using ManosLimpias.UI;
 using ManosLimpias.UI.Rive;
 using Rive;
 using Rive.Components;
@@ -78,17 +79,29 @@ namespace ManosLimpias.Editor
 
             var mainWidget = FindOrCreateWidget(panelObj.transform, "MainRive");
             var introWidget = FindOrCreateWidget(panelObj.transform, "IntroRive");
+            var stepIconWidget = FindOrCreateWidget(panelObj.transform, "StepIconRive");
             mainWidget.transform.SetSiblingIndex(0);
-            introWidget.transform.SetSiblingIndex(1);
+            stepIconWidget.transform.SetSiblingIndex(1);
+            introWidget.transform.SetSiblingIndex(2);
 
             ConfigureWidget(
                 mainWidget,
                 asset,
                 MainProgress.Artboard,
                 MainProgress.StateMachine,
+                HitTestBehavior.Opaque,
+                Fit.Contain,
+                RiveWidget.DataBindingMode.Manual);
+
+            ConfigureWidget(
+                stepIconWidget,
+                asset,
+                StepIcon.Artboard,
+                StepIcon.StateMachine,
                 HitTestBehavior.None,
                 Fit.Contain,
                 RiveWidget.DataBindingMode.Manual);
+            PlaceStepIcon(stepIconWidget.GetComponent<RectTransform>());
 
             ConfigureWidget(
                 introWidget,
@@ -104,12 +117,32 @@ namespace ManosLimpias.Editor
             var presenter = systems.GetComponent<SimiPrototypePresenter>();
             if (presenter == null)
                 presenter = systems.AddComponent<SimiPrototypePresenter>();
+            var binder = systems.GetComponent<RiveHudBinder>();
+            if (binder == null)
+                binder = systems.AddComponent<RiveHudBinder>();
+            var faucet = mainWidget.GetComponent<Faucet>();
+            if (faucet == null)
+                faucet = mainWidget.gameObject.AddComponent<Faucet>();
+            faucet.Bind(mainWidget);
 
             var soPresenter = new SerializedObject(presenter);
             soPresenter.FindProperty("flow").objectReferenceValue = systems.GetComponent<GameFlowController>();
             soPresenter.FindProperty("mainWidget").objectReferenceValue = mainWidget;
             soPresenter.FindProperty("introWidget").objectReferenceValue = introWidget;
+            soPresenter.FindProperty("stepIconWidget").objectReferenceValue = stepIconWidget;
+            soPresenter.FindProperty("hudBinder").objectReferenceValue = binder;
+            soPresenter.FindProperty("faucet").objectReferenceValue = faucet;
             soPresenter.ApplyModifiedPropertiesWithoutUndo();
+
+            var soBinder = new SerializedObject(binder);
+            soBinder.FindProperty("hud").objectReferenceValue = systems.GetComponent<HudPresenter>();
+            soBinder.FindProperty("mainWidget").objectReferenceValue = mainWidget;
+            soBinder.FindProperty("stepIconWidget").objectReferenceValue = stepIconWidget;
+            soBinder.ApplyModifiedPropertiesWithoutUndo();
+
+            var soFlow = new SerializedObject(systems.GetComponent<GameFlowController>());
+            soFlow.FindProperty("faucet").objectReferenceValue = faucet;
+            soFlow.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -159,6 +192,17 @@ namespace ManosLimpias.Editor
         {
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.localScale = Vector3.one;
+            rect.localRotation = Quaternion.identity;
+        }
+
+        static void PlaceStepIcon(RectTransform rect)
+        {
+            rect.anchorMin = new Vector2(0.82f, 0.31f);
+            rect.anchorMax = new Vector2(0.98f, 0.55f);
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rect.pivot = new Vector2(0.5f, 0.5f);

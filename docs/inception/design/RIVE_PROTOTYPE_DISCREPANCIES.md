@@ -2,7 +2,7 @@
 
 **File:** `Assets/Art/Rive/simi_prototype.riv`  
 **Dumped:** 2026-08-30 (Rive canvas runtime; no Rive MCP)  
-**Status:** Documented only — not solved this session.
+**Status:** Partially resolved in M-07. Open Water now uses the nested Rive main widget for hit testing, progress is bound to `progress_num`, and one runtime step-icon widget is mounted. The binary asset's nested input path remains optional because its instance name is not exposed by the prototype metadata.
 
 C# mirrors live under `Assets/Scripts/UI/Rive/`. Mounted artboards: `main` and `intro` on Gameplay. Nested contracts exist for later wiring.
 
@@ -14,11 +14,11 @@ C# mirrors live under `Assets/Scripts/UI/Rive/`. Mounted artboards: `main` and `
 
 `main` already draws faucet, hands, soap, towel, character, progress, and step icons at 1920×1080.
 
-Gameplay still has Unity graybox (`Playfield` / `Faucet` / `Soap` / `Towel` / `Hands` / `Sink` / `Germs`) and uGUI `PlayHudRoot`.
+Gameplay still has Unity graybox (`Playfield` / `Soap` / `Towel` / `Hands` / `Sink` / `Germs`); the legacy Faucet object and uGUI `PlayHudRoot` are disabled for the Rive Faucet milestone.
 
 The Rive panel is a fullscreen overlay on `GameplayCanvas`. Both stacks are visible.
 
-**Clarify later:** hide Unity playfield? replace it with Rive? HUD-only slot?
+**Remaining:** hide the remaining Unity playfield as each component is migrated to Rive.
 
 ---
 
@@ -48,7 +48,7 @@ The file uses state-machine inputs instead:
 
 Rive: independent L/R triggers (`faucet_L_On`, `faucet_L_Off`, `faucet_R_On`, `faucet_R_Off`).
 
-Unity: one `TapOpenClose` family for stages 0 (open) and 4 (close), single `Faucet` collider.
+Unity: Open Water is now completed by either Rive handle activation through one Faucet adapter; the legacy `TapOpenClose` proximity path and Faucet collider are disabled. Close Water remains future configuration.
 
 ---
 
@@ -64,13 +64,13 @@ Child SM inputs are **not** on `main`’s `progress_StateMachine` (only `progres
 
 Unity can set nested inputs via `Artboard.SetBooleanInputStateAtPath(name, value, path)`, but nested **instance names** inside `main` were not recoverable from the binary.
 
-Need those names before driving faucet / step icons / character from Unity.
+The new adapter keeps direct nested triggering opt-in; normal pointer interaction is handled by the main Rive widget and reported activation events. The remaining instance names are still needed for future direct control of the Faucet animation and other nested components.
 
 ---
 
 ## Drag vs Unity input
 
-Soap and towel expose `isDragged`. Unity uses world-space `IntentInputRouter` on graybox colliders. Not wired.
+Soap and towel expose `isDragged`. Unity uses world-space `IntentInputRouter` only for future non-Faucet input families.
 
 ---
 
@@ -99,14 +99,14 @@ Only two file-level view models:
 - `ViewModel1` — no properties (bound to `REF`)
 - `BubbleButton` — `buttonTrig` (trigger), `buttonBool` (boolean)
 
-Most gameplay state is SM inputs, not data binding. `RiveHudBinder` still SendMessages the old `VM_HUD` names to a null `riveWidget`.
+Most gameplay state is SM inputs, not data binding. `RiveHudBinder` now writes the direct `main` progress input and the single mounted step icon instead of sending the obsolete `VM_HUD` names.
 
 ---
 
 ## Open questions for you
 
-1. Hide / remove Unity graybox and uGUI HUD once Rive `main` is the playfield?
+1. Hide / remove the remaining Unity graybox once all playfield components are Rive-owned?
 2. Map six stages onto four `stepIcon` instances — which `step_ID` for Open vs Close water, Wet vs Rinse?
 3. Nested component instance names inside `main` (for `Set*InputStateAtPath`)?
-4. Dual faucet handles vs single tap-open/close — keep both, or pick one model?
+4. Dual faucet handles vs single tap-open/close — M-07 uses both Rive handles for Open Water; Close Water remains to be migrated.
 5. Keep Title scene, or delete it now that intro Jugar is the start?

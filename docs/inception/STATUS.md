@@ -1,11 +1,11 @@
 # Inception Status
 
 phase: implement
-design_version: v1
-active_milestone: none
-milestone_status: done
-last_session: 2026-08-30 — Imported simi_prototype.riv; typed contracts; mounted main+intro on Gameplay; intro Jugar dismisses overlay.
-next_action: Restart Unity Editor (Vulkan). Play Gameplay; confirm intro Jugar is visible and dismisses overlay.
+design_version: v2
+active_milestone: M-07b
+milestone_status: awaiting_user_verification
+last_session: 2026-08-30 — M-07b implemented; 6/6 EditMode and 1/1 PlayMode tests pass. Manual Gameplay/Rive verification remains.
+next_action: User runs M-07b acceptance checklist; on approval mark M-07b done and advance the roadmap.
 
 ## Phase values
 
@@ -30,3 +30,9 @@ next_action: Restart Unity Editor (Vulkan). Play Gameplay; confirm intro Jugar i
 | 2026-08-07 | design→implement | Fast-track GDD/TAD/milestones + initial code |
 | 2026-08-07 | implement | Discarded GameBootstrap; MCP-scaffolded Title/Gameplay scenes with serialized refs |
 | 2026-08-30 | implement | simi_prototype.riv contracts + Gameplay mount (intro overlay, Jugar dismiss) |
+| 2026-08-30 | implement | M-07 started: nested Rive Faucet and configurable stage lifecycle |
+| 2026-08-30 | tech | Pivoted v1→v2: GameStage inheritance and injected flow-services architecture proposed |
+| 2026-08-30 | plan | GDD-v2/TAD-v2 approved; M-07b GameStage architecture milestone planned |
+| 2026-08-30 | test-plan | M-07b roadmap approved; acceptance criteria and test stubs prepared |
+| 2026-08-30 | implement | M-07b test plan approved; implementation authorized |
+| 2026-08-30 | implement | M-07b implemented; automated tests pass; awaiting user Gameplay/Rive verification |

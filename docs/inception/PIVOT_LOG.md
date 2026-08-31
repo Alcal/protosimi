@@ -4,7 +4,14 @@ Record design and technical approach changes between versions. Implementation ag
 
 ## Entries
 
-_(No pivots yet — baseline is GDD-v1.)_
+## 2026-08-30 — v1 → v2: polymorphic GameStage architecture
+
+- **Reason:** Stage configuration and sequencing in `GameFlowController` are too tightly coupled. Stage-specific behavior should live in inheritable `GameStage` classes with an injected flow-services interface.
+- **Design:** Created [`design/GDD-v2.md`](design/GDD-v2.md). The six-stage wash sequence remains unchanged; `OpenFaucetStage` is the first concrete stage and Intro/Outro remain flow-level states.
+- **Technical approach:** Created [`tech/TAD-v2.md`](tech/TAD-v2.md). `GameFlowController` becomes the ordered stage factory/coordinator; `GameStage` implementations consume `IGameFlowServices` and request transitions through that interface.
+- **Affected milestone:** M-07 is superseded before user verification. Its configuration-driven `StageController` approach must not be extended; regenerate the Faucet milestone after TAD-v2 approval.
+- **Affected tests:** Supersede `tests/M-07-acceptance.md` and its EditMode coverage when the new M-07b milestone and acceptance artifacts are planned.
+- **User decision:** User requested the `GameStage` / `OpenFaucetStage` inheritance and injected-interface architecture.
 
 ---
 

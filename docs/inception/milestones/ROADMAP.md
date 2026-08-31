@@ -1,9 +1,9 @@
 # Implementation Roadmap
 
-Design version: **v1**
-Status: **approved** (fast-track)
+Design version: **v2**
+Status: **approved**
 
-**Sources:** [`../design/GDD-v1.md`](../design/GDD-v1.md) · [`../tech/TAD-v1.md`](../tech/TAD-v1.md)
+**Sources:** [`../design/GDD-v2.md`](../design/GDD-v2.md) · [`../tech/TAD-v2.md`](../tech/TAD-v2.md)
 
 ## Tech constraints from TAD
 
@@ -11,6 +11,9 @@ Status: **approved** (fast-track)
 - Analytics events in early milestones: stub in M-01; fire stage/session events by M-04
 - Asset pipeline: Rive HUD; Unity-native graybox playfield; Blender/ComfyUI unused for MVP
 - No disk persistence; M-04 = session state machine + analytics
+- `GameFlowController` sequences instantiated `GameStage` instances; concrete stages consume `IGameFlowServices`
+- Stage behavior must not resolve scene objects or hard-code next-stage indices
+- M-07b implements only `OpenFaucetStage`; future stages are additional concrete stage types
 
 ## Milestone index
 
@@ -22,6 +25,8 @@ Status: **approved** (fast-track)
 | M-04 | Session progression | done | M-03 |
 | M-05 | Graybox content | done | M-04 |
 | M-06 | Assist + polish | done | M-05 |
+| M-07 | Rive Faucet state machine | superseded | M-06 |
+| M-07b | Polymorphic GameStage flow + Open Faucet | awaiting_user_verification | M-06 |
 
 ## Vertical slice definition
 

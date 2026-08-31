@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &30079143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
@@ -334,6 +334,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1869384726}
+  - {fileID: 2070010002}
   - {fileID: 917361702}
   m_Father: {fileID: 751682363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1411,7 +1412,7 @@ MonoBehaviour:
   m_eventPoolingMode: 0
   m_speed: 1
   m_dataBindingMode: 0
-  m_viewModelInstanceName: 
+  m_viewModelInstanceName:
   m_customAudioProvider: {fileID: 0}
 --- !u!1 &1125114505
 GameObject:
@@ -1491,7 +1492,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1788,7 +1789,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3176cb2a9b63920f3be82b720cd59a7e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::ManosLimpias.Core.GameFlowController
   tuning: {fileID: 11400000, guid: e270baba854ce4df1953df79b4e4241a, type: 2}
   stages: {fileID: 1259954863}
@@ -1802,6 +1803,17 @@ MonoBehaviour:
   winRoot: {fileID: 1421451346}
   playRoot: {fileID: 30079142}
   titleSceneName: Title
+  riveHud: {fileID: 1259954864}
+  faucet: {fileID: 1869384728}
+  stageConfigurations:
+  - rid: 114000001
+  references:
+    version: 1
+    RefIds:
+    - rid: 114000001
+      type: {class: OpenFaucetStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
+      data:
+        stepId: 1
 --- !u!114 &1259954859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1875,6 +1887,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ManosLimpias.Core.StageController
   tuning: {fileID: 11400000, guid: e270baba854ce4df1953df79b4e4241a, type: 2}
+  stageDefinitions:
+  - id: OpenWater
+    inputFamily: 0
+    stepIconId: 1
+    OnEnter:
+      m_PersistentCalls:
+        m_Calls: []
+    OnExit:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!114 &1259954864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1889,7 +1911,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ManosLimpias.UI.RiveHudBinder
   hud: {fileID: 30079145}
   logBindings: 0
-  riveWidget: {fileID: 0}
+  mainWidget: {fileID: 1869384727}
+  stepIconWidget: {fileID: 2070010003}
 --- !u!114 &1259954865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1936,6 +1959,9 @@ MonoBehaviour:
   flow: {fileID: 1259954858}
   mainWidget: {fileID: 1869384727}
   introWidget: {fileID: 917361703}
+  stepIconWidget: {fileID: 2070010003}
+  hudBinder: {fileID: 1259954864}
+  faucet: {fileID: 1869384728}
 --- !u!1 &1352900543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1953,7 +1979,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1352900544
 Transform:
   m_ObjectHideFlags: 0
@@ -3023,7 +3049,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49ddea6c6ca30d39187ad53f21b7fbe6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ManosLimpias.Core.PlayfieldFoci
-  faucet: {fileID: 1352900543}
+  faucet: {fileID: 0}
   hands: {fileID: 1441508785}
   soap: {fileID: 1224805885}
   towel: {fileID: 665750934}
@@ -3037,6 +3063,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1869384726}
   - component: {fileID: 1869384727}
+  - component: {fileID: 1869384728}
   m_Layer: 0
   m_Name: MainRive
   m_TagString: Untagged
@@ -3079,6 +3106,87 @@ MonoBehaviour:
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: main
   m_stateMachineName: progress_StateMachine
+  m_fit: 1
+  m_alignment:
+    m_x: 0
+    m_y: 0
+  m_layoutScaleFactor: 1
+  m_layoutScalingMode: 1
+  m_fallbackDPI: 96
+  m_referenceDPI: 150
+  m_hitTestBehavior: 0
+  m_eventPoolingMode: 0
+  m_speed: 1
+  m_dataBindingMode: 2
+  m_viewModelInstanceName:
+  m_customAudioProvider: {fileID: 0}
+--- !u!114 &1869384728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869384725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c7772b65c09863f5adb81d58a4b9bcf, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ManosLimpias.UI.Rive.Faucet
+  nestedPath:
+  fireNestedInput: 0
+  mainWidget: {fileID: 1869384727}
+--- !u!1 &2070010001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2070010002}
+  - component: {fileID: 2070010003}
+  m_Layer: 0
+  m_Name: StepIconRive
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2070010002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070010001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 107557879}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.82, y: 0.31}
+  m_AnchorMax: {x: 0.98, y: 0.55}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2070010003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070010001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
+  m_rivePanel: {fileID: 107557880}
+  m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
+  m_artboardName: stepIcon
+  m_stateMachineName: steps_StateMachine
   m_fit: 1
   m_alignment:
     m_x: 0

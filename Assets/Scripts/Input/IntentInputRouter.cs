@@ -23,7 +23,12 @@ namespace ManosLimpias.Input
         void Update()
         {
             if (stages == null || !stages.AcceptingInput || tuning == null) return;
-            var family = StageController.FamilyFor(stages.StageIndex);
+            var definition = stages.CurrentDefinition;
+            var family = definition != null ? definition.inputFamily : StageController.FamilyFor(stages.StageIndex);
+
+            // TapOpenClose is owned by the interactive Rive component. Do not let
+            // world-space proximity or the legacy Faucet collider complete it.
+            if (family == InputFamily.TapOpenClose) return;
 
             bool down = false;
             Vector2 screen = Vector2.zero;
@@ -45,12 +50,7 @@ namespace ManosLimpias.Input
             var focus = playfield != null ? playfield.FocusForStage(stages.StageIndex) : null;
             bool nearFocus = focus == null || Vector2.Distance(world, focus.transform.position) <= tuning.tapRadiusWorld;
 
-            if (family == InputFamily.TapOpenClose)
-            {
-                if (down && !_pointerDown && nearFocus)
-                    stages.AddProgressFromFamily(family, 0.35f);
-            }
-            else if (family == InputFamily.HandsUnderWater)
+            if (family == InputFamily.HandsUnderWater)
             {
                 if (down && nearFocus)
                     stages.AddProgressFromFamily(family, Time.deltaTime);

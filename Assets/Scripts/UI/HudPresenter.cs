@@ -18,6 +18,7 @@ namespace ManosLimpias.UI
 
         public float StageProgress { get; private set; }
         public int StageIndex { get; private set; }
+        public int StageCount { get; private set; } = 1;
         public int[] IconStates { get; private set; } = { 0, 0, 0, 0 };
         public bool HostVisible { get; private set; }
         public bool HostAssistMode { get; private set; }
@@ -41,12 +42,17 @@ namespace ManosLimpias.UI
             if (hostAssistOutline) hostAssistOutline.enabled = assist;
         }
 
+        public void SetStageCount(int count)
+        {
+            StageCount = Mathf.Max(1, count);
+        }
+
         public void ApplyStage(int stageIndex, float progress)
         {
             StageIndex = stageIndex;
             StageProgress = progress;
             if (progressFill) progressFill.fillAmount = progress;
-            if (stageLabel) stageLabel.text = $"Etapa {stageIndex + 1}/6  {progress:P0}";
+            if (stageLabel) stageLabel.text = $"Etapa {stageIndex + 1}/{StageCount}  {progress:P0}";
             RecomputeIcons(stageIndex);
             PaintIcons();
         }
