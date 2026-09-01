@@ -4,8 +4,8 @@ phase: implement
 design_version: v2
 active_milestone: M-07b
 milestone_status: awaiting_user_verification
-last_session: 2026-08-31 — Direct WebGL Rive works; itch CI likely skipped Rive native lib copy. Added always-on preprocessor.
-next_action: User runs Deploy WebGL to itch.io, then opens the itch player to confirm Rive draws.
+last_session: 2026-08-31 — Dropped GameCI itch deploy; local post-commit hook on main runs scripts/deploy-itch-webgl.sh.
+next_action: User installs the hook (already copied locally), closes Unity, commits to main or runs the deploy script, then verifies Rive on itch.
 
 ## Phase values
 
@@ -43,3 +43,4 @@ next_action: User runs Deploy WebGL to itch.io, then opens the itch player to co
 | 2026-08-31 | implement | Bridged nested faucet pointer hits to Faucet.Activated (Triggers ≠ ReportedEvents) |
 | 2026-08-31 | implement | Poll nested faucet_L_On / faucet_R_On triggers; listeners stay Rive-side |
 | 2026-08-31 | implement | WebGL Rive checked on local player: native Initialized, widgets Loaded; marked resolved |
+| 2026-08-31 | implement | Dropped GameCI itch workflow; local post-commit on main deploys WebGL via butler |

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Runs after a commit. Deploys WebGL to itch when the commit is on main.
+set -euo pipefail
+
+[[ "${SKIP_ITCH_DEPLOY:-}" == "1" ]] && exit 0
+
+branch="$(git branch --show-current || true)"
+[[ "$branch" == "main" ]] || exit 0
+
+ROOT="$(git rev-parse --show-toplevel)"
+echo "post-commit: deploying WebGL to itch (SKIP_ITCH_DEPLOY=1 to skip)"
+exec "$ROOT/scripts/deploy-itch-webgl.sh"
