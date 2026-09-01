@@ -4,8 +4,8 @@ phase: implement
 design_version: v2
 active_milestone: M-07b
 milestone_status: awaiting_user_verification
-last_session: 2026-08-31 — Dropped GameCI itch deploy; local post-commit hook on main runs scripts/deploy-itch-webgl.sh.
-next_action: User installs the hook (already copied locally), closes Unity, commits to main or runs the deploy script, then verifies Rive on itch.
+last_session: 2026-08-31 — Itch Rive blank resolved (local WebGL deploy); debug probes removed from SimiPrototypePresenter.
+next_action: User runs M-07b acceptance checklist; on approve set milestone_status done and advance active_milestone.
 
 ## Phase values
 
@@ -44,3 +44,4 @@ next_action: User installs the hook (already copied locally), closes Unity, comm
 | 2026-08-31 | implement | Poll nested faucet_L_On / faucet_R_On triggers; listeners stay Rive-side |
 | 2026-08-31 | implement | WebGL Rive checked on local player: native Initialized, widgets Loaded; marked resolved |
 | 2026-08-31 | implement | Dropped GameCI itch workflow; local post-commit on main deploys WebGL via butler |
+| 2026-08-31 | implement | Itch Rive blank resolved; removed SimiPrototypePresenter debug probes |
