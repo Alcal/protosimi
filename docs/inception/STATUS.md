@@ -4,8 +4,8 @@ phase: implement
 design_version: v2
 active_milestone: M-07b
 milestone_status: awaiting_user_verification
-last_session: 2026-08-31 — WebGL Rive render checked; native Initialized and widgets Loaded. Marked resolved.
-next_action: User runs M-07b acceptance checklist; on approve set milestone_status done and advance active_milestone.
+last_session: 2026-08-31 — Direct WebGL Rive works; itch CI likely skipped Rive native lib copy. Added always-on preprocessor.
+next_action: User runs Deploy WebGL to itch.io, then opens the itch player to confirm Rive draws.
 
 ## Phase values
 

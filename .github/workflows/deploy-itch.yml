@@ -43,9 +43,10 @@ jobs:
         with:
           path: Library
           key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt') }}
+          # Do not fall back to a generic Library- key: that can restore a
+          # Standalone/Linux cache into a WebGL build and skip Rive plugin import.
           restore-keys: |
             Library-WebGL-
-            Library-
 
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
