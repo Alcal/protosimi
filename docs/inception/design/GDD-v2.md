@@ -33,7 +33,7 @@ The MVP keeps the six logical stages and their existing input families:
 | 4 | `CloseFaucetStage` | `TapOpenClose` | Either Faucet handle |
 | 5 | `DryHandsStage` | `RubOnHands` | Towel |
 
-M-07 only implements `OpenFaucetStage` in the configured list. Later stage classes can be added without changing `GameFlowController` sequencing code.
+The configured list currently contains only `OpenFaucetStage`. Later stage classes can be added without changing `GameFlowController` sequencing code.
 
 ### OpenFaucetStage
 

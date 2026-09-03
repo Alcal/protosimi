@@ -1,27 +1,8 @@
 # Inception Status
 
-phase: implement
 design_version: v3
-active_milestone: M-08
-milestone_status: awaiting_user_verification
-last_session: 2026-09-03 — M-08 origin fix: sibling widgets use each artboard's originX/Y (faucet 0,0; soap/steps 0.5,0.5); EditMode 7/7.
-next_action: User runs M-08 acceptance checklist; on approve set milestone_status done and advance active_milestone.
-
-## Phase values
-
-- `design` — GDD, screens, diagrams
-- `tech` — Technical Approach Document (architecture, tooling, assets, analytics)
-- `plan` — milestones and roadmap
-- `test-plan` — acceptance docs and Unity test stubs
-- `implement` — code one milestone per session
-- `verify` — user acceptance of completed milestone
-
-## Milestone status values
-
-- `pending` — not started
-- `in_progress` — agent actively working
-- `awaiting_user_verification` — agent done; user must run acceptance checklist
-- `done` — user approved; safe to advance
+last_session: 2026-09-03 — Retired milestone-driven inception; flattened TAD-v3 as the current technical document; removed TAD-v1/v2, milestone docs, and acceptance checklists.
+next_action: Continue from [`design/GDD-v2.md`](design/GDD-v2.md) and [`tech/TAD-v3.md`](tech/TAD-v3.md).
 
 ## Session log
 
@@ -49,3 +30,4 @@ next_action: User runs M-08 acceptance checklist; on approve set milestone_statu
 | 2026-09-03 | implement | M-08 implemented; EditMode 14/14, PlayMode 2/2; awaiting user Gameplay verification |
 | 2026-09-03 | implement | M-08 fix: empty-anchor Node x/y + Y-down mapping; Play Mode 10/10 non-zero rects |
 | 2026-09-03 | implement | M-08 origin fix: artboard originX/Y shifts soap/steps/towel/progressBar vs faucet 0,0 |
+| 2026-09-03 | docs | Retired milestone-driven inception; TAD-v3 is the standalone current TAD |

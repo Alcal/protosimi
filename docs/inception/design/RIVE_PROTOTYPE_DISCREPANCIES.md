@@ -1,7 +1,7 @@
 # Rive prototype discrepancies (simi_prototype.riv)
 
 **File:** `Assets/Art/Rive/simi_prototype.riv`  
-**Updated:** 2026-09-03 (M-08 background-anchor harness)  
+**Updated:** 2026-09-03 (background-anchor harness)  
 **Status:** Gameplay mounts `background` plus sibling widgets at `*-anchor` nodes. Leftover artboard `main` is not mounted.
 
 C# mirrors live under `Assets/Scripts/UI/Rive/`.
@@ -10,7 +10,7 @@ C# mirrors live under `Assets/Scripts/UI/Rive/`.
 
 ---
 
-## Mount (M-08)
+## Mount
 
 | Widget | Artboard | Hit testing |
 |--------|----------|-------------|
