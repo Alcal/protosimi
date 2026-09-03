@@ -7,23 +7,20 @@ using UnityEngine;
 namespace ManosLimpias.UI
 {
     /// <summary>
-    /// Drives the prototype's direct state-machine inputs. The prototype has no VM_HUD;
-    /// progress lives on main and the configured step icon is written both to the overlay
-    /// widget and to nested <c>step</c> instances inside <c>main</c>.
+    /// Drives overlay progressBar and the four stepIcon widgets at stepN-anchor.
     /// </summary>
     public class RiveHudBinder : MonoBehaviour, IProgressBarControl, IStepIconControl
     {
         public HudPresenter hud;
         public bool logBindings;
-        public RiveWidget mainWidget;
-        public RiveWidget stepIconWidget;
+        public RiveWidget progressBarWidget;
+        public RiveWidget[] stepIconWidgets;
 
         public float Progress { get; private set; }
         public int StepId => _stepId;
         public bool StepActive => _stepActive;
         public bool StepCompleted => _stepCompleted;
         public bool HasStepState => _hasStepState;
-        public string NestedStepPath => _nestedPath;
 
         float _lastProgress = -1f;
         int _stepId = 1;
@@ -34,31 +31,23 @@ namespace ManosLimpias.UI
         bool _pushedActive;
         bool _pushedCompleted;
         bool _progressInputMissing;
-        bool _stepIdMissing;
-        bool _stepActiveMissing;
-        bool _stepCompletedMissing;
-        bool _nestedPathResolved;
-        bool _nestedPathMissing;
         bool _pushing;
-        string _nestedPath;
-        RiveWidget _subscribedStepIcon;
+        RiveWidget[] _subscribedIcons;
 
-        public void Bind(RiveWidget main, RiveWidget stepIcon)
+        public void Bind(RiveWidget progressBar, params RiveWidget[] stepIcons)
         {
-            mainWidget = main;
-            stepIconWidget = stepIcon;
+            progressBarWidget = progressBar;
+            stepIconWidgets = stepIcons;
             _lastProgress = -1f;
             _pushedStepId = int.MinValue;
-            _nestedPathResolved = false;
-            _nestedPath = null;
-            SubscribeStepIcon();
+            SubscribeStepIcons();
             PushStepIcon();
         }
 
         public void SetProgress(float progress)
         {
             Progress = Mathf.Clamp01(progress);
-            Debug.Log($"[RiveHudBinder] Stage progress {Progress:F2} mainSM={(mainWidget?.StateMachine != null ? "ready" : "null")}");
+            Debug.Log($"[RiveHudBinder] Stage progress {Progress:F2} barSM={(progressBarWidget?.StateMachine != null ? "ready" : "null")}");
             if (hud != null)
                 hud.ApplyStage(hud.StageIndex, Progress);
             PushProgress();
@@ -75,64 +64,100 @@ namespace ManosLimpias.UI
 
         void OnEnable()
         {
-            SubscribeStepIcon();
+            SubscribeStepIcons();
         }
 
         void OnDisable()
         {
-            UnsubscribeStepIcon();
+            UnsubscribeStepIcons();
         }
 
         void LateUpdate()
         {
             if (logBindings)
-                Debug.Log($"[RiveHudBinder] stageProgress={Progress:F2} stepId={_stepId} active={_stepActive} completed={_stepCompleted} nested={_nestedPath}");
+                Debug.Log($"[RiveHudBinder] stageProgress={Progress:F2} stepId={_stepId} active={_stepActive} completed={_stepCompleted}");
             PushProgress();
             PushStepIcon();
         }
 
-        void SubscribeStepIcon()
+        void SubscribeStepIcons()
         {
-            if (_subscribedStepIcon == stepIconWidget)
+            if (ReferenceEquals(_subscribedIcons, stepIconWidgets))
                 return;
 
-            UnsubscribeStepIcon();
-            _subscribedStepIcon = stepIconWidget;
-            if (_subscribedStepIcon != null)
-                _subscribedStepIcon.OnWidgetStatusChanged += OnStepIconStatusChanged;
+            UnsubscribeStepIcons();
+            _subscribedIcons = stepIconWidgets;
+            if (_subscribedIcons == null)
+                return;
+
+            for (int i = 0; i < _subscribedIcons.Length; i++)
+            {
+                if (_subscribedIcons[i] != null)
+                    _subscribedIcons[i].OnWidgetStatusChanged += OnStepIconStatusChanged;
+            }
         }
 
-        void UnsubscribeStepIcon()
+        void UnsubscribeStepIcons()
         {
-            if (_subscribedStepIcon == null)
+            if (_subscribedIcons == null)
                 return;
-            _subscribedStepIcon.OnWidgetStatusChanged -= OnStepIconStatusChanged;
-            _subscribedStepIcon = null;
+
+            for (int i = 0; i < _subscribedIcons.Length; i++)
+            {
+                if (_subscribedIcons[i] != null)
+                    _subscribedIcons[i].OnWidgetStatusChanged -= OnStepIconStatusChanged;
+            }
+
+            _subscribedIcons = null;
         }
 
         void OnStepIconStatusChanged()
         {
-            if (stepIconWidget != null && stepIconWidget.Status == WidgetStatus.Loaded)
-            {
-                _pushedStepId = int.MinValue;
-                PushStepIcon();
-            }
+            _pushedStepId = int.MinValue;
+            PushStepIcon();
         }
 
         void PushProgress()
         {
-            if (mainWidget?.StateMachine == null || Mathf.Approximately(_lastProgress, Progress))
+            if (progressBarWidget?.StateMachine == null || Mathf.Approximately(_lastProgress, Progress))
                 return;
 
-            var input = RiveStateMachineInputs.GetNumber(mainWidget.StateMachine, MainProgress.ProgressNum);
-            if (input == null)
+            if (TrySetProgressInput(progressBarWidget, Progress))
             {
-                LogMissing(ref _progressInputMissing, MainProgress.ProgressNum, MainProgress.StateMachine);
+                _lastProgress = Progress;
                 return;
             }
 
-            input.Value = Progress;
-            _lastProgress = Progress;
+            LogMissing(ref _progressInputMissing, ProgressBar.ProgressNum, ProgressBar.Artboard);
+        }
+
+        public static bool TrySetProgressInput(RiveWidget widget, float progress)
+        {
+            if (widget?.StateMachine == null)
+                return false;
+
+            var sm = widget.StateMachine;
+            var number = RiveStateMachineInputs.FindNumber(
+                sm,
+                ProgressBar.ProgressNum,
+                ProgressBar.ProgressNumFallback);
+            if (number != null)
+            {
+                number.Value = progress;
+                return true;
+            }
+
+            var instance = sm.ViewModelInstance;
+            if (instance == null)
+                return false;
+
+            var property = RiveStateMachineInputs.GetViewModelProperty<ViewModelInstanceNumberProperty>(instance, ProgressBar.ProgressNum)
+                           ?? RiveStateMachineInputs.GetViewModelProperty<ViewModelInstanceNumberProperty>(instance, ProgressBar.ProgressNumFallback);
+            if (property == null)
+                return false;
+
+            property.Value = progress;
+            return true;
         }
 
         void PushStepIcon()
@@ -147,20 +172,17 @@ namespace ManosLimpias.UI
             _pushing = true;
             try
             {
-                var overlayReady = stepIconWidget?.StateMachine != null;
-                PushOverlayInputs();
-                PushNestedMainInputs();
+                PushStepWidgets();
 
                 if (changed)
                 {
-                    Debug.Log($"[RiveHudBinder] StepIcon state stepId={_stepId} active={_stepActive} completed={_stepCompleted} overlaySM={(overlayReady ? "ready" : "null")} nested={_nestedPath ?? "none"}");
+                    Debug.Log($"[RiveHudBinder] StepIcon state stepId={_stepId} active={_stepActive} completed={_stepCompleted}");
                     _pushedStepId = _stepId;
                     _pushedActive = _stepActive;
                     _pushedCompleted = _stepCompleted;
-                    stepIconWidget?.StateMachine?.Advance(0f);
-                    mainWidget?.StateMachine?.Advance(0f);
-                    var panel = stepIconWidget != null ? stepIconWidget.RivePanel : mainWidget?.RivePanel;
-                    panel?.Tick(0f);
+                    var target = WidgetForStep(_stepId);
+                    target?.StateMachine?.Advance(0f);
+                    target?.RivePanel?.Tick(0f);
                 }
             }
             finally
@@ -169,84 +191,52 @@ namespace ManosLimpias.UI
             }
         }
 
-        void PushOverlayInputs()
+        void PushStepWidgets()
         {
-            if (stepIconWidget?.StateMachine == null)
+            if (stepIconWidgets == null)
                 return;
 
-            var stepId = RiveStateMachineInputs.GetNumber(stepIconWidget.StateMachine, StepIcon.StepId);
-            var active = RiveStateMachineInputs.GetBool(stepIconWidget.StateMachine, StepIcon.IsActive);
-            var completed = RiveStateMachineInputs.GetBool(stepIconWidget.StateMachine, StepIcon.IsCompleted);
-            if (stepId == null)
-                LogMissing(ref _stepIdMissing, StepIcon.StepId, StepIcon.StateMachine);
-            else
-                stepId.Value = _stepId;
-            if (active == null)
-                LogMissing(ref _stepActiveMissing, StepIcon.IsActive, StepIcon.StateMachine);
-            else
-                active.Value = _stepActive;
-            if (completed == null)
-                LogMissing(ref _stepCompletedMissing, StepIcon.IsCompleted, StepIcon.StateMachine);
-            else
-                completed.Value = _stepCompleted;
-        }
-
-        void PushNestedMainInputs()
-        {
-            var artboard = mainWidget?.Artboard;
-            if (artboard == null)
-                return;
-
-            if (!_nestedPathResolved)
+            for (int i = 0; i < stepIconWidgets.Length; i++)
             {
-                _nestedPath = ResolveNestedPath(artboard);
-                if (!string.IsNullOrEmpty(_nestedPath) || mainWidget.Status == WidgetStatus.Loaded)
-                    _nestedPathResolved = true;
-                if (!string.IsNullOrEmpty(_nestedPath))
-                    Debug.Log($"[RiveHudBinder] Driving nested step instance '{_nestedPath}' on main.");
-                else if (_nestedPathResolved && !_nestedPathMissing)
-                {
-                    _nestedPathMissing = true;
-                    Debug.LogWarning("[RiveHudBinder] No nested stepIcon instance found on main. Overlay widget is the only rail.");
-                }
+                var widget = stepIconWidgets[i];
+                if (widget?.StateMachine == null)
+                    continue;
+
+                int id = i + 1;
+                bool isTarget = id == _stepId;
+                SetNumberInput(widget, StepIcon.StepId, id, StepIcon.StepIdLegacy);
+                SetBoolInput(widget, StepIcon.IsActive, isTarget && _stepActive);
+                SetBoolInput(widget, StepIcon.IsCompleted, isTarget ? _stepCompleted : id < _stepId);
             }
-
-            if (string.IsNullOrEmpty(_nestedPath))
-                return;
-
-            RiveStateMachineInputs.TrySetNumber(artboard, StepIcon.StepId, _stepId, _nestedPath);
-            RiveStateMachineInputs.TrySetBool(artboard, StepIcon.IsActive, _stepActive, _nestedPath);
-            RiveStateMachineInputs.TrySetBool(artboard, StepIcon.IsCompleted, _stepCompleted, _nestedPath);
         }
 
-        static string ResolveNestedPath(Artboard artboard)
+        RiveWidget WidgetForStep(int stepId)
         {
-            foreach (var path in StepIcon.NestedInstancePaths)
-            {
-                if (NodeExists(artboard, path) &&
-                    artboard.GetBooleanInputStateAtPath(StepIcon.IsActive, path).HasValue)
-                    return path;
-            }
-
-            return null;
+            int index = stepId - 1;
+            if (stepIconWidgets == null || index < 0 || index >= stepIconWidgets.Length)
+                return null;
+            return stepIconWidgets[index];
         }
 
-        static bool NodeExists(Artboard artboard, string name)
+        static void SetNumberInput(RiveWidget widget, string name, float value, string fallback)
         {
-#pragma warning disable CS0618
-            var component = artboard.Component(name);
-#pragma warning restore CS0618
-            if (component == null)
-                return false;
-            System.GC.KeepAlive(component);
-            return true;
+            var input = RiveStateMachineInputs.FindNumber(widget.StateMachine, name, fallback);
+            if (input != null)
+                input.Value = value;
         }
 
-        static void LogMissing(ref bool logged, string inputName, string stateMachine)
+        static void SetBoolInput(RiveWidget widget, string name, bool value)
+        {
+            var input = RiveStateMachineInputs.GetBool(widget.StateMachine, name);
+            if (input != null)
+                input.Value = value;
+        }
+
+        static void LogMissing(ref bool logged, string inputName, string owner)
         {
             if (logged) return;
             logged = true;
-            Debug.LogWarning($"[RiveHudBinder] Missing Rive input '{inputName}' on '{stateMachine}'.");
+            Debug.LogWarning($"[RiveHudBinder] Missing Rive input '{inputName}' on '{owner}'.");
         }
     }
 }

@@ -4,6 +4,15 @@ Record design and technical approach changes between versions. Implementation ag
 
 ## Entries
 
+## 2026-09-03 — v2 → v3: Rive background-anchor harness
+
+- **Reason:** The prototype `.riv` no longer composes gameplay on artboard `main`. `background` is an empty shell with `*-anchor` nodes; component artboards and `progressBar` must be sibling Unity widgets.
+- **Design:** [`design/GDD-v2.md`](design/GDD-v2.md) unchanged (six-stage wash, `OpenFaucetStage` first).
+- **Technical approach:** Created [`tech/TAD-v3.md`](tech/TAD-v3.md). GameStage / `IGameFlowServices` stay; Rive mount switches to background + anchored widgets + progress overlay. Enable/disable gates hit-testing only.
+- **Affected milestone:** M-07b remains `awaiting_user_verification`. New M-08 implements the harness.
+- **Affected tests:** Add `Assets/Tests/EditMode/M08RiveAnchorTests.cs` and `Assets/Tests/PlayMode/M08RiveAnchorPlayModeTests.cs`. Keep M-07b GameStage tests.
+- **User decision:** Approved with the M-08 implementation plan (sibling widgets at empty anchors).
+
 ## 2026-08-30 — v1 → v2: polymorphic GameStage architecture
 
 - **Reason:** Stage configuration and sequencing in `GameFlowController` are too tightly coupled. Stage-specific behavior should live in inheritable `GameStage` classes with an injected flow-services interface.

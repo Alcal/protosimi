@@ -1,8 +1,8 @@
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Shared step-icon component. <see cref="StepId"/> default is 1; values 1–4.
-    /// Animation names <c>step_ 2</c> and <c>step_ 3</c> include a space after the underscore.
+    /// Shared step-icon component. Values 1–4. Animation names <c>step_ 2</c> and
+    /// <c>step_ 3</c> include a space after the underscore.
     /// </summary>
     public static class StepIcon
     {
@@ -11,24 +11,25 @@ namespace ManosLimpias.UI.Rive
 
         public const string IsCompleted = "isCompleted";
         public const string IsActive = "isActive";
-        public const string StepId = "step_ID";
+        public const string StepId = "icon_ID";
+        public const string StepIdLegacy = "step_ID";
 
         public const string EventIsCompleted = "isCompleted";
 
-        /// <summary>
-        /// Nested instance names inside <c>main</c> that host a stepIcon SM.
-        /// The exported file names the first rail instance <c>step</c>.
-        /// </summary>
-        public static readonly string[] NestedInstancePaths =
+        public static readonly string[] AnchorNames =
         {
-            "step",
-            "step 2",
-            "step 3",
-            "step 4",
-            Artboard,
-            Artboard + " 2",
-            Artboard + " 3",
-            Artboard + " 4",
+            BackgroundAnchors.Step1,
+            BackgroundAnchors.Step2,
+            BackgroundAnchors.Step3,
+            BackgroundAnchors.Step4,
+        };
+
+        public static readonly string[] WidgetNames =
+        {
+            "StepIcon1Rive",
+            "StepIcon2Rive",
+            "StepIcon3Rive",
+            "StepIcon4Rive",
         };
 
         public const string AnimStep1 = "step_1";

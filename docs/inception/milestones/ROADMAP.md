@@ -1,9 +1,9 @@
 # Implementation Roadmap
 
-Design version: **v2**
+Design version: **v3**
 Status: **approved**
 
-**Sources:** [`../design/GDD-v2.md`](../design/GDD-v2.md) · [`../tech/TAD-v2.md`](../tech/TAD-v2.md)
+**Sources:** [`../design/GDD-v2.md`](../design/GDD-v2.md) · [`../tech/TAD-v3.md`](../tech/TAD-v3.md)
 
 ## Tech constraints from TAD
 
@@ -14,6 +14,7 @@ Status: **approved**
 - `GameFlowController` sequences instantiated `GameStage` instances; concrete stages consume `IGameFlowServices`
 - Stage behavior must not resolve scene objects or hard-code next-stage indices
 - M-07b implements only `OpenFaucetStage`; future stages are additional concrete stage types
+- Gameplay Rive mount is `background` + sibling widgets at `*-anchor` nodes; leftover `main` is not mounted
 
 ## Milestone index
 
@@ -27,6 +28,7 @@ Status: **approved**
 | M-06 | Assist + polish | done | M-05 |
 | M-07 | Rive Faucet state machine | superseded | M-06 |
 | M-07b | Polymorphic GameStage flow + Open Faucet | awaiting_user_verification | M-06 |
+| M-08 | Rive background-anchor harness | awaiting_user_verification | M-07b |
 
 ## Vertical slice definition
 

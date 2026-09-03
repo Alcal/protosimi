@@ -1,11 +1,11 @@
 # Inception Status
 
 phase: implement
-design_version: v2
-active_milestone: M-07b
+design_version: v3
+active_milestone: M-08
 milestone_status: awaiting_user_verification
-last_session: 2026-08-31 — Itch Rive blank resolved (local WebGL deploy); debug probes removed from SimiPrototypePresenter.
-next_action: User runs M-07b acceptance checklist; on approve set milestone_status done and advance active_milestone.
+last_session: 2026-09-03 — M-08 origin fix: sibling widgets use each artboard's originX/Y (faucet 0,0; soap/steps 0.5,0.5); EditMode 7/7.
+next_action: User runs M-08 acceptance checklist; on approve set milestone_status done and advance active_milestone.
 
 ## Phase values
 
@@ -45,3 +45,7 @@ next_action: User runs M-07b acceptance checklist; on approve set milestone_stat
 | 2026-08-31 | implement | WebGL Rive checked on local player: native Initialized, widgets Loaded; marked resolved |
 | 2026-08-31 | implement | Dropped GameCI itch workflow; local post-commit on main deploys WebGL via butler |
 | 2026-08-31 | implement | Itch Rive blank resolved; removed SimiPrototypePresenter debug probes |
+| 2026-09-03 | tech→implement | Pivoted v2→v3 Rive background-anchor harness; M-08 in progress |
+| 2026-09-03 | implement | M-08 implemented; EditMode 14/14, PlayMode 2/2; awaiting user Gameplay verification |
+| 2026-09-03 | implement | M-08 fix: empty-anchor Node x/y + Y-down mapping; Play Mode 10/10 non-zero rects |
+| 2026-09-03 | implement | M-08 origin fix: artboard originX/Y shifts soap/steps/towel/progressBar vs faucet 0,0 |

@@ -7,16 +7,19 @@ using UnityEngine;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Mounts simi_prototype <c>main</c> + <c>intro</c> and dismisses intro when Jugar fires.
+    /// Mounts simi_prototype background + intro and dismisses intro when Jugar fires.
     /// </summary>
     public class SimiPrototypePresenter : MonoBehaviour
     {
         public GameFlowController flow;
-        public RiveWidget mainWidget;
+        public RiveWidget backgroundWidget;
         public RiveWidget introWidget;
-        public RiveWidget stepIconWidget;
+        public RiveWidget progressBarWidget;
+        public RiveWidget faucetWidget;
+        public RiveWidget[] stepIconWidgets;
         public RiveHudBinder hudBinder;
         public Faucet faucet;
+        public RiveAnchorMount anchorMount;
 
         static readonly string[] TriggerPaths =
         {
@@ -47,19 +50,14 @@ namespace ManosLimpias.UI.Rive
                     BindIntro();
             }
 
-            if (mainWidget != null)
+            if (backgroundWidget != null)
             {
-                mainWidget.OnWidgetStatusChanged += OnMainStatusChanged;
-                if (mainWidget.Status == WidgetStatus.Loaded)
+                backgroundWidget.OnWidgetStatusChanged += OnBackgroundStatusChanged;
+                if (backgroundWidget.Status == WidgetStatus.Loaded)
                     BindGameplay();
             }
 
-            if (stepIconWidget != null)
-            {
-                stepIconWidget.OnWidgetStatusChanged += OnStepIconStatusChanged;
-                if (stepIconWidget.Status == WidgetStatus.Loaded)
-                    BindGameplay();
-            }
+            SubscribeStepIcons();
         }
 
         void OnDisable()
@@ -71,10 +69,9 @@ namespace ManosLimpias.UI.Rive
                 introWidget.OnRiveEventReported -= OnIntroEventReported;
             }
 
-            if (mainWidget != null)
-                mainWidget.OnWidgetStatusChanged -= OnMainStatusChanged;
-            if (stepIconWidget != null)
-                stepIconWidget.OnWidgetStatusChanged -= OnStepIconStatusChanged;
+            if (backgroundWidget != null)
+                backgroundWidget.OnWidgetStatusChanged -= OnBackgroundStatusChanged;
+            UnsubscribeStepIcons();
         }
 
         void OnIntroStatusChanged()
@@ -83,22 +80,59 @@ namespace ManosLimpias.UI.Rive
                 BindIntro();
         }
 
-        void OnMainStatusChanged()
+        void OnBackgroundStatusChanged()
         {
-            if (mainWidget != null && mainWidget.Status == WidgetStatus.Loaded)
+            if (backgroundWidget != null && backgroundWidget.Status == WidgetStatus.Loaded)
                 BindGameplay();
         }
 
         void OnStepIconStatusChanged()
         {
-            if (stepIconWidget != null && stepIconWidget.Status == WidgetStatus.Loaded)
-                BindGameplay();
+            BindGameplay();
         }
 
         void BindGameplay()
         {
-            faucet?.Bind(mainWidget);
-            hudBinder?.Bind(mainWidget, stepIconWidget);
+            faucet?.Bind(faucetWidget);
+            hudBinder?.Bind(progressBarWidget, stepIconWidgets);
+            anchorMount?.TryApply();
+        }
+
+        void SubscribeStepIcons()
+        {
+            if (stepIconWidgets == null)
+                return;
+            for (int i = 0; i < stepIconWidgets.Length; i++)
+            {
+                if (stepIconWidgets[i] != null)
+                {
+                    stepIconWidgets[i].OnWidgetStatusChanged += OnStepIconStatusChanged;
+                    if (stepIconWidgets[i].Status == WidgetStatus.Loaded)
+                        BindGameplay();
+                }
+            }
+
+            if (progressBarWidget != null)
+            {
+                progressBarWidget.OnWidgetStatusChanged += OnStepIconStatusChanged;
+                if (progressBarWidget.Status == WidgetStatus.Loaded)
+                    BindGameplay();
+            }
+        }
+
+        void UnsubscribeStepIcons()
+        {
+            if (stepIconWidgets != null)
+            {
+                for (int i = 0; i < stepIconWidgets.Length; i++)
+                {
+                    if (stepIconWidgets[i] != null)
+                        stepIconWidgets[i].OnWidgetStatusChanged -= OnStepIconStatusChanged;
+                }
+            }
+
+            if (progressBarWidget != null)
+                progressBarWidget.OnWidgetStatusChanged -= OnStepIconStatusChanged;
         }
 
         void BindIntro()

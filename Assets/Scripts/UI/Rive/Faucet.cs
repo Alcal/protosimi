@@ -7,15 +7,16 @@ using UnityEngine;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Nested faucet listeners (faucet_L_ON, faucet___R_ON, …) fire trigger inputs
-    /// (faucet_L_On / faucet_R_On). Those triggers never surface as ReportedEvents on
-    /// main's progress_StateMachine, so this adapter polls the nested inputs.
+    /// Binds the dedicated faucet artboard widget. Pointer hits fire SM triggers that
+    /// may not always surface as ReportedEvents, so this adapter also polls bool/trigger
+    /// inputs on the widget's own state machine.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public sealed class Faucet : MonoBehaviour, IFaucetControl
     {
         public const string Artboard = SimiPrototypeArtboards.Faucet;
         public const string StateMachine = "faucet_StateMachine";
+        public const string WidgetName = "FaucetRive";
 
         public const string FaucetLOn = "faucet_L_On";
         public const string FaucetLOff = "faucet_L_Off";
@@ -30,31 +31,22 @@ namespace ManosLimpias.UI.Rive
         public const string AnimWaterOff = "watreroff";
         public const string AnimOffSink = "off sink";
 
-        static readonly string[] NestedInstancePaths =
-        {
-            "faucet",
-            "Faucet",
-            "faucet 1",
-            Artboard,
-        };
-
-        [Tooltip("Nested instance path inside the main artboard. Override this if the Rive hierarchy uses another instance name.")]
-        public string nestedPath;
-        [Tooltip("Use only when a valid nested instance path is known. Rive pointer input normally drives the Faucet directly.")]
-        public bool fireNestedInput;
-        public RiveWidget mainWidget;
+        public bool fireInput;
+        public RiveWidget widget;
 
         public event Action<FaucetSide> Activated;
-        public bool IsEnabled { get; private set; } = true;
+        public bool IsEnabled { get; private set; }
 
-        bool _nestedResolved;
-        bool _loggedMissingPath;
+        bool _inputsResolved;
         bool _leftWasOn;
         bool _rightWasOn;
+        SMIBool _leftBool;
+        SMIBool _rightBool;
 
         public void SetEnabled(bool enabled)
         {
             IsEnabled = enabled;
+            ApplyHitTest();
             if (!enabled)
             {
                 _leftWasOn = false;
@@ -64,49 +56,67 @@ namespace ManosLimpias.UI.Rive
 
         void OnEnable()
         {
-            if (mainWidget != null)
-                mainWidget.OnRiveEventReported += OnRiveEventReported;
-            _nestedResolved = false;
+            Subscribe();
+            ApplyHitTest();
         }
 
         void OnDisable()
         {
-            if (mainWidget != null)
-                mainWidget.OnRiveEventReported -= OnRiveEventReported;
+            Unsubscribe();
         }
 
-        public void Bind(RiveWidget widget)
+        public void Bind(RiveWidget riveWidget)
         {
-            if (mainWidget != widget)
+            if (widget != riveWidget)
             {
-                if (mainWidget != null)
-                    mainWidget.OnRiveEventReported -= OnRiveEventReported;
-                mainWidget = widget;
-                if (isActiveAndEnabled && mainWidget != null)
-                    mainWidget.OnRiveEventReported += OnRiveEventReported;
+                Unsubscribe();
+                widget = riveWidget;
+                Subscribe();
             }
 
-            _nestedResolved = false;
-            _loggedMissingPath = false;
-            TryResolveNested();
+            _inputsResolved = false;
+            _leftBool = null;
+            _rightBool = null;
+            ApplyHitTest();
         }
 
         void Update()
         {
-            TryResolveNested();
-            if (!IsEnabled || mainWidget?.Artboard == null || string.IsNullOrEmpty(nestedPath))
+            if (!IsEnabled || widget?.StateMachine == null)
                 return;
 
-            PollTrigger(FaucetLOn, FaucetSide.Left, ref _leftWasOn);
-            PollTrigger(FaucetROn, FaucetSide.Right, ref _rightWasOn);
+            ResolveInputs();
+            if (_leftBool != null)
+                PollBool(_leftBool, FaucetSide.Left, ref _leftWasOn);
+            else
+                PollTrigger(FaucetLOn, FaucetSide.Left, ref _leftWasOn);
+
+            if (_rightBool != null)
+                PollBool(_rightBool, FaucetSide.Right, ref _rightWasOn);
+            else
+                PollTrigger(FaucetROn, FaucetSide.Right, ref _rightWasOn);
+        }
+
+        void PollBool(SMIBool input, FaucetSide side, ref bool wasOn)
+        {
+            var isOn = input != null && input.Value;
+            if (isOn && !wasOn)
+            {
+                Debug.Log($"[Faucet] Bool '{input.Name}'");
+                NotifyActivated(side);
+            }
+            wasOn = isOn;
         }
 
         void PollTrigger(string inputName, FaucetSide side, ref bool wasOn)
         {
-            var isOn = RiveStateMachineInputs.TryReadNestedTrigger(mainWidget.Artboard, inputName, nestedPath);
+            if (widget?.Artboard == null)
+                return;
+
+            var isOn = RiveStateMachineInputs.TryReadNestedTrigger(widget.Artboard, inputName, string.Empty);
             if (isOn && !wasOn)
             {
-                Debug.Log($"[Faucet] Nested trigger '{inputName}' at '{nestedPath}'");
+                Debug.Log($"[Faucet] Trigger '{inputName}'");
                 NotifyActivated(side);
             }
             wasOn = isOn;
@@ -144,43 +154,41 @@ namespace ManosLimpias.UI.Rive
         public void Activate(FaucetSide side)
         {
             if (!IsEnabled) return;
-            if (fireNestedInput && mainWidget?.Artboard != null && !string.IsNullOrEmpty(nestedPath))
+            if (fireInput && widget?.StateMachine != null)
             {
                 string inputName = side == FaucetSide.Left ? FaucetLOn : FaucetROn;
-                mainWidget.Artboard.FireInputStateAtPath(inputName, nestedPath);
+                RiveStateMachineInputs.FindTrigger(widget.StateMachine, inputName)?.Fire();
             }
 
             NotifyActivated(side);
         }
 
-        void TryResolveNested()
+        void ResolveInputs()
         {
-            if (_nestedResolved || mainWidget?.Artboard == null)
+            if (_inputsResolved || widget?.StateMachine == null)
                 return;
 
-            var artboard = mainWidget.Artboard;
-            if (!string.IsNullOrEmpty(nestedPath) &&
-                RiveStateMachineInputs.TryFindNestedInputPath(artboard, FaucetLOn, new[] { nestedPath }, out _))
-            {
-                _nestedResolved = true;
-                Debug.Log($"[Faucet] Tracking nested triggers at '{nestedPath}'");
-                return;
-            }
+            _inputsResolved = true;
+            _leftBool = RiveStateMachineInputs.GetBool(widget.StateMachine, FaucetLOn);
+            _rightBool = RiveStateMachineInputs.GetBool(widget.StateMachine, FaucetROn);
+        }
 
-            if (RiveStateMachineInputs.TryFindNestedInputPath(artboard, FaucetLOn, NestedInstancePaths, out var found))
-            {
-                nestedPath = found;
-                _nestedResolved = true;
-                Debug.Log($"[Faucet] Tracking nested triggers at '{nestedPath}'");
-                return;
-            }
+        void Subscribe()
+        {
+            if (widget != null)
+                widget.OnRiveEventReported += OnRiveEventReported;
+        }
 
-            if (mainWidget.Status == WidgetStatus.Loaded && !_loggedMissingPath)
-            {
-                _loggedMissingPath = true;
-                _nestedResolved = true;
-                Debug.LogWarning("[Faucet] Nested faucet_L_On trigger not found on main. Open Faucet cannot see handle listeners.");
-            }
+        void Unsubscribe()
+        {
+            if (widget != null)
+                widget.OnRiveEventReported -= OnRiveEventReported;
+        }
+
+        void ApplyHitTest()
+        {
+            if (widget != null)
+                widget.HitTestBehavior = IsEnabled ? HitTestBehavior.Translucent : HitTestBehavior.None;
         }
 
         void NotifyActivated(FaucetSide side)

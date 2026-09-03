@@ -40,17 +40,53 @@ namespace ManosLimpias.UI.Rive
 
         public static SMINumber GetNumber(StateMachine stateMachine, string name)
         {
-            return stateMachine == null || string.IsNullOrEmpty(name) ? null : stateMachine.GetNumber(name);
+            return FindNumber(stateMachine, name);
         }
 
         public static SMIBool GetBool(StateMachine stateMachine, string name)
         {
-            return stateMachine == null || string.IsNullOrEmpty(name) ? null : stateMachine.GetBool(name);
+            return FindBool(stateMachine, name);
         }
 
         public static SMITrigger GetTrigger(StateMachine stateMachine, string name)
         {
-            return stateMachine == null || string.IsNullOrEmpty(name) ? null : stateMachine.GetTrigger(name);
+            return FindTrigger(stateMachine, name);
+        }
+
+        public static SMINumber FindNumber(StateMachine stateMachine, params string[] names)
+        {
+            return FindInput(stateMachine, names, input => input.IsNumber) as SMINumber;
+        }
+
+        public static SMIBool FindBool(StateMachine stateMachine, params string[] names)
+        {
+            return FindInput(stateMachine, names, input => input.IsBoolean) as SMIBool;
+        }
+
+        public static SMITrigger FindTrigger(StateMachine stateMachine, params string[] names)
+        {
+            return FindInput(stateMachine, names, input => input.IsTrigger) as SMITrigger;
+        }
+
+        static SMIInput FindInput(StateMachine stateMachine, string[] names, Func<SMIInput, bool> match)
+        {
+            if (stateMachine == null || names == null || names.Length == 0)
+                return null;
+
+            var inputs = stateMachine.Inputs();
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                var input = inputs[i];
+                if (input == null || !match(input))
+                    continue;
+                for (int n = 0; n < names.Length; n++)
+                {
+                    if (!string.IsNullOrEmpty(names[n]) && input.Name == names[n])
+                        return input;
+                }
+            }
+
+            return null;
         }
 
         public static T GetViewModelProperty<T>(ViewModelInstance instance, string path)
