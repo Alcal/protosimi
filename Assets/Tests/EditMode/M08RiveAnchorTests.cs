@@ -182,7 +182,7 @@ namespace ManosLimpias.Tests
             Assert.That(faucet.IsOpen, Is.True);
 
             int hits = 0;
-            faucet.PointerHit += () => hits++;
+            faucet.PointerHit += _ => hits++;
             faucet.NotifyPointerHit();
             Assert.That(hits, Is.EqualTo(1));
 
@@ -193,6 +193,36 @@ namespace ManosLimpias.Tests
             faucet.NotifyPointerHit();
             Assert.That(count, Is.EqualTo(1));
             Assert.That(hits, Is.EqualTo(1));
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
+        public void LockOpen_DisablesHits_KeepsFaucetOpen()
+        {
+            var go = new GameObject("M08 Faucet LockOpen");
+            var widgetGo = new GameObject("M08 Faucet LockOpen Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var faucet = go.AddComponent<Faucet>();
+            int count = 0;
+            faucet.Activated += _ => count++;
+
+            faucet.Bind(widget);
+            faucet.SetEnabled(true);
+            faucet.LockOpen(FaucetSide.Right);
+
+            Assert.That(faucet.IsEnabled, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+            Assert.That(faucet.LeftIsOpen, Is.False);
+            Assert.That(faucet.RightIsOpen, Is.True);
+            Assert.That(faucet.IsOpen, Is.True);
+            Assert.That(count, Is.EqualTo(1));
+
+            faucet.Activate(FaucetSide.Left);
+            faucet.NotifyPointerHit(FaucetSide.Right);
+            Assert.That(count, Is.EqualTo(1));
+            Assert.That(faucet.LeftIsOpen, Is.False);
 
             Object.DestroyImmediate(go);
             Object.DestroyImmediate(widgetGo);

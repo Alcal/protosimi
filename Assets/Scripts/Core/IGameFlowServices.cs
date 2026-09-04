@@ -11,12 +11,16 @@ namespace ManosLimpias.Core
     public interface IFaucetControl
     {
         event Action<FaucetSide> Activated;
-        event Action PointerHit;
+        event Action<FaucetSide> PointerHit;
         bool IsEnabled { get; }
         bool LeftIsOpen { get; }
         bool RightIsOpen { get; }
         bool IsOpen { get; }
         void SetEnabled(bool enabled);
+        /// <summary>
+        /// Opens the chosen side visually and keeps it on while disabling further hits.
+        /// </summary>
+        void LockOpen(FaucetSide side);
     }
 
     public interface IProgressBarControl

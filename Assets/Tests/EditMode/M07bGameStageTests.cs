@@ -165,9 +165,28 @@ namespace ManosLimpias.Tests
             Assert.That(_services.Icon.Completed, Is.False);
             Assert.That(_services.CompletionCount, Is.EqualTo(0));
             Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.IsOpen, Is.True);
+            Assert.That(_services.Faucet.LeftIsOpen, Is.True);
+            Assert.That(_services.Faucet.RightIsOpen, Is.False);
 
             stage.Exit();
             _services.Faucet.RaisePointerHit();
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void OpenFaucet_PointerHitRight_LocksRightOnly()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Faucet.RaisePointerHit(FaucetSide.Right);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.LeftIsOpen, Is.False);
+            Assert.That(_services.Faucet.RightIsOpen, Is.True);
             Assert.That(_services.CompletionCount, Is.EqualTo(0));
         }
 
@@ -326,7 +345,7 @@ namespace ManosLimpias.Tests
         sealed class FakeFaucet : IFaucetControl
         {
             public event Action<FaucetSide> Activated;
-            public event Action PointerHit;
+            public event Action<FaucetSide> PointerHit;
             public bool IsEnabled { get; private set; }
             public bool LeftIsOpen { get; private set; }
             public bool RightIsOpen { get; private set; }
@@ -340,6 +359,15 @@ namespace ManosLimpias.Tests
                     LeftIsOpen = false;
                     RightIsOpen = false;
                 }
+            }
+
+            public void LockOpen(FaucetSide side)
+            {
+                if (side == FaucetSide.Left)
+                    LeftIsOpen = true;
+                else
+                    RightIsOpen = true;
+                IsEnabled = false;
             }
 
             public void SetOpen(FaucetSide side, bool open)
@@ -357,10 +385,10 @@ namespace ManosLimpias.Tests
                 Activated?.Invoke(side);
             }
 
-            public void RaisePointerHit()
+            public void RaisePointerHit(FaucetSide side = FaucetSide.Left)
             {
                 if (IsEnabled)
-                    PointerHit?.Invoke();
+                    PointerHit?.Invoke(side);
             }
         }
 

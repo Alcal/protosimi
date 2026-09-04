@@ -36,7 +36,7 @@ namespace ManosLimpias.Core
             SubscribeFaucet();
             Services.Faucet.SetEnabled(true);
             if (Services.Faucet.IsOpen)
-                LockFaucetOpen();
+                LockFaucetOpen(OpenSide());
         }
 
         protected override void OnTick(float deltaTime)
@@ -47,7 +47,7 @@ namespace ManosLimpias.Core
             if (!_faucetLocked)
             {
                 if (Services.Faucet != null && Services.Faucet.IsOpen)
-                    LockFaucetOpen();
+                    LockFaucetOpen(OpenSide());
                 return;
             }
 
@@ -82,26 +82,33 @@ namespace ManosLimpias.Core
         void OnFaucetActivated(FaucetSide side)
         {
             Debug.Log($"[OpenFaucetStage] Activated {side} entered={IsEntered}");
-            LockFaucetOpen();
+            LockFaucetOpen(side);
         }
 
-        void OnFaucetPointerHit()
+        void OnFaucetPointerHit(FaucetSide side)
         {
-            Debug.Log($"[OpenFaucetStage] PointerHit entered={IsEntered}");
-            LockFaucetOpen();
+            Debug.Log($"[OpenFaucetStage] PointerHit {side} entered={IsEntered}");
+            LockFaucetOpen(side);
         }
 
-        void LockFaucetOpen()
+        void LockFaucetOpen(FaucetSide side)
         {
             if (_faucetLocked || _completed || !IsEntered)
                 return;
 
             _faucetLocked = true;
             UnsubscribeFaucet();
-            Services.Faucet?.SetEnabled(false);
+            Services.Faucet?.LockOpen(side);
             Services.ProgressBar?.SetProgress(OpenProgress);
             Services.Hands?.SetDraggable(true);
-            Debug.Log("[OpenFaucetStage] Faucet locked open at 25%; hands draggable.");
+            Debug.Log($"[OpenFaucetStage] Faucet locked open ({side}) at 25%; hands draggable.");
+        }
+
+        FaucetSide OpenSide()
+        {
+            if (Services.Faucet != null && Services.Faucet.RightIsOpen && !Services.Faucet.LeftIsOpen)
+                return FaucetSide.Right;
+            return FaucetSide.Left;
         }
 
         void CompleteOnce()

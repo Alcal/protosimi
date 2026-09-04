@@ -37,7 +37,7 @@ namespace ManosLimpias.UI.Rive
         public RiveWidget widget;
 
         public event Action<FaucetSide> Activated;
-        public event Action PointerHit;
+        public event Action<FaucetSide> PointerHit;
         public bool IsEnabled { get; private set; }
         public bool LeftIsOpen { get; private set; }
         public bool RightIsOpen { get; private set; }
@@ -45,6 +45,8 @@ namespace ManosLimpias.UI.Rive
 
         bool _inputsResolved;
         bool _inputsLogged;
+        bool _pendingOpenVisual;
+        FaucetSide _pendingOpenSide;
         SMIInput _leftOnInput;
         SMIInput _rightOnInput;
         SMIInput _leftOffInput;
@@ -55,8 +57,22 @@ namespace ManosLimpias.UI.Rive
         {
             IsEnabled = enabled;
             ApplyHitTest();
-            if (!enabled)
+            if (enabled)
+                _pendingOpenVisual = false;
+            else
                 ClearOpenState();
+        }
+
+        public void LockOpen(FaucetSide side)
+        {
+            IsEnabled = false;
+            ApplyHitTest();
+            SetOpen(side, true);
+            if (!TryFireOpenTrigger(side))
+            {
+                _pendingOpenSide = side;
+                _pendingOpenVisual = true;
+            }
         }
 
         void OnEnable()
@@ -81,6 +97,7 @@ namespace ManosLimpias.UI.Rive
 
             _inputsResolved = false;
             _inputsLogged = false;
+            _pendingOpenVisual = false;
             _leftOnInput = null;
             _rightOnInput = null;
             _leftOffInput = null;
@@ -90,30 +107,36 @@ namespace ManosLimpias.UI.Rive
 
         void LateUpdate()
         {
+            if (_pendingOpenVisual && TryFireOpenTrigger(_pendingOpenSide))
+                _pendingOpenVisual = false;
+
             if (!IsEnabled)
                 return;
 
-            PollPointerHit();
-            if (widget?.StateMachine == null)
-                return;
+            if (widget?.StateMachine != null)
+            {
+                ResolveInputs();
+                PollChangedStates();
+                PollInput(_leftOnInput, FaucetSide.Left, open: true);
+                PollInput(_rightOnInput, FaucetSide.Right, open: true);
+                PollInput(_leftOffInput, FaucetSide.Left, open: false);
+                PollInput(_rightOffInput, FaucetSide.Right, open: false);
+                PollReportedEvents();
+            }
 
-            ResolveInputs();
-            PollChangedStates();
-            PollInput(_leftOnInput, FaucetSide.Left, open: true);
-            PollInput(_rightOnInput, FaucetSide.Right, open: true);
-            PollInput(_leftOffInput, FaucetSide.Left, open: false);
-            PollInput(_rightOffInput, FaucetSide.Right, open: false);
-            PollReportedEvents();
+            if (IsEnabled)
+                PollPointerHit();
         }
 
         void PollPointerHit()
         {
             if (!TryGetPressScreenPoint(out var screen))
                 return;
-            if (widget != null && !TryGetNormalizedPoint(screen, out _))
+            if (!TryGetNormalizedPoint(screen, out var normalized))
                 return;
 
-            NotifyPointerHit();
+            var side = normalized.x < 0.5f ? FaucetSide.Left : FaucetSide.Right;
+            NotifyPointerHit(side);
         }
 
         static bool TryGetPressScreenPoint(out Vector2 screen)
@@ -262,11 +285,13 @@ namespace ManosLimpias.UI.Rive
                    string.Equals(name, "faucet_R_OFF", StringComparison.OrdinalIgnoreCase);
         }
 
-        public void NotifyPointerHit()
+        public void NotifyPointerHit() => NotifyPointerHit(FaucetSide.Left);
+
+        public void NotifyPointerHit(FaucetSide side)
         {
             if (!IsEnabled) return;
-            Debug.Log($"[Faucet] PointerHit listeners={PointerHit?.GetInvocationList().Length ?? 0}");
-            PointerHit?.Invoke();
+            Debug.Log($"[Faucet] PointerHit {side} listeners={PointerHit?.GetInvocationList().Length ?? 0}");
+            PointerHit?.Invoke(side);
         }
 
         public void ActivateLeft() => Activate(FaucetSide.Left);
@@ -276,13 +301,35 @@ namespace ManosLimpias.UI.Rive
         public void Activate(FaucetSide side)
         {
             if (!IsEnabled) return;
-            if (fireInput && widget?.StateMachine != null)
-            {
-                string inputName = side == FaucetSide.Left ? FaucetLOn : FaucetROn;
-                RiveStateMachineInputs.FindTrigger(widget.StateMachine, inputName)?.Fire();
-            }
-
+            FireOpenTrigger(side);
             SetOpen(side, true);
+        }
+
+        bool TryFireOpenTrigger(FaucetSide side)
+        {
+            ResolveInputs();
+            if (widget?.StateMachine == null)
+                return false;
+
+            FireOpenTrigger(side);
+            Debug.Log($"[Faucet] LockOpen fired {(side == FaucetSide.Left ? FaucetLOn : FaucetROn)}.");
+            return true;
+        }
+
+        void FireOpenTrigger(FaucetSide side)
+        {
+            ResolveInputs();
+            FireInput(side == FaucetSide.Left ? _leftOnInput : _rightOnInput);
+        }
+
+        static void FireInput(SMIInput input)
+        {
+            if (input == null)
+                return;
+            if (input is SMITrigger trigger)
+                trigger.Fire();
+            else if (input is SMIBool boolean)
+                boolean.Value = true;
         }
 
         void ResolveInputs()
