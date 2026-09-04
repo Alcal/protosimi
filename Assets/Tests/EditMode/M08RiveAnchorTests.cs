@@ -254,6 +254,112 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void Hands_BeginDrag_DoesNotJumpFromTopLeftPivot()
+        {
+            var mapped = new Rect(-400f, -200f, 800f, 500f);
+            CreateStretchHands(mapped, out var parent, out var child, out var hands);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.25f, 0.75f));
+                hands.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+
+                AssertCornersEqual(before, WorldCorners(child));
+                Assert.That(hands.FreezePlacement, Is.True);
+                Assert.That(child.anchorMin, Is.EqualTo(child.anchorMax));
+                Assert.That(child.pivot, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
+        public void Hands_Drag_MovesByDelta_NotToPointer()
+        {
+            var mapped = new Rect(-400f, -200f, 800f, 500f);
+            CreateStretchHands(mapped, out var parent, out var child, out var hands);
+            try
+            {
+                var grab = ParentLocalPoint(child, new Vector2(0.2f, 0.8f));
+                hands.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                var origin = WorldCorners(child);
+
+                var delta = new Vector2(60f, -25f);
+                hands.NotifyParentLocalPointer(grab + delta, pressedThisFrame: false, held: true);
+
+                var moved = WorldCorners(child);
+                for (int i = 0; i < 4; i++)
+                {
+                    Assert.That(moved[i].x, Is.EqualTo(origin[i].x + delta.x).Within(0.05f));
+                    Assert.That(moved[i].y, Is.EqualTo(origin[i].y + delta.y).Within(0.05f));
+                }
+
+                var pointerWorld = (Vector2)parent.TransformPoint(grab + delta);
+                var center = (Vector2)((moved[0] + moved[2]) * 0.5f);
+                Assert.That(Vector2.Distance(center, pointerWorld), Is.GreaterThan(50f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        static void CreateStretchHands(
+            Rect mapped,
+            out RectTransform parent,
+            out RectTransform child,
+            out Hands hands)
+        {
+            var parentGo = new GameObject("M08 Hands Drag Parent", typeof(RectTransform));
+            parent = parentGo.GetComponent<RectTransform>();
+            parent.anchorMin = parent.anchorMax = new Vector2(0.5f, 0.5f);
+            parent.pivot = new Vector2(0.5f, 0.5f);
+            parent.sizeDelta = new Vector2(1920f, 1080f);
+
+            var childGo = new GameObject("M08 HandsRive", typeof(RectTransform));
+            child = childGo.GetComponent<RectTransform>();
+            child.SetParent(parent, false);
+            ArtboardSpace.ApplyNormalizedAnchors(
+                child,
+                parent,
+                mapped,
+                ArtboardSpace.UnityPivotFromRiveOrigin(SimiPrototypeArtboards.HandsOrigin));
+
+            var widget = childGo.AddComponent<RiveWidget>();
+            hands = childGo.AddComponent<Hands>();
+            hands.Bind(widget);
+            hands.SetDraggable(true);
+        }
+
+        static Vector3[] WorldCorners(RectTransform rect)
+        {
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            return corners;
+        }
+
+        static Vector2 ParentLocalPoint(RectTransform child, Vector2 normalizedInChild)
+        {
+            var rect = child.rect;
+            var local = new Vector2(
+                Mathf.Lerp(rect.xMin, rect.xMax, normalizedInChild.x),
+                Mathf.Lerp(rect.yMin, rect.yMax, normalizedInChild.y));
+            var parent = (RectTransform)child.parent;
+            return parent.InverseTransformPoint(child.TransformPoint(local));
+        }
+
+        static void AssertCornersEqual(Vector3[] expected, Vector3[] actual)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Assert.That(actual[i].x, Is.EqualTo(expected[i].x).Within(0.05f), $"corner {i} x");
+                Assert.That(actual[i].y, Is.EqualTo(expected[i].y).Within(0.05f), $"corner {i} y");
+            }
+        }
+
+        [Test]
         public void AC05_NonFaucetSlots_StartWithoutHits()
         {
             Assert.That(Hands.Artboard, Is.EqualTo(SimiPrototypeArtboards.Hands));

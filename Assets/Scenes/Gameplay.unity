@@ -1666,7 +1666,7 @@ GameObject:
   m_Component:
   - component: {fileID: 936479391}
   - component: {fileID: 936479393}
-  - component: {fileID: 936479392}
+  - component: {fileID: 936479394}
   m_Layer: 0
   m_Name: hitbox_1
   m_TagString: Untagged
@@ -1690,11 +1690,23 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.32, y: 0.22}
   m_AnchorMax: {x: 0.46, y: 0.48}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -101.099976, y: 26.599976}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!61 &936479392
-BoxCollider2D:
+--- !u!114 &936479393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936479390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
+--- !u!58 &936479394
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1723,34 +1735,12 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 268.80005, y: 280.8}
-  m_EdgeRadius: 0
---- !u!114 &936479393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 936479390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
+  m_Radius: 175
 --- !u!1 &940385650
 GameObject:
   m_ObjectHideFlags: 0
@@ -1871,7 +1861,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.38, y: 0.02}
   m_AnchorMax: {x: 0.62, y: 0.42}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -27, y: -58}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!61 &962942535
@@ -2723,7 +2713,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.29010418, y: 0.46944445}
   m_AnchorMax: {x: 0.6796875, y: 0.9027778}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -38.859, y: 6}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1402236051
@@ -3941,7 +3931,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1934587704}
   - component: {fileID: 1934587706}
-  - component: {fileID: 1934587705}
+  - component: {fileID: 1934587707}
   m_Layer: 0
   m_Name: hitbox_2
   m_TagString: Untagged
@@ -3965,11 +3955,23 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.54, y: 0.22}
   m_AnchorMax: {x: 0.68, y: 0.48}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -95.3999, y: 18.5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!61 &1934587705
-BoxCollider2D:
+--- !u!114 &1934587706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934587703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
+--- !u!58 &1934587707
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3998,34 +4000,12 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 268.79993, y: 280.8}
-  m_EdgeRadius: 0
---- !u!114 &1934587706
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1934587703}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
+  m_Radius: 175
 --- !u!1 &2036002445
 GameObject:
   m_ObjectHideFlags: 0

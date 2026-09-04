@@ -58,7 +58,7 @@ namespace ManosLimpias.UI.Rive
             IsDraggable = draggable;
             if (!draggable)
             {
-                _dragging = false;
+                EndDrag();
                 FreezePlacement = false;
             }
 
@@ -88,39 +88,61 @@ namespace ManosLimpias.UI.Rive
 
         void PollDrag()
         {
-            var rectTransform = widget != null ? widget.RectTransform : null;
-            if (rectTransform == null)
-                return;
-
-            bool pressed = TryGetPointerScreen(out var screen, out var pressedThisFrame, out var held);
-            if (!pressed || !held)
+            if (!TryGetPointerScreen(out var screen, out var pressedThisFrame, out var held))
             {
-                _dragging = false;
-                _hasLastLocal = false;
+                EndDrag();
                 return;
             }
 
-            if (pressedThisFrame && TryGetLocalInParent(screen, out _))
+            if (!held)
             {
-                if (RectContainsScreen(rectTransform, screen))
-                {
-                    ConvertToFreeLayout(rectTransform);
-                    FreezePlacement = true;
-                    _dragging = true;
-                }
-            }
-
-            if (!_dragging)
+                EndDrag();
                 return;
+            }
 
             if (!TryGetLocalInParent(screen, out var local))
                 return;
 
-            if (_hasLastLocal)
-                rectTransform.anchoredPosition += local - _lastLocal;
+            NotifyParentLocalPointer(local, pressedThisFrame, held);
+        }
 
-            _lastLocal = local;
-            _hasLastLocal = true;
+        /// <summary>
+        /// One pointer sample in the widget parent's local space. Grab keeps the
+        /// widget in place; later samples move it by delta only.
+        /// </summary>
+        public void NotifyParentLocalPointer(Vector2 parentLocal, bool pressedThisFrame, bool held)
+        {
+            var rectTransform = widget != null ? widget.RectTransform : null;
+            if (rectTransform == null)
+                return;
+
+            if (!held)
+            {
+                EndDrag();
+                return;
+            }
+
+            if (pressedThisFrame && ContainsParentLocal(rectTransform, parentLocal))
+            {
+                ConvertToFreeLayout(rectTransform);
+                FreezePlacement = true;
+                _dragging = true;
+                _lastLocal = parentLocal;
+                _hasLastLocal = true;
+                return;
+            }
+
+            if (!_dragging || !_hasLastLocal)
+                return;
+
+            rectTransform.anchoredPosition += parentLocal - _lastLocal;
+            _lastLocal = parentLocal;
+        }
+
+        void EndDrag()
+        {
+            _dragging = false;
+            _hasLastLocal = false;
         }
 
         void EnsureHitboxes()
@@ -147,20 +169,31 @@ namespace ManosLimpias.UI.Rive
         {
             if (rect == null)
                 return;
-            if (rect.anchorMin == rect.anchorMax)
+
+            var centerPivot = new Vector2(0.5f, 0.5f);
+            if (rect.anchorMin == rect.anchorMax && rect.pivot == centerPivot)
                 return;
 
             var size = rect.rect.size;
-            var world = rect.position;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            var worldCenter = (corners[0] + corners[2]) * 0.5f;
+
+            rect.anchorMin = rect.anchorMax = centerPivot;
+            rect.pivot = centerPivot;
             rect.sizeDelta = size;
-            rect.position = world;
+            rect.position = worldCenter;
         }
 
-        bool RectContainsScreen(RectTransform rectTransform, Vector2 screen)
+        static bool ContainsParentLocal(RectTransform rectTransform, Vector2 parentLocal)
         {
-            return TryGetNormalizedPoint(rectTransform, screen, out _);
+            var parent = rectTransform.parent as RectTransform;
+            if (parent == null)
+                return false;
+
+            var world = parent.TransformPoint(parentLocal);
+            var local = (Vector2)rectTransform.InverseTransformPoint(world);
+            return rectTransform.rect.Contains(local);
         }
 
         bool TryGetLocalInParent(Vector2 screen, out Vector2 local)
@@ -173,26 +206,6 @@ namespace ManosLimpias.UI.Rive
 
             return RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parent, screen, CanvasCamera(parent), out local);
-        }
-
-        bool TryGetNormalizedPoint(RectTransform rectTransform, Vector2 screen, out Vector2 normalized)
-        {
-            normalized = default;
-            if (rectTransform == null)
-                return false;
-
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    rectTransform, screen, CanvasCamera(rectTransform), out var local))
-                return false;
-
-            var rect = rectTransform.rect;
-            if (rect.width <= 0f || rect.height <= 0f || !rect.Contains(local))
-                return false;
-
-            normalized = new Vector2(
-                (local.x - rect.xMin) / rect.width,
-                (local.y - rect.yMin) / rect.height);
-            return true;
         }
 
         static Camera CanvasCamera(RectTransform rectTransform)
