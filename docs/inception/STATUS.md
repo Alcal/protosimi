@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-03 — Retired milestone-driven inception; flattened TAD-v3 as the current technical document; removed TAD-v1/v2, milestone docs, and acceptance checklists.
-next_action: Continue from [`design/GDD-v2.md`](design/GDD-v2.md) and [`tech/TAD-v3.md`](tech/TAD-v3.md).
+last_session: 2026-09-03 — OpenFaucetStage completes from a pointer hit on the faucet widget (this stage only); still also from IsOpen/Activated. Progress 100%, step icon completed, then RequestStageCompletion.
+next_action: Play Gameplay, dismiss intro, click the faucet; confirm progress fill, step 1 completed, then Outro.
 
 ## Session log
 
@@ -31,3 +31,5 @@ next_action: Continue from [`design/GDD-v2.md`](design/GDD-v2.md) and [`tech/TAD
 | 2026-09-03 | implement | M-08 fix: empty-anchor Node x/y + Y-down mapping; Play Mode 10/10 non-zero rects |
 | 2026-09-03 | implement | M-08 origin fix: artboard originX/Y shifts soap/steps/towel/progressBar vs faucet 0,0 |
 | 2026-09-03 | docs | Retired milestone-driven inception; TAD-v3 is the standalone current TAD |
+| 2026-09-03 | implement | OpenFaucetStage completes from faucet artboard open state; progress 1 + step icon 1 completed |
+| 2026-09-03 | implement | OpenFaucetStage completes from faucet widget PointerHit (this stage only; Close Water must not subscribe) |

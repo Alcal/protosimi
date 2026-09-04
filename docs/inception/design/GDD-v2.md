@@ -26,7 +26,7 @@ The MVP keeps the six logical stages and their existing input families:
 
 | Order | Stage class | Input family | Rive focus |
 |------:|-------------|--------------|------------|
-| 0 | `OpenFaucetStage` | `TapOpenClose` | Either Faucet handle |
+| 0 | `OpenFaucetStage` | `TapOpenClose` | Tap the faucet widget |
 | 1 | `WetHandsStage` | `HandsUnderWater` | Hands |
 | 2 | `RubSoapStage` | `RubOnHands` | Soap / hands |
 | 3 | `RinseStage` | `HandsUnderWater` | Hands |
@@ -37,7 +37,7 @@ The configured list currently contains only `OpenFaucetStage`. Later stage class
 
 ### OpenFaucetStage
 
-`OpenFaucetStage` extends `GameStage`. On entry it enables the Faucet and subscribes to its left/right activation event. Either handle is sufficient. The stage sets the active progress bar to 100% and asks the flow controller to advance. On exit it unsubscribes and disables or resets the Faucet as appropriate.
+`OpenFaucetStage` extends `GameStage`. On entry it enables the Faucet, marks its StepIcon active, and subscribes to pointer hits plus left/right activation. A tap on the faucet widget is enough for this stage. The stage sets the progress bar to 100%, marks the StepIcon completed, and asks the flow controller to advance once. On exit it unsubscribes and disables the Faucet.
 
 ## UI and feedback
 

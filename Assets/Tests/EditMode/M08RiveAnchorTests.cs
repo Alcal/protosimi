@@ -163,11 +163,21 @@ namespace ManosLimpias.Tests
             Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.Translucent));
             faucet.Activate(FaucetSide.Left);
             Assert.That(count, Is.EqualTo(1));
+            Assert.That(faucet.LeftIsOpen, Is.True);
+            Assert.That(faucet.IsOpen, Is.True);
+
+            int hits = 0;
+            faucet.PointerHit += () => hits++;
+            faucet.NotifyPointerHit();
+            Assert.That(hits, Is.EqualTo(1));
 
             faucet.SetEnabled(false);
             Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+            Assert.That(faucet.IsOpen, Is.False);
             faucet.Activate(FaucetSide.Right);
+            faucet.NotifyPointerHit();
             Assert.That(count, Is.EqualTo(1));
+            Assert.That(hits, Is.EqualTo(1));
 
             Object.DestroyImmediate(go);
             Object.DestroyImmediate(widgetGo);

@@ -102,9 +102,9 @@ Use Unity-serializable stage assets/factories so designers can reorder or replac
 - `intro` remains a fullscreen overlay above the playfield.
 - Leftover artboard `main` is not mounted.
 - `RiveHudBinder` writes progress to the overlay `progressBar` widget and drives four `stepIcon` widgets by id.
-- `Faucet` binds to the dedicated faucet widget. `SetEnabled` toggles that widget’s `HitTestBehavior` (`Translucent` when enabled, `None` when disabled). Components stay visible; only the active stage’s interactable receives hits.
+- `Faucet` binds to the dedicated faucet widget. `SetEnabled` toggles that widget’s `HitTestBehavior` (`Translucent` when enabled, `None` when disabled). Components stay visible; only the active stage’s interactable receives hits. The adapter exposes `LeftIsOpen` / `RightIsOpen` / `IsOpen` from faucet artboard state when Unity can see it, fires `Activated` on the rising edge, and fires `PointerHit` when a press lands in the faucet widget.
 - Hands, soap, towel, and character are mounted and remain `HitTestBehavior.None` until later stages exist.
-- `OpenFaucetStage` listens to the Faucet event, accepts either side, sets progress to `1`, and requests completion.
+- `OpenFaucetStage` enables the Faucet and completes from `PointerHit` (this stage only) or from `IsOpen` / `Activated`. It sets progress to `1`, marks its StepIcon completed, and requests completion once.
 - Rive state-machine names: [`../design/RIVE_INTERFACES.md`](../design/RIVE_INTERFACES.md) and [`../design/RIVE_PROTOTYPE_DISCREPANCIES.md`](../design/RIVE_PROTOTYPE_DISCREPANCIES.md).
 - No stage class resolves Rive node names, widgets, or input paths.
 
@@ -175,8 +175,8 @@ MVP implementation: `AnalyticsStub` logs to console; no external SDK.
 
 ## Testing
 
-**EditMode:** AABB → view-rect mapping; disabled Faucet ignores activation and sets `HitTestBehavior.None`; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, accepts both Faucet sides, fills progress once, requests completion once, and unsubscribes on exit.
+**EditMode:** AABB → view-rect mapping; disabled Faucet ignores activation and `PointerHit` and sets `HitTestBehavior.None`; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, completes from `PointerHit` (this stage only) or either Faucet side / `IsOpen` on tick, fills progress once, marks the StepIcon completed, requests completion once, and unsubscribes on exit.
 
 **PlayMode:** background widget is present (not artboard `main`); intro still dismisses into the first `GameStage`.
 
-**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Hands/soap/towel/character must not consume pointer hits. Activate either Faucet handle; expect overlay progress to fill and the stage to complete.
+**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Hands/soap/towel/character must not consume pointer hits. Click the faucet widget; expect overlay progress to fill, step 1 completed, and Outro.

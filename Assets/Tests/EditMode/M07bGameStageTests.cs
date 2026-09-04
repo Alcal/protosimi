@@ -128,6 +128,58 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void OpenFaucet_Completes_WhenIsOpenOnTick()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Faucet.SetOpen(FaucetSide.Right, true);
+            stage.Tick(0.016f);
+
+            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
+            Assert.That(_services.Icon.Completed, Is.True);
+            Assert.That(_services.Icon.Active, Is.False);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+
+            stage.Tick(0.016f);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OpenFaucet_Completes_OnPointerHit()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Faucet.RaisePointerHit();
+            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
+            Assert.That(_services.Icon.Completed, Is.True);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+
+            stage.Exit();
+            _services.Faucet.RaisePointerHit();
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OpenFaucet_CompleteOnce_IgnoresSecondActivation()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Faucet.Raise(FaucetSide.Left);
+            _services.Faucet.Raise(FaucetSide.Right);
+
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void AC07_ReplayResetsStageLifecycle()
         {
             _flow.stageConfigurations = new List<GameStage> { new RecordingStage("first") };
@@ -234,17 +286,41 @@ namespace ManosLimpias.Tests
         sealed class FakeFaucet : IFaucetControl
         {
             public event Action<FaucetSide> Activated;
+            public event Action PointerHit;
             public bool IsEnabled { get; private set; }
+            public bool LeftIsOpen { get; private set; }
+            public bool RightIsOpen { get; private set; }
+            public bool IsOpen => LeftIsOpen || RightIsOpen;
 
             public void SetEnabled(bool enabled)
             {
                 IsEnabled = enabled;
+                if (!enabled)
+                {
+                    LeftIsOpen = false;
+                    RightIsOpen = false;
+                }
+            }
+
+            public void SetOpen(FaucetSide side, bool open)
+            {
+                if (side == FaucetSide.Left)
+                    LeftIsOpen = open;
+                else
+                    RightIsOpen = open;
             }
 
             public void Raise(FaucetSide side)
             {
+                if (!IsEnabled) return;
+                SetOpen(side, true);
+                Activated?.Invoke(side);
+            }
+
+            public void RaisePointerHit()
+            {
                 if (IsEnabled)
-                    Activated?.Invoke(side);
+                    PointerHit?.Invoke();
             }
         }
 

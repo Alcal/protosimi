@@ -52,9 +52,9 @@ Empty `*-anchor` groups have no drawable AABB (`ComputeBounds()` is always 0 in 
 
 ## Faucet model
 
-Rive: independent L/R triggers (`faucet_L_On`, `faucet_L_Off`, `faucet_R_On`, `faucet_R_Off`) on the **faucet** artboard widget.
+Rive: independent L/R triggers (`faucet_L_On`, `faucet_L_Off`, `faucet_R_On`, `faucet_R_Off`) on the **faucet** artboard widget. Open vs closed is the persistent SM state (`active_L` / `activeR` vs `offL` / `off_R`).
 
-Unity: Open Water completes from either handle through `Faucet`. Close Water remains future configuration.
+Unity: `Faucet` polls those states in LateUpdate (plus bool/event fallbacks) and reports a `PointerHit` when a press lands in the faucet widget. Open Water completes from that pointer hit. Close Water remains future configuration and should not subscribe to `PointerHit`.
 
 ---
 

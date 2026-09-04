@@ -1,17 +1,19 @@
 using System;
+using System.Collections.Generic;
 using ManosLimpias.Core;
 using Rive;
 using Rive.Components;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Binds the dedicated faucet artboard widget. Pointer hits fire SM triggers that
-    /// may not always surface as ReportedEvents, so this adapter also polls bool/trigger
-    /// inputs on the widget's own state machine.
+    /// Binds the dedicated faucet artboard widget. OpenFaucetStage also completes
+    /// from a pointer press inside this widget; Close Water should not subscribe
+    /// to <see cref="PointerHit"/>.
     /// </summary>
-    [DefaultExecutionOrder(-100)]
+    [DefaultExecutionOrder(100)]
     public sealed class Faucet : MonoBehaviour, IFaucetControl
     {
         public const string Artboard = SimiPrototypeArtboards.Faucet;
@@ -35,23 +37,26 @@ namespace ManosLimpias.UI.Rive
         public RiveWidget widget;
 
         public event Action<FaucetSide> Activated;
+        public event Action PointerHit;
         public bool IsEnabled { get; private set; }
+        public bool LeftIsOpen { get; private set; }
+        public bool RightIsOpen { get; private set; }
+        public bool IsOpen => LeftIsOpen || RightIsOpen;
 
         bool _inputsResolved;
-        bool _leftWasOn;
-        bool _rightWasOn;
-        SMIBool _leftBool;
-        SMIBool _rightBool;
+        bool _inputsLogged;
+        SMIInput _leftOnInput;
+        SMIInput _rightOnInput;
+        SMIInput _leftOffInput;
+        SMIInput _rightOffInput;
+        readonly List<string> _changedStates = new();
 
         public void SetEnabled(bool enabled)
         {
             IsEnabled = enabled;
             ApplyHitTest();
             if (!enabled)
-            {
-                _leftWasOn = false;
-                _rightWasOn = false;
-            }
+                ClearOpenState();
         }
 
         void OnEnable()
@@ -75,51 +80,136 @@ namespace ManosLimpias.UI.Rive
             }
 
             _inputsResolved = false;
-            _leftBool = null;
-            _rightBool = null;
+            _inputsLogged = false;
+            _leftOnInput = null;
+            _rightOnInput = null;
+            _leftOffInput = null;
+            _rightOffInput = null;
             ApplyHitTest();
         }
 
-        void Update()
+        void LateUpdate()
         {
-            if (!IsEnabled || widget?.StateMachine == null)
+            if (!IsEnabled)
+                return;
+
+            PollPointerHit();
+            if (widget?.StateMachine == null)
                 return;
 
             ResolveInputs();
-            if (_leftBool != null)
-                PollBool(_leftBool, FaucetSide.Left, ref _leftWasOn);
-            else
-                PollTrigger(FaucetLOn, FaucetSide.Left, ref _leftWasOn);
-
-            if (_rightBool != null)
-                PollBool(_rightBool, FaucetSide.Right, ref _rightWasOn);
-            else
-                PollTrigger(FaucetROn, FaucetSide.Right, ref _rightWasOn);
+            PollChangedStates();
+            PollInput(_leftOnInput, FaucetSide.Left, open: true);
+            PollInput(_rightOnInput, FaucetSide.Right, open: true);
+            PollInput(_leftOffInput, FaucetSide.Left, open: false);
+            PollInput(_rightOffInput, FaucetSide.Right, open: false);
+            PollReportedEvents();
         }
 
-        void PollBool(SMIBool input, FaucetSide side, ref bool wasOn)
+        void PollPointerHit()
         {
-            var isOn = input != null && input.Value;
-            if (isOn && !wasOn)
-            {
-                Debug.Log($"[Faucet] Bool '{input.Name}'");
-                NotifyActivated(side);
-            }
-            wasOn = isOn;
-        }
-
-        void PollTrigger(string inputName, FaucetSide side, ref bool wasOn)
-        {
-            if (widget?.Artboard == null)
+            if (!TryGetPressScreenPoint(out var screen))
+                return;
+            if (widget != null && !TryGetNormalizedPoint(screen, out _))
                 return;
 
-            var isOn = RiveStateMachineInputs.TryReadNestedTrigger(widget.Artboard, inputName, string.Empty);
-            if (isOn && !wasOn)
+            NotifyPointerHit();
+        }
+
+        static bool TryGetPressScreenPoint(out Vector2 screen)
+        {
+            if (Pointer.current != null && Pointer.current.press.wasPressedThisFrame)
             {
-                Debug.Log($"[Faucet] Trigger '{inputName}'");
-                NotifyActivated(side);
+                screen = Pointer.current.position.ReadValue();
+                return true;
             }
-            wasOn = isOn;
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                screen = Mouse.current.position.ReadValue();
+                return true;
+            }
+
+            screen = default;
+            return false;
+        }
+
+        bool TryGetNormalizedPoint(Vector2 screen, out Vector2 normalized)
+        {
+            normalized = default;
+            var rectTransform = widget != null ? widget.RectTransform : null;
+            if (rectTransform == null)
+                return false;
+
+            var canvas = rectTransform.GetComponentInParent<Canvas>();
+            Camera camera = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                camera = canvas.worldCamera;
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    rectTransform, screen, camera, out var local))
+                return false;
+
+            var rect = rectTransform.rect;
+            if (rect.width <= 0f || rect.height <= 0f || !rect.Contains(local))
+                return false;
+
+            normalized = new Vector2(
+                (local.x - rect.xMin) / rect.width,
+                (local.y - rect.yMin) / rect.height);
+            return true;
+        }
+
+        void PollChangedStates()
+        {
+            if (!RiveStateMachineInputs.TryCopyChangedStateNames(widget.StateMachine, _changedStates))
+                return;
+
+            for (int i = 0; i < _changedStates.Count; i++)
+                ApplyStateName(_changedStates[i]);
+        }
+
+        void ApplyStateName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            if (name == AnimActiveL)
+                SetOpen(FaucetSide.Left, true);
+            else if (name == AnimOffL)
+                SetOpen(FaucetSide.Left, false);
+            else if (name == AnimActiveR)
+                SetOpen(FaucetSide.Right, true);
+            else if (name == AnimOffR)
+                SetOpen(FaucetSide.Right, false);
+            else if (name == AnimWater && !IsOpen)
+                SetOpen(FaucetSide.Left, true);
+        }
+
+        void PollInput(SMIInput input, FaucetSide side, bool open)
+        {
+            if (input == null)
+                return;
+            if (input.IsBoolean)
+            {
+                var boolInput = input as SMIBool;
+                if (boolInput != null && boolInput.Value)
+                    SetOpen(side, open);
+                return;
+            }
+
+            if (RiveStateMachineInputs.TryReadInputBool(input, out var pulsed) && pulsed)
+                SetOpen(side, open);
+        }
+
+        void PollReportedEvents()
+        {
+            var stateMachine = widget.StateMachine;
+            if (stateMachine == null)
+                return;
+
+            foreach (var report in stateMachine.EnumerateReportedEvents())
+                ApplyReportedName(report?.Name);
         }
 
         void OnRiveEventReported(ReportedEvent report)
@@ -127,10 +217,23 @@ namespace ManosLimpias.UI.Rive
             if (report == null) return;
             Debug.Log($"[Faucet] Rive event '{report.Name}' enabled={IsEnabled}");
             if (!IsEnabled) return;
-            if (IsLeftOn(report.Name))
-                NotifyActivated(FaucetSide.Left);
-            else if (IsRightOn(report.Name))
-                NotifyActivated(FaucetSide.Right);
+            ApplyReportedName(report.Name);
+        }
+
+        void ApplyReportedName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+            if (IsLeftOn(name))
+                SetOpen(FaucetSide.Left, true);
+            else if (IsRightOn(name))
+                SetOpen(FaucetSide.Right, true);
+            else if (IsLeftOff(name))
+                SetOpen(FaucetSide.Left, false);
+            else if (IsRightOff(name))
+                SetOpen(FaucetSide.Right, false);
+            else
+                ApplyStateName(name);
         }
 
         static bool IsLeftOn(string name)
@@ -147,6 +250,25 @@ namespace ManosLimpias.UI.Rive
                    string.Equals(name, "faucet__R_ON", StringComparison.OrdinalIgnoreCase);
         }
 
+        static bool IsLeftOff(string name)
+        {
+            return name == FaucetLOff ||
+                   string.Equals(name, "faucet_L_OFF", StringComparison.OrdinalIgnoreCase);
+        }
+
+        static bool IsRightOff(string name)
+        {
+            return name == FaucetROff ||
+                   string.Equals(name, "faucet_R_OFF", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public void NotifyPointerHit()
+        {
+            if (!IsEnabled) return;
+            Debug.Log($"[Faucet] PointerHit listeners={PointerHit?.GetInvocationList().Length ?? 0}");
+            PointerHit?.Invoke();
+        }
+
         public void ActivateLeft() => Activate(FaucetSide.Left);
 
         public void ActivateRight() => Activate(FaucetSide.Right);
@@ -160,7 +282,7 @@ namespace ManosLimpias.UI.Rive
                 RiveStateMachineInputs.FindTrigger(widget.StateMachine, inputName)?.Fire();
             }
 
-            NotifyActivated(side);
+            SetOpen(side, true);
         }
 
         void ResolveInputs()
@@ -169,8 +291,20 @@ namespace ManosLimpias.UI.Rive
                 return;
 
             _inputsResolved = true;
-            _leftBool = RiveStateMachineInputs.GetBool(widget.StateMachine, FaucetLOn);
-            _rightBool = RiveStateMachineInputs.GetBool(widget.StateMachine, FaucetROn);
+            var sm = widget.StateMachine;
+            _leftOnInput = RiveStateMachineInputs.FindBool(sm, FaucetLOn)
+                           ?? (SMIInput)RiveStateMachineInputs.FindTrigger(sm, FaucetLOn);
+            _rightOnInput = RiveStateMachineInputs.FindBool(sm, FaucetROn)
+                            ?? (SMIInput)RiveStateMachineInputs.FindTrigger(sm, FaucetROn);
+            _leftOffInput = RiveStateMachineInputs.FindBool(sm, FaucetLOff)
+                            ?? (SMIInput)RiveStateMachineInputs.FindTrigger(sm, FaucetLOff);
+            _rightOffInput = RiveStateMachineInputs.FindBool(sm, FaucetROff)
+                             ?? (SMIInput)RiveStateMachineInputs.FindTrigger(sm, FaucetROff);
+
+            if (_inputsLogged)
+                return;
+            _inputsLogged = true;
+            Debug.Log($"[Faucet] SM inputs: {RiveStateMachineInputs.DescribeInputs(sm)}");
         }
 
         void Subscribe()
@@ -191,10 +325,25 @@ namespace ManosLimpias.UI.Rive
                 widget.HitTestBehavior = IsEnabled ? HitTestBehavior.Translucent : HitTestBehavior.None;
         }
 
-        void NotifyActivated(FaucetSide side)
+        void ClearOpenState()
         {
-            Debug.Log($"[Faucet] Activated {side} listeners={Activated?.GetInvocationList().Length ?? 0}");
-            Activated?.Invoke(side);
+            LeftIsOpen = false;
+            RightIsOpen = false;
+        }
+
+        void SetOpen(FaucetSide side, bool open)
+        {
+            bool wasOpen = side == FaucetSide.Left ? LeftIsOpen : RightIsOpen;
+            if (side == FaucetSide.Left)
+                LeftIsOpen = open;
+            else
+                RightIsOpen = open;
+
+            if (open && !wasOpen)
+            {
+                Debug.Log($"[Faucet] Activated {side} listeners={Activated?.GetInvocationList().Length ?? 0}");
+                Activated?.Invoke(side);
+            }
         }
     }
 }

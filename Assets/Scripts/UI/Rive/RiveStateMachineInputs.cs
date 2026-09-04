@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Rive;
+using UnityEngine;
 
 namespace ManosLimpias.UI.Rive
 {
@@ -183,5 +185,233 @@ namespace ManosLimpias.UI.Rive
                 return false;
             return GetBoolValueMethod.Invoke(null, new object[] { pointer }) is bool value && value;
         }
+
+        public static string DescribeInputs(StateMachine stateMachine)
+        {
+            if (stateMachine == null)
+                return "(null)";
+
+            var inputs = stateMachine.Inputs();
+            if (inputs == null || inputs.Count == 0)
+                return "(none)";
+
+            var parts = new string[inputs.Count];
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                var input = inputs[i];
+                if (input == null)
+                {
+                    parts[i] = "?";
+                    continue;
+                }
+
+                string kind = input.IsBoolean ? "bool" : input.IsTrigger ? "trigger" : input.IsNumber ? "number" : "other";
+                parts[i] = $"{input.Name}:{kind}";
+            }
+
+            return string.Join(", ", parts);
+        }
+
+        /// <summary>
+        /// Copies state-machine layer/animation names from the last advance when the
+        /// 0.4.3 native plugin exports them. Returns false if the API is missing.
+        /// Skipped on WebGL players so missing <c>__Internal</c> symbols cannot fail the link.
+        /// </summary>
+        public static bool TryCopyChangedStateNames(StateMachine stateMachine, List<string> destination)
+        {
+            destination?.Clear();
+            if (stateMachine == null || destination == null)
+                return false;
+            return NativeStateQuery.TryCopyNames(stateMachine, destination);
+        }
+
+        public static bool TryReadInputBool(SMIInput input, out bool value)
+        {
+            return NativeStateQuery.TryReadInputBool(input, out value);
+        }
+    }
+
+    static class NativeStateQuery
+    {
+        static readonly PropertyInfo NativeStateMachineProperty = typeof(StateMachine).GetProperty(
+            "NativeStateMachine",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        static readonly PropertyInfo NativeSmiProperty = typeof(SMIInput).GetProperty(
+            "NativeSMI",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+#if (UNITY_IOS || UNITY_TVOS || UNITY_WEBGL || UNITY_SWITCH || UNITY_VISIONOS) && !UNITY_EDITOR
+        const string NativeLib = "__Internal";
+#else
+        const string NativeLib = "rive";
+#endif
+
+        enum Availability
+        {
+            Unprobed,
+            StateChangedCount,
+            StateChangedCountStateMachine,
+            Unavailable
+        }
+
+        static Availability _availability = Availability.Unprobed;
+        static bool _loggedUnavailable;
+
+        public static bool TryCopyNames(StateMachine stateMachine, List<string> destination)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return false;
+#else
+            if (NativeStateMachineProperty == null)
+                return false;
+
+            var native = NativeStateMachineProperty.GetValue(stateMachine);
+            if (native is not IntPtr pointer || pointer == IntPtr.Zero)
+                return false;
+
+            Probe(pointer);
+            if (_availability == Availability.Unavailable)
+                return false;
+
+            try
+            {
+                uint count = _availability == Availability.StateChangedCountStateMachine
+                    ? getStateChangedCountStateMachine(pointer)
+                    : getStateChangedCount(pointer);
+                for (uint i = 0; i < count; i++)
+                {
+                    var layer = _availability == Availability.StateChangedCountStateMachine
+                        ? getStateChangedFromIndexStateMachine(pointer, i)
+                        : getStateChangedAt(pointer, i);
+                    var name = NameFromLayer(layer);
+                    if (!string.IsNullOrEmpty(name))
+                        destination.Add(name);
+                }
+
+                return true;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                MarkUnavailable();
+                return false;
+            }
+            catch (DllNotFoundException)
+            {
+                MarkUnavailable();
+                return false;
+            }
+#endif
+        }
+
+        public static bool TryReadInputBool(SMIInput input, out bool value)
+        {
+            value = false;
+            if (input == null || NativeSmiProperty == null || GetBoolValueMethod == null)
+                return false;
+            if (NativeSmiProperty.GetValue(input) is not IntPtr pointer || pointer == IntPtr.Zero)
+                return false;
+            if (GetBoolValueMethod.Invoke(null, new object[] { pointer }) is not bool native)
+                return false;
+            value = native;
+            return true;
+        }
+
+        static MethodInfo GetBoolValueMethod => typeof(SMIBool).GetMethod(
+            "getSMIBoolValueStateMachine",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            new[] { typeof(IntPtr) },
+            null);
+
+        static void Probe(IntPtr pointer)
+        {
+            if (_availability != Availability.Unprobed)
+                return;
+
+            if (TryCount(getStateChangedCount, pointer))
+            {
+                _availability = Availability.StateChangedCount;
+                return;
+            }
+
+            if (TryCount(getStateChangedCountStateMachine, pointer))
+            {
+                _availability = Availability.StateChangedCountStateMachine;
+                return;
+            }
+
+            MarkUnavailable();
+        }
+
+        static bool TryCount(Func<IntPtr, uint> getter, IntPtr pointer)
+        {
+            try
+            {
+                getter(pointer);
+                return true;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return false;
+            }
+            catch (DllNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        static string NameFromLayer(IntPtr layer)
+        {
+            if (layer == IntPtr.Zero)
+                return null;
+            try
+            {
+                var namePtr = layerStateGetName(layer);
+                if (namePtr == IntPtr.Zero)
+                    namePtr = getLayerStateName(layer);
+                return namePtr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(namePtr);
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
+        }
+
+        static void MarkUnavailable()
+        {
+            _availability = Availability.Unavailable;
+            if (_loggedUnavailable)
+                return;
+            _loggedUnavailable = true;
+            Debug.Log("[Faucet] Native state-change API unavailable; using bool/event fallbacks.");
+        }
+
+#if !UNITY_WEBGL || UNITY_EDITOR
+        [DllImport(NativeLib, EntryPoint = "getStateChangedCount")]
+        static extern uint getStateChangedCount(IntPtr stateMachine);
+
+        [DllImport(NativeLib, EntryPoint = "getStateChangedAt")]
+        static extern IntPtr getStateChangedAt(IntPtr stateMachine, uint index);
+
+        [DllImport(NativeLib, EntryPoint = "getStateChangedCountStateMachine")]
+        static extern uint getStateChangedCountStateMachine(IntPtr stateMachine);
+
+        [DllImport(NativeLib, EntryPoint = "getStateChangedFromIndexStateMachine")]
+        static extern IntPtr getStateChangedFromIndexStateMachine(IntPtr stateMachine, uint index);
+
+        [DllImport(NativeLib, EntryPoint = "layerStateGetName")]
+        static extern IntPtr layerStateGetName(IntPtr layerState);
+
+        [DllImport(NativeLib, EntryPoint = "getLayerStateName")]
+        static extern IntPtr getLayerStateName(IntPtr layerState);
+#else
+        static uint getStateChangedCount(IntPtr stateMachine) => 0;
+        static IntPtr getStateChangedAt(IntPtr stateMachine, uint index) => IntPtr.Zero;
+        static uint getStateChangedCountStateMachine(IntPtr stateMachine) => 0;
+        static IntPtr getStateChangedFromIndexStateMachine(IntPtr stateMachine, uint index) => IntPtr.Zero;
+        static IntPtr layerStateGetName(IntPtr layerState) => IntPtr.Zero;
+        static IntPtr getLayerStateName(IntPtr layerState) => IntPtr.Zero;
+#endif
     }
 }
