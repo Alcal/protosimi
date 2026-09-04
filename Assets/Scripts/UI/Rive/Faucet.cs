@@ -9,8 +9,8 @@ using UnityEngine.InputSystem;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Binds the dedicated faucet artboard widget. OpenFaucetStage also completes
-    /// from a pointer press inside this widget; Close Water should not subscribe
+    /// Binds the dedicated faucet artboard widget. OpenFaucetStage locks the faucet
+    /// open from a pointer press inside this widget; Close Water should not subscribe
     /// to <see cref="PointerHit"/>.
     /// </summary>
     [DefaultExecutionOrder(100)]

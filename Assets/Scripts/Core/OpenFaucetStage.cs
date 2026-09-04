@@ -1,22 +1,30 @@
-using System;
 using UnityEngine;
 
 namespace ManosLimpias.Core
 {
-    [Serializable]
+    [System.Serializable]
     public sealed class OpenFaucetStage : GameStage
     {
+        public const float OpenProgress = 0.25f;
+        public const float FillStep = 0.02f;
+        public const float FillInterval = 0.1f;
+
         public int stepId = 1;
 
         bool _completed;
+        bool _faucetLocked;
+        float _fillTimer;
 
         public override string Id => "OpenFaucet";
 
         protected override void OnEnter()
         {
             _completed = false;
+            _faucetLocked = false;
+            _fillTimer = 0f;
             Services.ProgressBar?.SetProgress(0f);
             Services.StepIcon?.SetState(stepId, active: true, completed: false);
+            Services.Hands?.SetDraggable(false);
 
             if (Services.Faucet == null)
             {
@@ -25,46 +33,101 @@ namespace ManosLimpias.Core
             }
 
             Debug.Log("[OpenFaucetStage] Entered; subscribed to Faucet pointer hit.");
-            Services.Faucet.Activated += OnFaucetActivated;
-            Services.Faucet.PointerHit += OnFaucetPointerHit;
+            SubscribeFaucet();
             Services.Faucet.SetEnabled(true);
             if (Services.Faucet.IsOpen)
-                CompleteOnce();
+                LockFaucetOpen();
         }
 
         protected override void OnTick(float deltaTime)
         {
-            if (Services.Faucet != null && Services.Faucet.IsOpen)
-                CompleteOnce();
+            if (_completed || !IsEntered)
+                return;
+
+            if (!_faucetLocked)
+            {
+                if (Services.Faucet != null && Services.Faucet.IsOpen)
+                    LockFaucetOpen();
+                return;
+            }
+
+            if (Services.WaterContact != null && Services.WaterContact.IsOverlapping)
+            {
+                _fillTimer += deltaTime;
+                var progress = Services.ProgressBar != null ? Services.ProgressBar.Progress : OpenProgress;
+                while (_fillTimer >= FillInterval && progress < 1f)
+                {
+                    _fillTimer -= FillInterval;
+                    progress = Mathf.Min(1f, progress + FillStep);
+                    Services.ProgressBar?.SetProgress(progress);
+                }
+
+                if (progress >= 1f)
+                    CompleteOnce();
+            }
+            else
+            {
+                _fillTimer = 0f;
+            }
         }
 
         protected override void OnExit()
         {
-            if (Services.Faucet == null) return;
-            Services.Faucet.Activated -= OnFaucetActivated;
-            Services.Faucet.PointerHit -= OnFaucetPointerHit;
-            Services.Faucet.SetEnabled(false);
+            UnsubscribeFaucet();
+            Services.Hands?.SetDraggable(false);
+            if (Services.Faucet != null)
+                Services.Faucet.SetEnabled(false);
         }
 
         void OnFaucetActivated(FaucetSide side)
         {
             Debug.Log($"[OpenFaucetStage] Activated {side} entered={IsEntered}");
-            CompleteOnce();
+            LockFaucetOpen();
         }
 
         void OnFaucetPointerHit()
         {
             Debug.Log($"[OpenFaucetStage] PointerHit entered={IsEntered}");
-            CompleteOnce();
+            LockFaucetOpen();
+        }
+
+        void LockFaucetOpen()
+        {
+            if (_faucetLocked || _completed || !IsEntered)
+                return;
+
+            _faucetLocked = true;
+            UnsubscribeFaucet();
+            Services.Faucet?.SetEnabled(false);
+            Services.ProgressBar?.SetProgress(OpenProgress);
+            Services.Hands?.SetDraggable(true);
+            Debug.Log("[OpenFaucetStage] Faucet locked open at 25%; hands draggable.");
         }
 
         void CompleteOnce()
         {
-            if (_completed || !IsEntered) return;
+            if (_completed || !IsEntered)
+                return;
             _completed = true;
             Services.ProgressBar?.SetProgress(1f);
             Services.StepIcon?.SetState(stepId, active: false, completed: true);
             Services.RequestStageCompletion(this);
+        }
+
+        void SubscribeFaucet()
+        {
+            if (Services.Faucet == null)
+                return;
+            Services.Faucet.Activated += OnFaucetActivated;
+            Services.Faucet.PointerHit += OnFaucetPointerHit;
+        }
+
+        void UnsubscribeFaucet()
+        {
+            if (Services.Faucet == null)
+                return;
+            Services.Faucet.Activated -= OnFaucetActivated;
+            Services.Faucet.PointerHit -= OnFaucetPointerHit;
         }
 
         public override GameStage CreateRuntime()

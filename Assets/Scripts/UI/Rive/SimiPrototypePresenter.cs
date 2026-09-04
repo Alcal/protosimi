@@ -16,9 +16,11 @@ namespace ManosLimpias.UI.Rive
         public RiveWidget introWidget;
         public RiveWidget progressBarWidget;
         public RiveWidget faucetWidget;
+        public RiveWidget handsWidget;
         public RiveWidget[] stepIconWidgets;
         public RiveHudBinder hudBinder;
         public Faucet faucet;
+        public Hands hands;
         public RiveAnchorMount anchorMount;
 
         static readonly string[] TriggerPaths =
@@ -94,6 +96,7 @@ namespace ManosLimpias.UI.Rive
         void BindGameplay()
         {
             faucet?.Bind(faucetWidget);
+            hands?.Bind(handsWidget, faucetWidget);
             hudBinder?.Bind(progressBarWidget, stepIconWidgets);
             anchorMount?.TryApply();
         }

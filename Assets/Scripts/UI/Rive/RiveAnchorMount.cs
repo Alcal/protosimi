@@ -103,6 +103,13 @@ namespace ManosLimpias.UI.Rive
                 if (child == null)
                     continue;
 
+                var hands = slot.widget.GetComponent<Hands>();
+                if (hands != null && hands.FreezePlacement)
+                {
+                    placed++;
+                    continue;
+                }
+
                 if (!TryResolveAabb(slot, out var aabb))
                 {
                     Debug.LogWarning($"[RiveAnchorMount] No origin/size for '{slot.anchorName}'.");

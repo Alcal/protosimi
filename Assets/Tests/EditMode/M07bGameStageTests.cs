@@ -62,7 +62,7 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void AC03_OpenFaucetCompletes_OnEitherHandle()
+        public void AC03_OpenFaucetLocksAtQuarter_OnEitherHandle()
         {
             var stage = new OpenFaucetStage();
             _services.CompletionRequested = _ => { };
@@ -74,14 +74,17 @@ namespace ManosLimpias.Tests
             Assert.That(_services.Icon.Completed, Is.False);
 
             _services.Faucet.Raise(FaucetSide.Left);
-            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
-            Assert.That(_services.Icon.Active, Is.False);
-            Assert.That(_services.Icon.Completed, Is.True);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Hands.IsDraggable, Is.True);
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.Icon.Completed, Is.False);
 
             stage.Exit();
             _services.Faucet.Raise(FaucetSide.Right);
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+            Assert.That(_services.Hands.IsDraggable, Is.False);
         }
 
         [Test]
@@ -110,6 +113,7 @@ namespace ManosLimpias.Tests
             stage.Exit();
 
             Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Hands.IsDraggable, Is.False);
             _services.Faucet.Raise(FaucetSide.Left);
             Assert.That(_services.CompletionCount, Is.Zero);
         }
@@ -128,7 +132,7 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void OpenFaucet_Completes_WhenIsOpenOnTick()
+        public void OpenFaucet_LocksAtQuarter_WhenIsOpenOnTick()
         {
             var stage = new OpenFaucetStage();
             _services.CompletionRequested = _ => { };
@@ -138,17 +142,18 @@ namespace ManosLimpias.Tests
             _services.Faucet.SetOpen(FaucetSide.Right, true);
             stage.Tick(0.016f);
 
-            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
-            Assert.That(_services.Icon.Completed, Is.True);
-            Assert.That(_services.Icon.Active, Is.False);
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+            Assert.That(_services.Icon.Completed, Is.False);
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+            Assert.That(_services.Hands.IsDraggable, Is.True);
 
             stage.Tick(0.016f);
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
         }
 
         [Test]
-        public void OpenFaucet_Completes_OnPointerHit()
+        public void OpenFaucet_LocksAtQuarter_OnPointerHit()
         {
             var stage = new OpenFaucetStage();
             _services.CompletionRequested = _ => { };
@@ -156,17 +161,18 @@ namespace ManosLimpias.Tests
             stage.Enter();
 
             _services.Faucet.RaisePointerHit();
-            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
-            Assert.That(_services.Icon.Completed, Is.True);
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+            Assert.That(_services.Icon.Completed, Is.False);
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
 
             stage.Exit();
             _services.Faucet.RaisePointerHit();
-            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
         }
 
         [Test]
-        public void OpenFaucet_CompleteOnce_IgnoresSecondActivation()
+        public void OpenFaucet_LockOnce_IgnoresSecondActivation()
         {
             var stage = new OpenFaucetStage();
             _services.CompletionRequested = _ => { };
@@ -176,6 +182,36 @@ namespace ManosLimpias.Tests
             _services.Faucet.Raise(FaucetSide.Left);
             _services.Faucet.Raise(FaucetSide.Right);
 
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void OpenFaucet_FillsWhileOverlapping_ThenCompletes()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+            _services.Faucet.RaisePointerHit();
+
+            _services.Water.IsOverlapping = true;
+            stage.Tick(OpenFaucetStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress + OpenFaucetStage.FillStep).Within(0.0001f));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+
+            _services.Water.IsOverlapping = false;
+            stage.Tick(OpenFaucetStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress + OpenFaucetStage.FillStep).Within(0.0001f));
+
+            _services.Water.IsOverlapping = true;
+            stage.Tick(3.8f);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
+            Assert.That(_services.Icon.Active, Is.False);
+            Assert.That(_services.Icon.Completed, Is.True);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+
+            stage.Tick(OpenFaucetStage.FillInterval);
             Assert.That(_services.CompletionCount, Is.EqualTo(1));
         }
 
@@ -267,12 +303,16 @@ namespace ManosLimpias.Tests
         sealed class FakeServices : IGameFlowServices
         {
             public readonly FakeFaucet Faucet = new();
+            public readonly FakeHands Hands = new();
+            public readonly FakeWater Water = new();
             public readonly FakeProgress Progress = new();
             public readonly FakeIcon Icon = new();
             public Action<GameStage> CompletionRequested;
             public int CompletionCount { get; private set; }
 
             IFaucetControl IGameFlowServices.Faucet => Faucet;
+            IHandsControl IGameFlowServices.Hands => Hands;
+            IWaterContactControl IGameFlowServices.WaterContact => Water;
             IProgressBarControl IGameFlowServices.ProgressBar => Progress;
             IStepIconControl IGameFlowServices.StepIcon => Icon;
 
@@ -322,6 +362,21 @@ namespace ManosLimpias.Tests
                 if (IsEnabled)
                     PointerHit?.Invoke();
             }
+        }
+
+        sealed class FakeHands : IHandsControl
+        {
+            public bool IsDraggable { get; private set; }
+
+            public void SetDraggable(bool draggable)
+            {
+                IsDraggable = draggable;
+            }
+        }
+
+        sealed class FakeWater : IWaterContactControl
+        {
+            public bool IsOverlapping { get; set; }
         }
 
         sealed class FakeProgress : IProgressBarControl

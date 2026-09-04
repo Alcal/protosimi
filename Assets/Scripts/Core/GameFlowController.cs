@@ -27,6 +27,7 @@ namespace ManosLimpias.Core
         public HudPresenter hud;
         public RiveHudBinder riveHud;
         public Faucet faucet;
+        public Hands hands;
         public AudioPlaceholderPlayer audioPlayer;
         public WafController waf;
         public AssistHijack assist;
@@ -252,6 +253,7 @@ namespace ManosLimpias.Core
             readonly GameFlowController _flow;
             readonly IProgressBarControl _fallbackProgress;
             readonly IStepIconControl _fallbackStepIcon;
+            readonly NullHands _nullHands = new();
 
             public FlowServices(GameFlowController flow)
             {
@@ -261,6 +263,8 @@ namespace ManosLimpias.Core
             }
 
             public IFaucetControl Faucet => _flow.faucet;
+            public IHandsControl Hands => _flow.hands != null ? _flow.hands : _nullHands;
+            public IWaterContactControl WaterContact => _flow.hands != null ? _flow.hands : _nullHands;
             public IProgressBarControl ProgressBar => _flow.riveHud ?? _fallbackProgress;
             public IStepIconControl StepIcon => _flow.riveHud ?? _fallbackStepIcon;
 
@@ -290,6 +294,17 @@ namespace ManosLimpias.Core
         sealed class NullStepIcon : IStepIconControl
         {
             public void SetState(int stepId, bool active, bool completed) { }
+        }
+
+        sealed class NullHands : IHandsControl, IWaterContactControl
+        {
+            public bool IsDraggable { get; private set; }
+            public bool IsOverlapping => false;
+
+            public void SetDraggable(bool draggable)
+            {
+                IsDraggable = draggable;
+            }
         }
     }
 }

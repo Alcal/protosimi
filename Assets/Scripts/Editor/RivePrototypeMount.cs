@@ -177,14 +177,24 @@ namespace ManosLimpias.Editor
             faucet.Bind(faucetWidget);
             faucet.SetEnabled(false);
 
+            var hands = handsWidget.GetComponent<Hands>();
+            if (hands == null)
+                hands = handsWidget.gameObject.AddComponent<Hands>();
+            hands.Bind(handsWidget, faucetWidget);
+            hands.SetDraggable(false);
+            mount.TryApply();
+            AssignHitboxes(hands, handsWidget, faucetWidget);
+
             var soPresenter = new SerializedObject(presenter);
             soPresenter.FindProperty("flow").objectReferenceValue = systems.GetComponent<GameFlowController>();
             soPresenter.FindProperty("backgroundWidget").objectReferenceValue = backgroundWidget;
             soPresenter.FindProperty("introWidget").objectReferenceValue = introWidget;
             soPresenter.FindProperty("progressBarWidget").objectReferenceValue = progressWidget;
             soPresenter.FindProperty("faucetWidget").objectReferenceValue = faucetWidget;
+            soPresenter.FindProperty("handsWidget").objectReferenceValue = handsWidget;
             soPresenter.FindProperty("hudBinder").objectReferenceValue = binder;
             soPresenter.FindProperty("faucet").objectReferenceValue = faucet;
+            soPresenter.FindProperty("hands").objectReferenceValue = hands;
             soPresenter.FindProperty("anchorMount").objectReferenceValue = mount;
             AssignWidgetArray(soPresenter.FindProperty("stepIconWidgets"), stepWidgets);
             soPresenter.ApplyModifiedPropertiesWithoutUndo();
@@ -198,12 +208,57 @@ namespace ManosLimpias.Editor
 
             var soFlow = new SerializedObject(flow);
             soFlow.FindProperty("faucet").objectReferenceValue = faucet;
+            soFlow.FindProperty("hands").objectReferenceValue = hands;
             soFlow.FindProperty("riveHud").objectReferenceValue = binder;
             soFlow.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Debug.Log("Mounted simi_prototype background + anchored widgets on GameplayCanvas.");
+        }
+
+        [MenuItem("ManosLimpias/Bake Hands And Faucet Hitboxes")]
+        public static void BakeHandsAndFaucetHitboxes()
+        {
+            var handsGo = GameObject.Find("HandsRive");
+            var faucetGo = GameObject.Find("FaucetRive");
+            if (handsGo == null || faucetGo == null)
+            {
+                Debug.LogError("[RivePrototypeMount] HandsRive or FaucetRive not found.");
+                return;
+            }
+
+            var panel = handsGo.transform.parent != null
+                ? handsGo.transform.parent.GetComponent<RiveAnchorMount>()
+                : null;
+            panel?.TryApply();
+
+            var handsWidget = handsGo.GetComponent<RiveWidget>();
+            var faucetWidget = faucetGo.GetComponent<RiveWidget>();
+            var hands = handsGo.GetComponent<Hands>();
+            if (hands == null)
+                hands = handsGo.AddComponent<Hands>();
+            hands.Bind(handsWidget, faucetWidget);
+            AssignHitboxes(hands, handsWidget, faucetWidget);
+
+            EditorSceneManager.MarkSceneDirty(handsGo.scene);
+            EditorSceneManager.SaveScene(handsGo.scene);
+            Debug.Log("[RivePrototypeMount] Baked Hands/Faucet layout and authored hitbox children.");
+        }
+
+        static void AssignHitboxes(Hands hands, RiveWidget handsWidget, RiveWidget faucetWidget)
+        {
+            var hitbox1 = RiveNodeHitbox.FindOrCreate(handsWidget, Hands.Hitbox1, Hands.Hitbox1Normalized);
+            var hitbox2 = RiveNodeHitbox.FindOrCreate(handsWidget, Hands.Hitbox2, Hands.Hitbox2Normalized);
+            var water = RiveNodeHitbox.FindOrCreate(faucetWidget, Hands.WaterSqspot, Hands.WaterNormalized);
+
+            var soHands = new SerializedObject(hands);
+            soHands.FindProperty("hitbox1").objectReferenceValue = hitbox1;
+            soHands.FindProperty("hitbox2").objectReferenceValue = hitbox2;
+            soHands.FindProperty("waterHitbox").objectReferenceValue = water;
+            soHands.FindProperty("widget").objectReferenceValue = handsWidget;
+            soHands.FindProperty("faucetWidget").objectReferenceValue = faucetWidget;
+            soHands.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void LogFileInventory(Asset asset)

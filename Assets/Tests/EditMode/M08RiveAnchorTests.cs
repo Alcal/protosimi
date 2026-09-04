@@ -55,6 +55,12 @@ namespace ManosLimpias.Tests
             Assert.That(full.yMin, Is.EqualTo(60f).Within(0.01f));
             Assert.That(full.height, Is.EqualTo(1080f).Within(0.01f));
 
+            var stretched = ArtboardSpace.MapAabbToViewFill(0f, 0f, 192f, 108f, artboard, letterboxed);
+            Assert.That(stretched.xMin, Is.EqualTo(0f).Within(0.01f));
+            Assert.That(stretched.width, Is.EqualTo(192f).Within(0.01f));
+            Assert.That(stretched.yMax, Is.EqualTo(1200f).Within(0.01f));
+            Assert.That(stretched.height, Is.EqualTo(120f).Within(0.01f));
+
             var anchors = ArtboardSpace.ToNormalizedAnchors(mapped, view);
             Assert.That(anchors.x, Is.EqualTo(100f / 1920f).Within(0.0001f));
             Assert.That(anchors.w, Is.EqualTo((1080f - 200f) / 1080f).Within(0.0001f));
@@ -178,6 +184,31 @@ namespace ManosLimpias.Tests
             faucet.NotifyPointerHit();
             Assert.That(count, Is.EqualTo(1));
             Assert.That(hits, Is.EqualTo(1));
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
+        public void Hands_SetDraggable_TogglesHitTest()
+        {
+            var go = new GameObject("M08 Hands");
+            var widgetGo = new GameObject("M08 Hands Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var hands = go.AddComponent<Hands>();
+            hands.Bind(widget);
+
+            Assert.That(hands.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            hands.SetDraggable(true);
+            Assert.That(hands.IsDraggable, Is.True);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.Translucent));
+
+            hands.SetDraggable(false);
+            Assert.That(hands.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+            Assert.That(hands.FreezePlacement, Is.False);
 
             Object.DestroyImmediate(go);
             Object.DestroyImmediate(widgetGo);

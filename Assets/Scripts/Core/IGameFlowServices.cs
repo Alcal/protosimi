@@ -30,9 +30,22 @@ namespace ManosLimpias.Core
         void SetState(int stepId, bool active, bool completed);
     }
 
+    public interface IHandsControl
+    {
+        bool IsDraggable { get; }
+        void SetDraggable(bool draggable);
+    }
+
+    public interface IWaterContactControl
+    {
+        bool IsOverlapping { get; }
+    }
+
     public interface IGameFlowServices
     {
         IFaucetControl Faucet { get; }
+        IHandsControl Hands { get; }
+        IWaterContactControl WaterContact { get; }
         IProgressBarControl ProgressBar { get; }
         IStepIconControl StepIcon { get; }
         void RequestStageCompletion(GameStage stage);

@@ -26,7 +26,7 @@ The MVP keeps the six logical stages and their existing input families:
 
 | Order | Stage class | Input family | Rive focus |
 |------:|-------------|--------------|------------|
-| 0 | `OpenFaucetStage` | `TapOpenClose` | Tap the faucet widget |
+| 0 | `OpenFaucetStage` | `TapOpenClose` then drag | Tap the faucet, then drag hands under water |
 | 1 | `WetHandsStage` | `HandsUnderWater` | Hands |
 | 2 | `RubSoapStage` | `RubOnHands` | Soap / hands |
 | 3 | `RinseStage` | `HandsUnderWater` | Hands |
@@ -37,7 +37,7 @@ The configured list currently contains only `OpenFaucetStage`. Later stage class
 
 ### OpenFaucetStage
 
-`OpenFaucetStage` extends `GameStage`. On entry it enables the Faucet, marks its StepIcon active, and subscribes to pointer hits plus left/right activation. A tap on the faucet widget is enough for this stage. The stage sets the progress bar to 100%, marks the StepIcon completed, and asks the flow controller to advance once. On exit it unsubscribes and disables the Faucet.
+`OpenFaucetStage` extends `GameStage`. On entry it enables the Faucet, marks its StepIcon active, and subscribes to pointer hits plus left/right activation. Opening the faucet fills the progress bar to 25%, disables further faucet hits (the artboard stays visually open), and makes the Hands widget draggable. While either hands hitbox overlaps the faucet `water-sqspot`, progress fills by 2% every 100ms and pauses if they leave. At 100% the stage marks the StepIcon completed and asks the flow controller to advance once. On exit it unsubscribes, disables the Faucet, and turns off Hands drag.
 
 ## UI and feedback
 

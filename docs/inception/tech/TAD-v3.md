@@ -30,12 +30,15 @@ flowchart TD
     flow -->|creates and orders| stages[GameStage instances]
     flow -->|injects| services[IGameFlowServices]
     services --> faucet[IFaucetControl]
+    services --> hands[IHandsControl]
+    services --> water[IWaterContact]
     services --> progress[IProgressBar]
     services --> icon[IStepIcon]
     services --> camera[ICameraFocus]
     services --> host[IHostPresentation]
     stages --> open[OpenFaucetStage]
     open -->|SetEnabled| faucet
+    open -->|SetDraggable| hands
     open -->|SetProgress| progress
     open -->|requests advance| flow
     flow --> introState[Intro]
@@ -71,6 +74,7 @@ The stage must unsubscribe from all service events in `OnExit()` so the inactive
 The interface is supplied by `GameFlowController` and exposes narrow capabilities:
 
 - Faucet enable/disable/reset state and left/right activation event;
+- Hands drag enable/disable and water-contact overlap;
 - current-stage progress value and progress reset/fill operations;
 - active `StepIcon` selection and completion state;
 - camera focus and host presentation commands where needed;
@@ -103,8 +107,10 @@ Use Unity-serializable stage assets/factories so designers can reorder or replac
 - Leftover artboard `main` is not mounted.
 - `RiveHudBinder` writes progress to the overlay `progressBar` widget and drives four `stepIcon` widgets by id.
 - `Faucet` binds to the dedicated faucet widget. `SetEnabled` toggles that widget’s `HitTestBehavior` (`Translucent` when enabled, `None` when disabled). Components stay visible; only the active stage’s interactable receives hits. The adapter exposes `LeftIsOpen` / `RightIsOpen` / `IsOpen` from faucet artboard state when Unity can see it, fires `Activated` on the rising edge, and fires `PointerHit` when a press lands in the faucet widget.
-- Hands, soap, towel, and character are mounted and remain `HitTestBehavior.None` until later stages exist.
-- `OpenFaucetStage` enables the Faucet and completes from `PointerHit` (this stage only) or from `IsOpen` / `Activated`. It sets progress to `1`, marks its StepIcon completed, and requests completion once.
+- `Hands` binds to the dedicated hands widget. `SetDraggable` toggles that widget’s `HitTestBehavior` and Unity RectTransform drag. After the first drag, `RiveAnchorMount` skips remounting that slot so a view resize does not snap the hands back.
+- Wet-hands overlap uses authored child RectTransforms (`hitbox_1` / `hitbox_2` on Hands, `water-sqspot` on Faucet) plus trigger `BoxCollider2D`s. Starting size is a fraction of the parent widget’s playtime box; designers move them in the Rect tool. Overlap is canvas-space AABB, not Physics2D and not Rive node lookup.
+- Hands, soap, towel, and character start at `HitTestBehavior.None`. `OpenFaucetStage` enables Hands drag after the faucet is locked open.
+- `OpenFaucetStage` enables the Faucet and locks it open from `PointerHit` (this stage only) or from `IsOpen` / `Activated`. It sets progress to `0.25`, disables faucet hits, enables Hands drag, then fills `+0.02` every `0.1s` while either hands hitbox overlaps `water-sqspot`. At `1` it marks its StepIcon completed and requests completion once.
 - Rive state-machine names: [`../design/RIVE_INTERFACES.md`](../design/RIVE_INTERFACES.md) and [`../design/RIVE_PROTOTYPE_DISCREPANCIES.md`](../design/RIVE_PROTOTYPE_DISCREPANCIES.md).
 - No stage class resolves Rive node names, widgets, or input paths.
 
@@ -175,8 +181,8 @@ MVP implementation: `AnalyticsStub` logs to console; no external SDK.
 
 ## Testing
 
-**EditMode:** AABB → view-rect mapping; disabled Faucet ignores activation and `PointerHit` and sets `HitTestBehavior.None`; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, completes from `PointerHit` (this stage only) or either Faucet side / `IsOpen` on tick, fills progress once, marks the StepIcon completed, requests completion once, and unsubscribes on exit.
+**EditMode:** AABB → view-rect mapping including Fit.Fill; disabled Faucet ignores activation and `PointerHit` and sets `HitTestBehavior.None`; Hands `SetDraggable` toggles hit testing; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, locks the faucet at progress `0.25` from `PointerHit` (this stage only) or either Faucet side / `IsOpen` on tick, enables Hands drag, fills `+0.02` per `0.1s` only while overlapping, marks the StepIcon completed at `1`, requests completion once, and unsubscribes on exit.
 
-**PlayMode:** background widget is present (not artboard `main`); intro still dismisses into the first `GameStage`.
+**PlayMode:** background widget is present (not artboard `main`); intro still dismisses into the first `GameStage`. Faucet activate / pointer hit leaves the session in Stage with the faucet disabled.
 
-**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Hands/soap/towel/character must not consume pointer hits. Click the faucet widget; expect overlay progress to fill, step 1 completed, and Outro.
+**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Click the faucet widget; expect overlay progress at 25%, faucet no longer clickable but still open, and Hands draggable. Drag a hands hitbox over the water spot; expect the bar to climb ~2% every 100ms while overlapping, pause when leaving, then step 1 completed and Outro at 100%. Nodes `hitbox_1`, `hitbox_2` (hands) and `water-sqspot` (faucet) must exist in the `.riv` export.

@@ -33,7 +33,7 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void OpenFaucet_ActivateHandle_CompletesStage()
+        public void OpenFaucet_ActivateHandle_LocksFaucetAndStaysInStage()
         {
             var flowObject = new GameObject("OpenFaucet PlayMode Flow");
             var faucet = flowObject.AddComponent<ManosLimpias.UI.Rive.Faucet>();
@@ -48,15 +48,14 @@ namespace ManosLimpias.Tests
 
             faucet.Activate(FaucetSide.Left);
 
-            Assert.That(flow.State, Is.EqualTo(GameFlowState.Outro));
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Stage));
             Assert.That(faucet.IsEnabled, Is.False);
-            Assert.That(faucet.IsOpen, Is.False);
 
             Object.DestroyImmediate(flowObject);
         }
 
         [Test]
-        public void OpenFaucet_PointerHit_CompletesStage()
+        public void OpenFaucet_PointerHit_LocksFaucetAndStaysInStage()
         {
             var flowObject = new GameObject("OpenFaucet PointerHit Flow");
             var faucet = flowObject.AddComponent<ManosLimpias.UI.Rive.Faucet>();
@@ -70,7 +69,7 @@ namespace ManosLimpias.Tests
 
             faucet.NotifyPointerHit();
 
-            Assert.That(flow.State, Is.EqualTo(GameFlowState.Outro));
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Stage));
             Assert.That(faucet.IsEnabled, Is.False);
 
             Object.DestroyImmediate(flowObject);

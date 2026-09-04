@@ -65,6 +65,32 @@ namespace ManosLimpias.UI.Rive
             return Rect.MinMaxRect(x0, y0, x1, y1);
         }
 
+        /// <summary>
+        /// Maps a Rive AABB into a view that uses Fit.Fill (artboard stretched to the view).
+        /// </summary>
+        public static Rect MapAabbToViewFill(
+            float minX,
+            float minY,
+            float maxX,
+            float maxY,
+            Vector2 artboardSize,
+            Rect view)
+        {
+            if (artboardSize.x <= 0f || artboardSize.y <= 0f || view.width <= 0f || view.height <= 0f)
+                return new Rect(view.x, view.y, 0f, 0f);
+
+            float riveMinX = Mathf.Min(minX, maxX);
+            float riveMaxX = Mathf.Max(minX, maxX);
+            float riveMinY = Mathf.Min(minY, maxY);
+            float riveMaxY = Mathf.Max(minY, maxY);
+
+            float x0 = view.xMin + riveMinX / artboardSize.x * view.width;
+            float x1 = view.xMin + riveMaxX / artboardSize.x * view.width;
+            float y0 = view.yMin + (artboardSize.y - riveMaxY) / artboardSize.y * view.height;
+            float y1 = view.yMin + (artboardSize.y - riveMinY) / artboardSize.y * view.height;
+            return Rect.MinMaxRect(x0, y0, x1, y1);
+        }
+
         public static Vector4 ToNormalizedAnchors(Rect mapped, Rect view)
         {
             if (view.width <= 0f || view.height <= 0f)
