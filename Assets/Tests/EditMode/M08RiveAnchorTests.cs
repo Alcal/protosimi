@@ -17,6 +17,15 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void ProgressBar_BlendMix_MapsNormalizedToZeroOneHundred()
+        {
+            Assert.That(ProgressBar.ToBlend(0f), Is.EqualTo(0f));
+            Assert.That(ProgressBar.ToBlend(0.25f), Is.EqualTo(25f));
+            Assert.That(ProgressBar.ToBlend(1f), Is.EqualTo(100f));
+            Assert.That(ProgressBar.ToBlend(2f), Is.EqualTo(100f));
+        }
+
+        [Test]
         public void AC02_AnchorSlots_HaveWidgets()
         {
             Assert.That(BackgroundAnchors.All, Does.Contain(BackgroundAnchors.Faucet));

@@ -137,27 +137,36 @@ namespace ManosLimpias.UI
                 return false;
 
             var sm = widget.StateMachine;
-            var number = RiveStateMachineInputs.FindNumber(
-                sm,
-                ProgressBar.ProgressNum,
-                ProgressBar.ProgressNumFallback);
-            if (number != null)
-            {
-                number.Value = progress;
-                return true;
-            }
+            bool wrote = false;
 
             var instance = sm.ViewModelInstance;
-            if (instance == null)
-                return false;
+            var property = instance != null ? instance.GetNumberProperty(ProgressBar.ProgressNum) : null;
+            if (property != null)
+            {
+                property.Value = ProgressBar.ToBlend(progress);
+                wrote = true;
+            }
 
-            var property = RiveStateMachineInputs.GetViewModelProperty<ViewModelInstanceNumberProperty>(instance, ProgressBar.ProgressNum)
-                           ?? RiveStateMachineInputs.GetViewModelProperty<ViewModelInstanceNumberProperty>(instance, ProgressBar.ProgressNumFallback);
-            if (property == null)
-                return false;
+            var progressNum = RiveStateMachineInputs.GetNumber(sm, ProgressBar.ProgressNum);
+            if (progressNum != null)
+            {
+                progressNum.Value = ProgressBar.ToBlend(progress);
+                wrote = true;
+            }
+            else if (!wrote)
+            {
+                var fallback = RiveStateMachineInputs.GetNumber(sm, ProgressBar.ProgressNumFallback);
+                if (fallback != null)
+                {
+                    fallback.Value = progress;
+                    wrote = true;
+                }
+            }
 
-            property.Value = progress;
-            return true;
+            if (wrote)
+                sm.Advance(0f);
+
+            return wrote;
         }
 
         void PushStepIcon()
