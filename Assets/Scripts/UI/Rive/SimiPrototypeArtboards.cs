@@ -40,6 +40,11 @@ namespace ManosLimpias.UI.Rive
         public static readonly Vector2 StepIconSize = new(250f, 250f);
         public static readonly Vector2 CharacterSize = new(300f, 300f);
         public static readonly Vector2 HandsSize = new(1920f, 1080f);
+        /// <summary>
+        /// Extra artboard-space below <see cref="HandsSize"/> so nested hands
+        /// (442×754 at y=808) are not clipped.
+        /// </summary>
+        public static readonly Vector2 HandsOverflow = new(0f, 482f);
         public static readonly Vector2 SoapSize = new(400f, 400f);
         public static readonly Vector2 TowelSize = new(300f, 340f);
         public static readonly Vector2 BubbleSize = new(300f, 300f);

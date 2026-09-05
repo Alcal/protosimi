@@ -9,9 +9,9 @@ namespace ManosLimpias.UI.Rive
     /// Positions sibling Rive widgets from named nodes on the background artboard.
     /// Empty Rive groups have no drawable AABB, so placement uses Node x/y plus the
     /// component artboard size, shifted by that artboard's origin (0–1), then mapped
-    /// through Fit.Contain + Center with a Y-flip. Slots with overflow (faucet water)
-    /// grow downward from a top-left origin and expand the live artboard viewport so
-    /// Rive does not clip the extra draw.
+    /// through Fit.Contain + Center with a Y-flip. Slots with overflow (faucet water,
+    /// nested hands) grow downward from a top-left origin and expand the live artboard
+    /// viewport so Rive does not clip the extra draw.
     /// </summary>
     public sealed class RiveAnchorMount : MonoBehaviour
     {
@@ -32,8 +32,13 @@ namespace ManosLimpias.UI.Rive
         {
             backgroundWidget = background;
             slots = mountSlots ?? Array.Empty<Slot>();
+            Relayout();
+        }
+
+        public bool Relayout()
+        {
             _applied = false;
-            TryApply();
+            return TryApply();
         }
 
         void OnEnable()

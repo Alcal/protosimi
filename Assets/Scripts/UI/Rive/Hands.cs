@@ -8,7 +8,8 @@ namespace ManosLimpias.UI.Rive
 {
     /// <summary>
     /// Binds the dedicated hands artboard widget. OpenFaucetStage enables drag
-    /// after the faucet is locked open, and fills from hands/water hitbox overlap.
+    /// after the faucet is locked open, then fills only after a grab while a
+    /// hands hitbox overlaps the faucet water spot.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public sealed class Hands : MonoBehaviour, IHandsControl, IWaterContactControl

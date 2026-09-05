@@ -81,7 +81,7 @@ namespace ManosLimpias.Tests
             var overflow = BackgroundAnchors.OverflowFor(BackgroundAnchors.Faucet);
             Assert.That(overflow.y, Is.EqualTo(SimiPrototypeArtboards.FaucetOverflow.y).Within(0.01f));
             Assert.That(overflow.y, Is.GreaterThan(0f));
-            Assert.That(BackgroundAnchors.OverflowFor(BackgroundAnchors.Hands), Is.EqualTo(Vector2.zero));
+            Assert.That(BackgroundAnchors.OverflowFor(BackgroundAnchors.Soap), Is.EqualTo(Vector2.zero));
 
             Assert.That(BackgroundAnchors.TryGetArtboardAabb(
                 BackgroundAnchors.Faucet, SimiPrototypeArtboards.FaucetSize, out var faucetDesign), Is.True);
@@ -100,6 +100,37 @@ namespace ManosLimpias.Tests
                 SimiPrototypeArtboards.BackgroundSize, view);
             var visualMapped = ArtboardSpace.MapAabbToView(
                 faucetVisual.xMin, faucetVisual.yMin, faucetVisual.xMax, faucetVisual.yMax,
+                SimiPrototypeArtboards.BackgroundSize, view);
+            Assert.That(visualMapped.yMax, Is.EqualTo(designMapped.yMax).Within(0.01f));
+            Assert.That(visualMapped.yMin, Is.LessThan(designMapped.yMin - 1f));
+            Assert.That(visualMapped.height, Is.EqualTo(designMapped.height + overflow.y).Within(0.01f));
+        }
+
+        [Test]
+        public void HandsOverflow_ExtendsAabbDownwardWithoutMovingOrigin()
+        {
+            var overflow = BackgroundAnchors.OverflowFor(BackgroundAnchors.Hands);
+            Assert.That(overflow.y, Is.EqualTo(SimiPrototypeArtboards.HandsOverflow.y).Within(0.01f));
+            Assert.That(overflow.y, Is.GreaterThan(0f));
+            Assert.That(overflow.x, Is.EqualTo(0f).Within(0.01f));
+
+            Assert.That(BackgroundAnchors.TryGetArtboardAabb(
+                BackgroundAnchors.Hands, SimiPrototypeArtboards.HandsSize, out var handsDesign), Is.True);
+            Assert.That(BackgroundAnchors.TryGetArtboardAabb(
+                BackgroundAnchors.Hands,
+                SimiPrototypeArtboards.HandsSize + SimiPrototypeArtboards.HandsOverflow,
+                out var handsVisual), Is.True);
+            Assert.That(handsVisual.xMin, Is.EqualTo(handsDesign.xMin).Within(0.01f));
+            Assert.That(handsVisual.yMin, Is.EqualTo(handsDesign.yMin).Within(0.01f));
+            Assert.That(handsVisual.width, Is.EqualTo(handsDesign.width).Within(0.01f));
+            Assert.That(handsVisual.height, Is.EqualTo(handsDesign.height + overflow.y).Within(0.01f));
+
+            var view = new Rect(0f, 0f, 1920f, 1080f);
+            var designMapped = ArtboardSpace.MapAabbToView(
+                handsDesign.xMin, handsDesign.yMin, handsDesign.xMax, handsDesign.yMax,
+                SimiPrototypeArtboards.BackgroundSize, view);
+            var visualMapped = ArtboardSpace.MapAabbToView(
+                handsVisual.xMin, handsVisual.yMin, handsVisual.xMax, handsVisual.yMax,
                 SimiPrototypeArtboards.BackgroundSize, view);
             Assert.That(visualMapped.yMax, Is.EqualTo(designMapped.yMax).Within(0.01f));
             Assert.That(visualMapped.yMin, Is.LessThan(designMapped.yMin - 1f));
@@ -441,6 +472,37 @@ namespace ManosLimpias.Tests
             {
                 Assert.That(actual[i].x, Is.EqualTo(expected[i].x).Within(0.05f), $"corner {i} x");
                 Assert.That(actual[i].y, Is.EqualTo(expected[i].y).Within(0.05f), $"corner {i} y");
+            }
+        }
+
+        [Test]
+        public void RiveNodeHitbox_Overlaps_IgnoresGrazingEdges()
+        {
+            var aGo = new GameObject("M08 Hitbox A", typeof(RectTransform));
+            var bGo = new GameObject("M08 Hitbox B", typeof(RectTransform));
+            try
+            {
+                var aRt = aGo.GetComponent<RectTransform>();
+                var bRt = bGo.GetComponent<RectTransform>();
+                aRt.anchorMin = aRt.anchorMax = new Vector2(0.5f, 0.5f);
+                bRt.anchorMin = bRt.anchorMax = new Vector2(0.5f, 0.5f);
+                aRt.pivot = bRt.pivot = new Vector2(0.5f, 0.5f);
+                aRt.sizeDelta = bRt.sizeDelta = new Vector2(100f, 100f);
+                aRt.position = Vector3.zero;
+
+                var a = aGo.AddComponent<RiveNodeHitbox>();
+                var b = bGo.AddComponent<RiveNodeHitbox>();
+
+                bRt.position = new Vector3(0f, 99f, 0f);
+                Assert.That(RiveNodeHitbox.Overlaps(a, b), Is.False);
+
+                bRt.position = new Vector3(0f, 50f, 0f);
+                Assert.That(RiveNodeHitbox.Overlaps(a, b), Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(aGo);
+                Object.DestroyImmediate(bGo);
             }
         }
 

@@ -233,6 +233,24 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void OpenFaucet_DoesNotFill_UntilHandsDragStarted()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+            _services.Faucet.RaisePointerHit();
+
+            _services.Water.IsOverlapping = true;
+            stage.Tick(OpenFaucetStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
+
+            _services.Hands.RaiseDragStarted();
+            stage.Tick(OpenFaucetStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress + OpenFaucetStage.FillStep).Within(0.0001f));
+        }
+
+        [Test]
         public void OpenFaucet_FillsWhileOverlapping_ThenCompletes()
         {
             var stage = new OpenFaucetStage();
@@ -240,6 +258,7 @@ namespace ManosLimpias.Tests
             stage.Initialize(_services);
             stage.Enter();
             _services.Faucet.RaisePointerHit();
+            _services.Hands.RaiseDragStarted();
 
             _services.Water.IsOverlapping = true;
             stage.Tick(OpenFaucetStage.FillInterval);

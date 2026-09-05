@@ -14,6 +14,7 @@ namespace ManosLimpias.UI.Rive
         public const string Hitbox1 = "hitbox_1";
         public const string Hitbox2 = "hitbox_2";
         public const string WaterSqspot = "water-sqspot";
+        public const float MinOverlap = 8f;
 
         RectTransform _rect;
         BoxCollider2D _collider;
@@ -127,7 +128,10 @@ namespace ManosLimpias.UI.Rive
                 return false;
             if (!a.TryGetWorldRect(out var ar) || !b.TryGetWorldRect(out var br))
                 return false;
-            return ar.Overlaps(br);
+
+            float x = Mathf.Min(ar.xMax, br.xMax) - Mathf.Max(ar.xMin, br.xMin);
+            float y = Mathf.Min(ar.yMax, br.yMax) - Mathf.Max(ar.yMin, br.yMin);
+            return x >= MinOverlap && y >= MinOverlap;
         }
 
         void OnDrawGizmos()

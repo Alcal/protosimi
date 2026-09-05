@@ -98,11 +98,16 @@ namespace ManosLimpias.UI.Rive
 
         /// <summary>
         /// Extra size beyond <see cref="SizeFor"/> so runtime drawables that
-        /// leave the artboard (faucet water) stay inside the mounted panel.
+        /// leave the artboard (faucet water, nested hands) stay inside the mounted panel.
         /// </summary>
         public static Vector2 OverflowFor(string anchorName)
         {
-            return anchorName == Faucet ? SimiPrototypeArtboards.FaucetOverflow : Vector2.zero;
+            switch (anchorName)
+            {
+                case Faucet: return SimiPrototypeArtboards.FaucetOverflow;
+                case Hands: return SimiPrototypeArtboards.HandsOverflow;
+                default: return Vector2.zero;
+            }
         }
 
         public static bool TryGetArtboardAabb(string anchorName, Vector2 size, out Rect aabb)

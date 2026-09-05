@@ -13,6 +13,7 @@ namespace ManosLimpias.Core
 
         bool _completed;
         bool _faucetLocked;
+        bool _handsGrabbed;
         float _fillTimer;
 
         public override string Id => "OpenFaucet";
@@ -21,6 +22,7 @@ namespace ManosLimpias.Core
         {
             _completed = false;
             _faucetLocked = false;
+            _handsGrabbed = false;
             _fillTimer = 0f;
             Services.ProgressBar?.SetProgress(0f);
             Services.StepIcon?.SetState(stepId, active: true, completed: false);
@@ -53,24 +55,23 @@ namespace ManosLimpias.Core
                 return;
             }
 
-            if (Services.WaterContact != null && Services.WaterContact.IsOverlapping)
-            {
-                _fillTimer += deltaTime;
-                var progress = Services.ProgressBar != null ? Services.ProgressBar.Progress : OpenProgress;
-                while (_fillTimer >= FillInterval && progress < 1f)
-                {
-                    _fillTimer -= FillInterval;
-                    progress = Mathf.Min(1f, progress + FillStep);
-                    Services.ProgressBar?.SetProgress(progress);
-                }
-
-                if (progress >= 1f)
-                    CompleteOnce();
-            }
-            else
+            if (!_handsGrabbed || Services.WaterContact == null || !Services.WaterContact.IsOverlapping)
             {
                 _fillTimer = 0f;
+                return;
             }
+
+            _fillTimer += deltaTime;
+            var progress = Services.ProgressBar != null ? Services.ProgressBar.Progress : OpenProgress;
+            while (_fillTimer >= FillInterval && progress < 1f)
+            {
+                _fillTimer -= FillInterval;
+                progress = Mathf.Min(1f, progress + FillStep);
+                Services.ProgressBar?.SetProgress(progress);
+            }
+
+            if (progress >= 1f)
+                CompleteOnce();
         }
 
         protected override void OnExit()
@@ -88,6 +89,7 @@ namespace ManosLimpias.Core
 
         void OnHandsDragStarted()
         {
+            _handsGrabbed = true;
             Services.Hands?.SetGlow(false);
         }
 
