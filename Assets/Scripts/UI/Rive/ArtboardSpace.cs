@@ -126,5 +126,19 @@ namespace ManosLimpias.UI.Rive
         {
             ApplyNormalizedAnchors(child, parent, mappedInParent, new Vector2(0.5f, 0.5f));
         }
+
+        public static void StretchFill(RectTransform child)
+        {
+            if (child == null)
+                return;
+
+            child.anchorMin = Vector2.zero;
+            child.anchorMax = Vector2.one;
+            child.offsetMin = Vector2.zero;
+            child.offsetMax = Vector2.zero;
+            child.pivot = new Vector2(0.5f, 0.5f);
+            child.localScale = Vector3.one;
+            child.localRotation = Quaternion.identity;
+        }
     }
 }

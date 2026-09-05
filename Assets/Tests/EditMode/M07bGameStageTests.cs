@@ -77,7 +77,9 @@ namespace ManosLimpias.Tests
             Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress));
             Assert.That(_services.CompletionCount, Is.EqualTo(0));
             Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
             Assert.That(_services.Hands.IsDraggable, Is.True);
+            Assert.That(_services.Hands.IsGlowing, Is.True);
             Assert.That(_services.Icon.Active, Is.True);
             Assert.That(_services.Icon.Completed, Is.False);
 
@@ -113,9 +115,34 @@ namespace ManosLimpias.Tests
             stage.Exit();
 
             Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
             Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
             _services.Faucet.Raise(FaucetSide.Left);
             Assert.That(_services.CompletionCount, Is.Zero);
+        }
+
+        [Test]
+        public void OpenFaucet_GlowsFaucetUntilTap_ThenHandsUntilGrab()
+        {
+            var stage = new OpenFaucetStage();
+            stage.Initialize(_services);
+            stage.Enter();
+
+            Assert.That(_services.Faucet.IsGlowing, Is.True);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
+
+            _services.Faucet.Raise(FaucetSide.Left);
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.True);
+            Assert.That(_services.Hands.IsDraggable, Is.True);
+
+            _services.Hands.RaiseDragStarted();
+            Assert.That(_services.Hands.IsGlowing, Is.False);
+
+            stage.Exit();
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
         }
 
         [Test]
@@ -347,6 +374,7 @@ namespace ManosLimpias.Tests
             public event Action<FaucetSide> Activated;
             public event Action<FaucetSide> PointerHit;
             public bool IsEnabled { get; private set; }
+            public bool IsGlowing { get; private set; }
             public bool LeftIsOpen { get; private set; }
             public bool RightIsOpen { get; private set; }
             public bool IsOpen => LeftIsOpen || RightIsOpen;
@@ -359,6 +387,11 @@ namespace ManosLimpias.Tests
                     LeftIsOpen = false;
                     RightIsOpen = false;
                 }
+            }
+
+            public void SetGlow(bool on)
+            {
+                IsGlowing = on;
             }
 
             public void LockOpen(FaucetSide side)
@@ -394,11 +427,23 @@ namespace ManosLimpias.Tests
 
         sealed class FakeHands : IHandsControl
         {
+            public event Action DragStarted;
             public bool IsDraggable { get; private set; }
+            public bool IsGlowing { get; private set; }
 
             public void SetDraggable(bool draggable)
             {
                 IsDraggable = draggable;
+            }
+
+            public void SetGlow(bool on)
+            {
+                IsGlowing = on;
+            }
+
+            public void RaiseDragStarted()
+            {
+                DragStarted?.Invoke();
             }
         }
 

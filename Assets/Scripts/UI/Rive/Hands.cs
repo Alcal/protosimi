@@ -1,3 +1,4 @@
+using System;
 using ManosLimpias.Core;
 using Rive.Components;
 using UnityEngine;
@@ -37,8 +38,12 @@ namespace ManosLimpias.UI.Rive
         public RiveNodeHitbox hitbox2;
         public RiveNodeHitbox waterHitbox;
 
+        public event Action DragStarted;
         public bool IsDraggable { get; private set; }
+        public bool IsGlowing { get; private set; }
         public bool FreezePlacement { get; private set; }
+
+        RectTransform DragRect => RiveGlow.LayoutRect(widget) ?? widget?.RectTransform;
         bool _dragging;
         Vector2 _lastLocal;
         bool _hasLastLocal;
@@ -63,6 +68,12 @@ namespace ManosLimpias.UI.Rive
             }
 
             ApplyHitTest();
+        }
+
+        public void SetGlow(bool on)
+        {
+            IsGlowing = on;
+            RiveGlow.SetForWidget(widget, on);
         }
 
         public void Bind(RiveWidget handsWidget, RiveWidget waterWidget = null)
@@ -112,7 +123,7 @@ namespace ManosLimpias.UI.Rive
         /// </summary>
         public void NotifyParentLocalPointer(Vector2 parentLocal, bool pressedThisFrame, bool held)
         {
-            var rectTransform = widget != null ? widget.RectTransform : null;
+            var rectTransform = DragRect;
             if (rectTransform == null)
                 return;
 
@@ -129,6 +140,7 @@ namespace ManosLimpias.UI.Rive
                 _dragging = true;
                 _lastLocal = parentLocal;
                 _hasLastLocal = true;
+                DragStarted?.Invoke();
                 return;
             }
 
@@ -199,7 +211,7 @@ namespace ManosLimpias.UI.Rive
         bool TryGetLocalInParent(Vector2 screen, out Vector2 local)
         {
             local = default;
-            var rectTransform = widget != null ? widget.RectTransform : null;
+            var rectTransform = DragRect;
             var parent = rectTransform != null ? rectTransform.parent as RectTransform : null;
             if (parent == null)
                 return false;

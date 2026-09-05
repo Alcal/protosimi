@@ -25,6 +25,7 @@ namespace ManosLimpias.Core
             Services.ProgressBar?.SetProgress(0f);
             Services.StepIcon?.SetState(stepId, active: true, completed: false);
             Services.Hands?.SetDraggable(false);
+            Services.Hands?.SetGlow(false);
 
             if (Services.Faucet == null)
             {
@@ -35,6 +36,7 @@ namespace ManosLimpias.Core
             Debug.Log("[OpenFaucetStage] Entered; subscribed to Faucet pointer hit.");
             SubscribeFaucet();
             Services.Faucet.SetEnabled(true);
+            Services.Faucet.SetGlow(true);
             if (Services.Faucet.IsOpen)
                 LockFaucetOpen(OpenSide());
         }
@@ -73,10 +75,20 @@ namespace ManosLimpias.Core
 
         protected override void OnExit()
         {
+            UnsubscribeHands();
             UnsubscribeFaucet();
+            Services.Hands?.SetGlow(false);
             Services.Hands?.SetDraggable(false);
             if (Services.Faucet != null)
+            {
+                Services.Faucet.SetGlow(false);
                 Services.Faucet.SetEnabled(false);
+            }
+        }
+
+        void OnHandsDragStarted()
+        {
+            Services.Hands?.SetGlow(false);
         }
 
         void OnFaucetActivated(FaucetSide side)
@@ -99,8 +111,11 @@ namespace ManosLimpias.Core
             _faucetLocked = true;
             UnsubscribeFaucet();
             Services.Faucet?.LockOpen(side);
+            Services.Faucet?.SetGlow(false);
             Services.ProgressBar?.SetProgress(OpenProgress);
             Services.Hands?.SetDraggable(true);
+            Services.Hands?.SetGlow(true);
+            SubscribeHands();
             Debug.Log($"[OpenFaucetStage] Faucet locked open ({side}) at 25%; hands draggable.");
         }
 
@@ -135,6 +150,21 @@ namespace ManosLimpias.Core
                 return;
             Services.Faucet.Activated -= OnFaucetActivated;
             Services.Faucet.PointerHit -= OnFaucetPointerHit;
+        }
+
+        void SubscribeHands()
+        {
+            if (Services.Hands == null)
+                return;
+            Services.Hands.DragStarted -= OnHandsDragStarted;
+            Services.Hands.DragStarted += OnHandsDragStarted;
+        }
+
+        void UnsubscribeHands()
+        {
+            if (Services.Hands == null)
+                return;
+            Services.Hands.DragStarted -= OnHandsDragStarted;
         }
 
         public override GameStage CreateRuntime()

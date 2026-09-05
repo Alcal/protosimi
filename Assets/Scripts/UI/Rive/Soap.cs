@@ -4,6 +4,7 @@ namespace ManosLimpias.UI.Rive
     {
         public const string Artboard = SimiPrototypeArtboards.Soap;
         public const string StateMachine = "soap_StateMachine";
+        public const string WidgetName = "SoapRive";
 
         public const string IsDragged = "isDragged";
 

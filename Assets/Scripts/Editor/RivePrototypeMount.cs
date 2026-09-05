@@ -51,46 +51,33 @@ namespace ManosLimpias.Editor
                 return;
             }
 
-            var panelTf = canvas.transform.Find("Rive Panel");
-            GameObject panelObj = panelTf != null ? panelTf.gameObject : null;
-            if (panelObj == null)
-            {
-                panelObj = new GameObject("Rive Panel", typeof(RectTransform), typeof(RivePanel), typeof(RiveCanvasRenderer));
-                panelObj.transform.SetParent(canvas.transform, false);
-                Stretch(panelObj.GetComponent<RectTransform>());
-            }
-            else
-            {
-                if (panelObj.GetComponent<RivePanel>() == null)
-                    panelObj.AddComponent<RivePanel>();
-                if (panelObj.GetComponent<RiveCanvasRenderer>() == null)
-                    panelObj.AddComponent<RiveCanvasRenderer>();
-                Stretch(panelObj.GetComponent<RectTransform>());
-            }
+            var canvasTf = canvas.transform;
+            var glowTemplate = AssetDatabase.LoadAssetAtPath<Material>(RiveGlow.TemplateAssetPath);
 
-            panelObj.transform.SetAsLastSibling();
-
-            var renderer = panelObj.GetComponent<RiveCanvasRenderer>();
-            var soRenderer = new SerializedObject(renderer);
-            var initialPanel = soRenderer.FindProperty("m_initialRivePanel");
-            if (initialPanel != null)
-                initialPanel.objectReferenceValue = panelObj.GetComponent<RivePanel>();
-            soRenderer.ApplyModifiedPropertiesWithoutUndo();
+            var panelObj = FindOrCreatePanel(canvasTf, "Rive Panel", stretch: true);
+            var hudPanel = FindOrCreatePanel(canvasTf, RiveGlow.HudPanelName, stretch: true);
+            var introPanel = FindOrCreatePanel(canvasTf, RiveGlow.PanelNameFor(Intro.WidgetName), stretch: true);
 
             RenameIfExists(panelObj.transform, "MainRive", Background.WidgetName);
             RenameIfExists(panelObj.transform, "StepIconRive", StepIcon.WidgetNames[0]);
 
-            var backgroundWidget = FindOrCreateWidget(panelObj.transform, Background.WidgetName);
-            var faucetWidget = FindOrCreateWidget(panelObj.transform, Faucet.WidgetName);
-            var handsWidget = FindOrCreateWidget(panelObj.transform, "HandsRive");
-            var soapWidget = FindOrCreateWidget(panelObj.transform, "SoapRive");
-            var towelWidget = FindOrCreateWidget(panelObj.transform, "TowelRive");
-            var characterWidget = FindOrCreateWidget(panelObj.transform, "CharacterRive");
+            var backgroundWidget = FindOrRelocateWidget(canvasTf, panelObj.transform, Background.WidgetName);
+            var handsWidget = FindOrRelocateWidget(canvasTf, IsolatedPanel(canvasTf, Hands.WidgetName), Hands.WidgetName);
+            var soapWidget = FindOrRelocateWidget(canvasTf, IsolatedPanel(canvasTf, Soap.WidgetName), Soap.WidgetName);
+            var towelWidget = FindOrRelocateWidget(canvasTf, IsolatedPanel(canvasTf, Towel.WidgetName), Towel.WidgetName);
+            var faucetWidget = FindOrRelocateWidget(canvasTf, IsolatedPanel(canvasTf, Faucet.WidgetName), Faucet.WidgetName);
+            var characterWidget = FindOrRelocateWidget(canvasTf, IsolatedPanel(canvasTf, Character.WidgetName), Character.WidgetName);
             var stepWidgets = new RiveWidget[StepIcon.WidgetNames.Length];
             for (int i = 0; i < stepWidgets.Length; i++)
-                stepWidgets[i] = FindOrCreateWidget(panelObj.transform, StepIcon.WidgetNames[i]);
-            var progressWidget = FindOrCreateWidget(panelObj.transform, ProgressBar.WidgetName);
-            var introWidget = FindOrCreateWidget(panelObj.transform, "IntroRive");
+                stepWidgets[i] = FindOrRelocateWidget(canvasTf, hudPanel.transform, StepIcon.WidgetNames[i]);
+            var progressWidget = FindOrRelocateWidget(canvasTf, hudPanel.transform, ProgressBar.WidgetName);
+            var introWidget = FindOrRelocateWidget(canvasTf, introPanel.transform, Intro.WidgetName);
+
+            ConfigureGlow(handsWidget.transform.parent.gameObject, handsWidget, glowTemplate);
+            ConfigureGlow(soapWidget.transform.parent.gameObject, soapWidget, glowTemplate);
+            ConfigureGlow(towelWidget.transform.parent.gameObject, towelWidget, glowTemplate);
+            ConfigureGlow(faucetWidget.transform.parent.gameObject, faucetWidget, glowTemplate);
+            ConfigureGlow(characterWidget.transform.parent.gameObject, characterWidget, glowTemplate);
 
             var oldFaucetOnBackground = backgroundWidget.GetComponent<Faucet>();
             if (oldFaucetOnBackground != null)
@@ -104,7 +91,7 @@ namespace ManosLimpias.Editor
                 HitTestBehavior.None,
                 Fit.Contain,
                 RiveWidget.DataBindingMode.Manual);
-            Stretch(backgroundWidget.GetComponent<RectTransform>());
+            ArtboardSpace.StretchFill(backgroundWidget.GetComponent<RectTransform>());
 
             ConfigureSlot(faucetWidget, asset, Faucet.Artboard, Faucet.StateMachine, HitTestBehavior.None);
             ConfigureSlot(handsWidget, asset, Hands.Artboard, Hands.StateMachine, HitTestBehavior.None);
@@ -131,20 +118,18 @@ namespace ManosLimpias.Editor
                 HitTestBehavior.Opaque,
                 Fit.Contain,
                 RiveWidget.DataBindingMode.AutoBindDefault);
-            Stretch(introWidget.GetComponent<RectTransform>());
+            ArtboardSpace.StretchFill(introWidget.GetComponent<RectTransform>());
+            introPanel.SetActive(true);
             introWidget.gameObject.SetActive(true);
 
-            int sibling = 0;
-            backgroundWidget.transform.SetSiblingIndex(sibling++);
-            handsWidget.transform.SetSiblingIndex(sibling++);
-            soapWidget.transform.SetSiblingIndex(sibling++);
-            towelWidget.transform.SetSiblingIndex(sibling++);
-            faucetWidget.transform.SetSiblingIndex(sibling++);
-            characterWidget.transform.SetSiblingIndex(sibling++);
-            for (int i = 0; i < stepWidgets.Length; i++)
-                stepWidgets[i].transform.SetSiblingIndex(sibling++);
-            progressWidget.transform.SetSiblingIndex(sibling++);
-            introWidget.transform.SetSiblingIndex(sibling++);
+            panelObj.transform.SetAsLastSibling();
+            handsWidget.transform.parent.SetAsLastSibling();
+            soapWidget.transform.parent.SetAsLastSibling();
+            towelWidget.transform.parent.SetAsLastSibling();
+            faucetWidget.transform.parent.SetAsLastSibling();
+            characterWidget.transform.parent.SetAsLastSibling();
+            hudPanel.transform.SetAsLastSibling();
+            introPanel.transform.SetAsLastSibling();
 
             var mount = panelObj.GetComponent<RiveAnchorMount>();
             if (mount == null)
@@ -182,6 +167,7 @@ namespace ManosLimpias.Editor
                 hands = handsWidget.gameObject.AddComponent<Hands>();
             hands.Bind(handsWidget, faucetWidget);
             hands.SetDraggable(false);
+            Canvas.ForceUpdateCanvases();
             mount.TryApply();
             AssignHitboxes(hands, handsWidget, faucetWidget);
 
@@ -228,9 +214,8 @@ namespace ManosLimpias.Editor
                 return;
             }
 
-            var panel = handsGo.transform.parent != null
-                ? handsGo.transform.parent.GetComponent<RiveAnchorMount>()
-                : null;
+            var rootPanel = GameObject.Find("Rive Panel");
+            var panel = rootPanel != null ? rootPanel.GetComponent<RiveAnchorMount>() : null;
             panel?.TryApply();
 
             var handsWidget = handsGo.GetComponent<RiveWidget>();
@@ -319,15 +304,73 @@ namespace ManosLimpias.Editor
                 RiveWidget.DataBindingMode.Manual);
         }
 
-        static RiveWidget FindOrCreateWidget(Transform panel, string name)
+        static Transform IsolatedPanel(Transform canvas, string widgetName)
         {
-            var existing = panel.Find(name);
+            return FindOrCreatePanel(canvas, RiveGlow.PanelNameFor(widgetName), stretch: false).transform;
+        }
+
+        static GameObject FindOrCreatePanel(Transform canvas, string panelName, bool stretch)
+        {
+            var existing = FindDeep(canvas, panelName);
+            GameObject go;
+            if (existing != null)
+            {
+                go = existing.gameObject;
+                if (go.GetComponent<RectTransform>() == null)
+                    go.AddComponent<RectTransform>();
+                if (go.GetComponent<RivePanel>() == null)
+                    go.AddComponent<RivePanel>();
+                if (go.GetComponent<RiveCanvasRenderer>() == null)
+                    go.AddComponent<RiveCanvasRenderer>();
+                if (go.transform.parent != canvas)
+                    go.transform.SetParent(canvas, false);
+            }
+            else
+            {
+                go = new GameObject(panelName, typeof(RectTransform), typeof(RivePanel), typeof(RiveCanvasRenderer));
+                go.transform.SetParent(canvas, false);
+            }
+
+            WireCanvasRenderer(go);
+            if (stretch)
+                ArtboardSpace.StretchFill(go.GetComponent<RectTransform>());
+            return go;
+        }
+
+        static void WireCanvasRenderer(GameObject panelGo)
+        {
+            var renderer = panelGo.GetComponent<RiveCanvasRenderer>();
+            var so = new SerializedObject(renderer);
+            var initialPanel = so.FindProperty("m_initialRivePanel");
+            if (initialPanel != null)
+                initialPanel.objectReferenceValue = panelGo.GetComponent<RivePanel>();
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void ConfigureGlow(GameObject panelGo, RiveWidget widget, Material template)
+        {
+            if (panelGo == null || widget == null)
+                return;
+            var glow = panelGo.GetComponent<RiveGlow>();
+            if (glow == null)
+                glow = panelGo.AddComponent<RiveGlow>();
+            var so = new SerializedObject(glow);
+            so.FindProperty("widget").objectReferenceValue = widget;
+            so.FindProperty("template").objectReferenceValue = template;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static RiveWidget FindOrRelocateWidget(Transform canvas, Transform panel, string name)
+        {
+            var existing = FindDeep(canvas, name);
             GameObject go;
             if (existing != null)
             {
                 go = existing.gameObject;
                 if (go.GetComponent<RiveWidget>() == null)
                     go.AddComponent<RiveWidget>();
+                if (existing.parent != panel)
+                    existing.SetParent(panel, false);
             }
             else
             {
@@ -335,7 +378,23 @@ namespace ManosLimpias.Editor
                 go.transform.SetParent(panel, false);
             }
 
+            ArtboardSpace.StretchFill(go.GetComponent<RectTransform>());
             return go.GetComponent<RiveWidget>();
+        }
+
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root == null)
+                return null;
+            if (root.name == name)
+                return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var found = FindDeep(root.GetChild(i), name);
+                if (found != null)
+                    return found;
+            }
+            return null;
         }
 
         static void RenameIfExists(Transform panel, string oldName, string newName)
@@ -378,16 +437,6 @@ namespace ManosLimpias.Editor
                 property.GetArrayElementAtIndex(i).objectReferenceValue = widgets[i];
         }
 
-        static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.localScale = Vector3.one;
-            rect.localRotation = Quaternion.identity;
-        }
     }
 }
 #endif

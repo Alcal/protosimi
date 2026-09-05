@@ -298,12 +298,21 @@ namespace ManosLimpias.Core
 
         sealed class NullHands : IHandsControl, IWaterContactControl
         {
+#pragma warning disable CS0067
+            public event Action DragStarted;
+#pragma warning restore CS0067
             public bool IsDraggable { get; private set; }
+            public bool IsGlowing { get; private set; }
             public bool IsOverlapping => false;
 
             public void SetDraggable(bool draggable)
             {
                 IsDraggable = draggable;
+            }
+
+            public void SetGlow(bool on)
+            {
+                IsGlowing = on;
             }
         }
     }

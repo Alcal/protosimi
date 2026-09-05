@@ -4,6 +4,7 @@ namespace ManosLimpias.UI.Rive
     {
         public const string Artboard = SimiPrototypeArtboards.Towel;
         public const string StateMachine = "towel_StateMachine";
+        public const string WidgetName = "TowelRive";
 
         public const string IsDragged = "isDragged";
 

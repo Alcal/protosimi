@@ -4,6 +4,7 @@ namespace ManosLimpias.UI.Rive
     {
         public const string Artboard = SimiPrototypeArtboards.Character;
         public const string StateMachine = "drSimi_StateMachine";
+        public const string WidgetName = "CharacterRive";
 
         public const string IsTalking = "isTalking";
         public const string PopUp = "popUp";

@@ -39,6 +39,7 @@ namespace ManosLimpias.UI.Rive
         public event Action<FaucetSide> Activated;
         public event Action<FaucetSide> PointerHit;
         public bool IsEnabled { get; private set; }
+        public bool IsGlowing { get; private set; }
         public bool LeftIsOpen { get; private set; }
         public bool RightIsOpen { get; private set; }
         public bool IsOpen => LeftIsOpen || RightIsOpen;
@@ -73,6 +74,12 @@ namespace ManosLimpias.UI.Rive
                 _pendingOpenSide = side;
                 _pendingOpenVisual = true;
             }
+        }
+
+        public void SetGlow(bool on)
+        {
+            IsGlowing = on;
+            RiveGlow.SetForWidget(widget, on);
         }
 
         void OnEnable()

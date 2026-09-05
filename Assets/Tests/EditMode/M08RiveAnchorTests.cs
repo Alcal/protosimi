@@ -276,6 +276,60 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void Hands_IsolatedPanel_DragMovesPanelNotWidget()
+        {
+            var canvasGo = new GameObject("M08 Hands Isolated Canvas", typeof(RectTransform));
+            var canvas = canvasGo.GetComponent<RectTransform>();
+            canvas.anchorMin = canvas.anchorMax = new Vector2(0.5f, 0.5f);
+            canvas.pivot = new Vector2(0.5f, 0.5f);
+            canvas.sizeDelta = new Vector2(1920f, 1080f);
+
+            var panelGo = new GameObject(RiveGlow.PanelNameFor(Hands.WidgetName), typeof(RectTransform), typeof(RivePanel));
+            var panel = panelGo.GetComponent<RectTransform>();
+            panel.SetParent(canvas, false);
+            var mapped = new Rect(-400f, -200f, 800f, 500f);
+            ArtboardSpace.ApplyNormalizedAnchors(
+                panel,
+                canvas,
+                mapped,
+                ArtboardSpace.UnityPivotFromRiveOrigin(SimiPrototypeArtboards.HandsOrigin));
+
+            var childGo = new GameObject(Hands.WidgetName, typeof(RectTransform));
+            var child = childGo.GetComponent<RectTransform>();
+            child.SetParent(panel, false);
+            ArtboardSpace.StretchFill(child);
+            var widget = childGo.AddComponent<RiveWidget>();
+            var hands = childGo.AddComponent<Hands>();
+            hands.Bind(widget);
+            hands.SetDraggable(true);
+
+            try
+            {
+                Assert.That(RiveGlow.LayoutRect(widget), Is.EqualTo(panel));
+                var beforePanel = WorldCorners(panel);
+                var grab = ParentLocalPoint(panel, new Vector2(0.25f, 0.75f));
+                hands.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                var delta = new Vector2(40f, -15f);
+                hands.NotifyParentLocalPointer(grab + delta, pressedThisFrame: false, held: true);
+
+                var movedPanel = WorldCorners(panel);
+                for (int i = 0; i < 4; i++)
+                {
+                    Assert.That(movedPanel[i].x, Is.EqualTo(beforePanel[i].x + delta.x).Within(0.05f));
+                    Assert.That(movedPanel[i].y, Is.EqualTo(beforePanel[i].y + delta.y).Within(0.05f));
+                }
+
+                Assert.That(child.anchorMin, Is.EqualTo(Vector2.zero));
+                Assert.That(child.anchorMax, Is.EqualTo(Vector2.one));
+                AssertCornersEqual(movedPanel, WorldCorners(child));
+            }
+            finally
+            {
+                Object.DestroyImmediate(canvasGo);
+            }
+        }
+
+        [Test]
         public void Hands_Drag_MovesByDelta_NotToPointer()
         {
             var mapped = new Rect(-400f, -200f, 800f, 500f);

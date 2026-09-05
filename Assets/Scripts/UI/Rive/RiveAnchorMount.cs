@@ -99,7 +99,7 @@ namespace ManosLimpias.UI.Rive
                 if (slot == null || slot.widget == null || string.IsNullOrEmpty(slot.anchorName))
                     continue;
 
-                var child = slot.widget.GetComponent<RectTransform>();
+                var child = RiveGlow.LayoutRect(slot.widget);
                 if (child == null)
                     continue;
 
@@ -136,6 +136,8 @@ namespace ManosLimpias.UI.Rive
                     host,
                     mappedInHost,
                     ArtboardSpace.UnityPivotFromRiveOrigin(SimiPrototypeArtboards.OriginForAnchor(slot.anchorName)));
+                if (child != slot.widget.RectTransform)
+                    ArtboardSpace.StretchFill(slot.widget.RectTransform);
                 placed++;
             }
 

@@ -8,6 +8,7 @@ namespace ManosLimpias.UI.Rive
     {
         public const string Artboard = SimiPrototypeArtboards.Intro;
         public const string StateMachine = "State Machine 1";
+        public const string WidgetName = "IntroRive";
 
         public const string AnimDefault = "default";
         public const string AnimFadeout = "fadeout";

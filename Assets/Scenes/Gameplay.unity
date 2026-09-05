@@ -250,13 +250,13 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 2062004188}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.02578125, y: 0.07731482}
-  m_AnchorMax: {x: 0.18203124, y: 0.35509259}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &44757937
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 2062004193}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: character
   m_stateMachineName: drSimi_StateMachine
@@ -401,17 +401,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1869384726}
-  - {fileID: 940385651}
-  - {fileID: 1844413676}
-  - {fileID: 711110846}
-  - {fileID: 1402236050}
-  - {fileID: 44757936}
-  - {fileID: 2070010002}
-  - {fileID: 1288794978}
-  - {fileID: 1652781464}
-  - {fileID: 212580492}
-  - {fileID: 2102819945}
-  - {fileID: 917361702}
   m_Father: {fileID: 751682363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -827,7 +816,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.85078126, y: 0.050925925}
   m_AnchorMax: {x: 0.9809896, y: 0.2824074}
@@ -846,7 +835,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 760785381}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: stepIcon
   m_stateMachineName: steps_StateMachine
@@ -974,6 +963,149 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 380571083}
   m_CullTransparentMesh: 1
+--- !u!1 &426682691
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 426682692}
+  - component: {fileID: 426682698}
+  - component: {fileID: 426682697}
+  - component: {fileID: 426682696}
+  - component: {fileID: 426682695}
+  - component: {fileID: 426682694}
+  - component: {fileID: 426682693}
+  m_Layer: 0
+  m_Name: HandsRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &426682692
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 940385651}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: -0.081018515}
+  m_AnchorMax: {x: 1, y: 0.9189815}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &426682693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d154b021f2cdd95aa450476c3b32ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveGlow
+  widget: {fileID: 940385652}
+  template: {fileID: 2100000, guid: 3da91e99a37939d3ba69889f81582744, type: 2}
+  color: {r: 1, g: 0.85, b: 0.2, a: 1}
+  width: 8
+  intensity: 1
+  threshold: 0.05
+--- !u!114 &426682694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 426682695}
+  m_initialRivePanel: {fileID: 426682697}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &426682695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &426682696
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_CullTransparentMesh: 1
+--- !u!114 &426682697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &426682698
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426682691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 426682697}
 --- !u!1 &433927236
 GameObject:
   m_ObjectHideFlags: 0
@@ -1372,10 +1504,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 919598250}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.66510415, y: 0.49537036}
-  m_AnchorMax: {x: 0.82135415, y: 0.8101852}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1391,7 +1523,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 919598255}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: towel
   m_stateMachineName: towel_StateMachine
@@ -1507,6 +1639,13 @@ RectTransform:
   - {fileID: 30079146}
   - {fileID: 1421451347}
   - {fileID: 107557879}
+  - {fileID: 426682692}
+  - {fileID: 1588612154}
+  - {fileID: 919598250}
+  - {fileID: 997547282}
+  - {fileID: 2062004188}
+  - {fileID: 760785377}
+  - {fileID: 1186554320}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1514,6 +1653,134 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &760785376
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 760785377}
+  - component: {fileID: 760785382}
+  - component: {fileID: 760785381}
+  - component: {fileID: 760785380}
+  - component: {fileID: 760785379}
+  - component: {fileID: 760785378}
+  m_Layer: 0
+  m_Name: Rive Hud Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &760785377
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2070010002}
+  - {fileID: 1288794978}
+  - {fileID: 1652781464}
+  - {fileID: 212580492}
+  - {fileID: 2102819945}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &760785378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 760785379}
+  m_initialRivePanel: {fileID: 760785381}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &760785379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &760785380
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_CullTransparentMesh: 1
+--- !u!114 &760785381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &760785382
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760785376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 760785381}
 --- !u!1 &829522156
 GameObject:
   m_ObjectHideFlags: 0
@@ -1619,7 +1886,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 1186554320}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -1638,7 +1905,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 1186554324}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: intro
   m_stateMachineName: State Machine 1
@@ -1656,6 +1923,149 @@ MonoBehaviour:
   m_dataBindingMode: 0
   m_viewModelInstanceName: 
   m_customAudioProvider: {fileID: 0}
+--- !u!1 &919598249
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 919598250}
+  - component: {fileID: 919598256}
+  - component: {fileID: 919598255}
+  - component: {fileID: 919598254}
+  - component: {fileID: 919598253}
+  - component: {fileID: 919598252}
+  - component: {fileID: 919598251}
+  m_Layer: 0
+  m_Name: TowelRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &919598250
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 711110846}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.66510415, y: 0.49537036}
+  m_AnchorMax: {x: 0.82135415, y: 0.8101852}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &919598251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d154b021f2cdd95aa450476c3b32ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveGlow
+  widget: {fileID: 711110847}
+  template: {fileID: 2100000, guid: 3da91e99a37939d3ba69889f81582744, type: 2}
+  color: {r: 1, g: 0.85, b: 0.2, a: 1}
+  width: 8
+  intensity: 1
+  threshold: 0.05
+--- !u!114 &919598252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 919598253}
+  m_initialRivePanel: {fileID: 919598255}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &919598253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &919598254
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_CullTransparentMesh: 1
+--- !u!114 &919598255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &919598256
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919598249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 919598255}
 --- !u!1 &936479390
 GameObject:
   m_ObjectHideFlags: 0
@@ -1667,6 +2077,7 @@ GameObject:
   - component: {fileID: 936479391}
   - component: {fileID: 936479393}
   - component: {fileID: 936479394}
+  - component: {fileID: 936479395}
   m_Layer: 0
   m_Name: hitbox_1
   m_TagString: Untagged
@@ -1690,7 +2101,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.32, y: 0.22}
   m_AnchorMax: {x: 0.46, y: 0.48}
-  m_AnchoredPosition: {x: -101.099976, y: 26.599976}
+  m_AnchoredPosition: {x: -101.1001, y: 26.599854}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &936479393
@@ -1741,6 +2152,52 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 175
+--- !u!61 &936479395
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936479390}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 268.80005, y: 280.79996}
+  m_EdgeRadius: 0
 --- !u!1 &940385650
 GameObject:
   m_ObjectHideFlags: 0
@@ -1773,13 +2230,13 @@ RectTransform:
   m_Children:
   - {fileID: 936479391}
   - {fileID: 1934587704}
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 426682692}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: -0.081018515}
-  m_AnchorMax: {x: 1, y: 0.9189815}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &940385652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1792,7 +2249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 426682697}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: hands
   m_stateMachineName: main
@@ -1908,7 +2365,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 179.52002, y: 187.20001}
+  m_Size: {x: 179.52002, y: 187.2}
   m_EdgeRadius: 0
 --- !u!114 &962942536
 MonoBehaviour:
@@ -1922,6 +2379,149 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
+--- !u!1 &997547281
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 997547282}
+  - component: {fileID: 997547288}
+  - component: {fileID: 997547287}
+  - component: {fileID: 997547286}
+  - component: {fileID: 997547285}
+  - component: {fileID: 997547284}
+  - component: {fileID: 997547283}
+  m_Layer: 0
+  m_Name: FaucetRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &997547282
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1402236050}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.29010418, y: 0.46944445}
+  m_AnchorMax: {x: 0.6796875, y: 0.9027778}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &997547283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d154b021f2cdd95aa450476c3b32ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveGlow
+  widget: {fileID: 1402236052}
+  template: {fileID: 2100000, guid: 3da91e99a37939d3ba69889f81582744, type: 2}
+  color: {r: 1, g: 0.85, b: 0.2, a: 1}
+  width: 8
+  intensity: 1
+  threshold: 0.05
+--- !u!114 &997547284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 997547285}
+  m_initialRivePanel: {fileID: 997547287}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &997547285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &997547286
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_CullTransparentMesh: 1
+--- !u!114 &997547287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &997547288
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997547281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 997547287}
 --- !u!1 &1125114505
 GameObject:
   m_ObjectHideFlags: 0
@@ -2124,6 +2724,130 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1186554319
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1186554320}
+  - component: {fileID: 1186554325}
+  - component: {fileID: 1186554324}
+  - component: {fileID: 1186554323}
+  - component: {fileID: 1186554322}
+  - component: {fileID: 1186554321}
+  m_Layer: 0
+  m_Name: IntroRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1186554320
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 917361702}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1186554321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 1186554322}
+  m_initialRivePanel: {fileID: 1186554324}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &1186554322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &1186554323
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_CullTransparentMesh: 1
+--- !u!114 &1186554324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &1186554325
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186554319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 1186554324}
 --- !u!1 &1224805885
 GameObject:
   m_ObjectHideFlags: 0
@@ -2513,7 +3237,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.85078126, y: 0.49537036}
   m_AnchorMax: {x: 0.9809896, y: 0.7268519}
@@ -2532,7 +3256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 760785381}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: stepIcon
   m_stateMachineName: steps_StateMachine
@@ -2709,13 +3433,13 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 962942534}
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 997547282}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.29010418, y: 0.46944445}
-  m_AnchorMax: {x: 0.6796875, y: 0.9027778}
-  m_AnchoredPosition: {x: -38.859, y: 6}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1402236051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2742,7 +3466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 997547287}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: faucet
   m_stateMachineName: faucet_StateMachine
@@ -3345,6 +4069,149 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1560233918}
   m_CullTransparentMesh: 1
+--- !u!1 &1588612153
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1588612154}
+  - component: {fileID: 1588612160}
+  - component: {fileID: 1588612159}
+  - component: {fileID: 1588612158}
+  - component: {fileID: 1588612157}
+  - component: {fileID: 1588612156}
+  - component: {fileID: 1588612155}
+  m_Layer: 0
+  m_Name: SoapRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1588612154
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1844413676}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.05703125, y: 0.475}
+  m_AnchorMax: {x: 0.2653646, y: 0.84537035}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1588612155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d154b021f2cdd95aa450476c3b32ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveGlow
+  widget: {fileID: 1844413677}
+  template: {fileID: 2100000, guid: 3da91e99a37939d3ba69889f81582744, type: 2}
+  color: {r: 1, g: 0.85, b: 0.2, a: 1}
+  width: 8
+  intensity: 1
+  threshold: 0.05
+--- !u!114 &1588612156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 1588612157}
+  m_initialRivePanel: {fileID: 1588612159}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &1588612157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &1588612158
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_CullTransparentMesh: 1
+--- !u!114 &1588612159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &1588612160
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588612153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 1588612159}
 --- !u!1 &1652781463
 GameObject:
   m_ObjectHideFlags: 0
@@ -3374,7 +4241,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.85078126, y: 0.27314815}
   m_AnchorMax: {x: 0.9809896, y: 0.5046296}
@@ -3393,7 +4260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 760785381}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: stepIcon
   m_stateMachineName: steps_StateMachine
@@ -3750,10 +4617,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 1588612154}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.05703125, y: 0.475}
-  m_AnchorMax: {x: 0.2653646, y: 0.84537035}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3769,7 +4636,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 1588612159}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: 'soap '
   m_stateMachineName: soap_StateMachine
@@ -3932,6 +4799,7 @@ GameObject:
   - component: {fileID: 1934587704}
   - component: {fileID: 1934587706}
   - component: {fileID: 1934587707}
+  - component: {fileID: 1934587708}
   m_Layer: 0
   m_Name: hitbox_2
   m_TagString: Untagged
@@ -4006,6 +4874,52 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 175
+--- !u!61 &1934587708
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934587703}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 268.79993, y: 280.79996}
+  m_EdgeRadius: 0
 --- !u!1 &2036002445
 GameObject:
   m_ObjectHideFlags: 0
@@ -4112,6 +5026,149 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2036002445}
   m_CullTransparentMesh: 1
+--- !u!1 &2062004187
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2062004188}
+  - component: {fileID: 2062004194}
+  - component: {fileID: 2062004193}
+  - component: {fileID: 2062004192}
+  - component: {fileID: 2062004191}
+  - component: {fileID: 2062004190}
+  - component: {fileID: 2062004189}
+  m_Layer: 0
+  m_Name: CharacterRivePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2062004188
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 44757936}
+  m_Father: {fileID: 751682363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.02578125, y: 0.07731482}
+  m_AnchorMax: {x: 0.18203124, y: 0.35509259}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &2062004189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d154b021f2cdd95aa450476c3b32ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveGlow
+  widget: {fileID: 44757937}
+  template: {fileID: 2100000, guid: 3da91e99a37939d3ba69889f81582744, type: 2}
+  color: {r: 1, g: 0.85, b: 0.2, a: 1}
+  width: 8
+  intensity: 1
+  threshold: 0.05
+--- !u!114 &2062004190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4a2d64b69b4c0bbdc2f768c08b799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveCanvasRenderer
+  m_pointerInputMode: 0
+  m_displayImage: {fileID: 2062004191}
+  m_initialRivePanel: {fileID: 2062004193}
+  m_customMaterial: {fileID: 0}
+  m_matchCanvasResolution: 0
+  m_inputProvider: {fileID: 0}
+--- !u!114 &2062004191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9727164d01ae84a31a68e1e12835571c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.CanvasRendererRawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &2062004192
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_CullTransparentMesh: 1
+--- !u!114 &2062004193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f980c8c19ea824215be0686df1b90726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RivePanel
+  m_customRenderTargetStrategy: {fileID: 0}
+  m_updateMode: 0
+  m_disableEditorPreview: 0
+  m_drawOptimization: 1
+  m_multiTouchSupport: 1
+--- !u!114 &2062004194
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062004187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f654c708803f043dfb10eb862af9e868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.PanelContextPreviewManager
+  m_rivePanel: {fileID: 2062004193}
 --- !u!1 &2070010001
 GameObject:
   m_ObjectHideFlags: 0
@@ -4141,7 +5198,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.85078126, y: 0.7175926}
   m_AnchorMax: {x: 0.9809896, y: 0.9490741}
@@ -4160,7 +5217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 760785381}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: stepIcon
   m_stateMachineName: steps_StateMachine
@@ -4207,7 +5264,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 107557879}
+  m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.18340689, y: 0.810574}
   m_AnchorMax: {x: 0.7459069, y: 0.9957592}
@@ -4226,7 +5283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b5bc34e03734ee49f044caba90a384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rive.Runtime.Components::Rive.Components.RiveWidget
-  m_rivePanel: {fileID: 107557880}
+  m_rivePanel: {fileID: 760785381}
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: progressBar
   m_stateMachineName: progress_StateMachine

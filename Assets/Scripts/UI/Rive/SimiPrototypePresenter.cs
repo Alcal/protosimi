@@ -201,7 +201,13 @@ namespace ManosLimpias.UI.Rive
             _dismissed = true;
             UnbindIntro();
             if (introWidget != null)
-                introWidget.gameObject.SetActive(false);
+            {
+                var host = RiveGlow.LayoutRect(introWidget);
+                if (host != null)
+                    host.gameObject.SetActive(false);
+                else
+                    introWidget.gameObject.SetActive(false);
+            }
             flow?.DismissIntro();
         }
     }

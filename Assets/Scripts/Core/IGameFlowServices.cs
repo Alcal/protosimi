@@ -8,7 +8,13 @@ namespace ManosLimpias.Core
         Right
     }
 
-    public interface IFaucetControl
+    public interface IGlowHint
+    {
+        bool IsGlowing { get; }
+        void SetGlow(bool on);
+    }
+
+    public interface IFaucetControl : IGlowHint
     {
         event Action<FaucetSide> Activated;
         event Action<FaucetSide> PointerHit;
@@ -34,8 +40,9 @@ namespace ManosLimpias.Core
         void SetState(int stepId, bool active, bool completed);
     }
 
-    public interface IHandsControl
+    public interface IHandsControl : IGlowHint
     {
+        event Action DragStarted;
         bool IsDraggable { get; }
         void SetDraggable(bool draggable);
     }
