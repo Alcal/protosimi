@@ -10,6 +10,7 @@ namespace ManosLimpias.UI.Rive
     public static class GameBubbles
     {
         public const string Artboard = SimiPrototypeArtboards.GameBubbles;
+        public const string StateMachine = "Auto Generated State Machine";
         public const string AnimBubblesPath = "bubbles path";
     }
 

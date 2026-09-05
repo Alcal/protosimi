@@ -4,7 +4,8 @@
     "references": [
         "Rive.Runtime",
         "Rive.Runtime.Components",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

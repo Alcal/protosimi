@@ -1,0 +1,53 @@
+using System;
+
+namespace ManosLimpias.UI.Rive
+{
+    /// <summary>
+    /// Pure helpers for on-hand foam wake thresholds and grow. EditMode tests
+    /// cover this without a live .riv.
+    /// </summary>
+    public static class SoapFoamMath
+    {
+        public const float SpeedMin = 0.95f;
+        public const float SpeedMax = 1.05f;
+
+        public static float[] CreateThresholds(int count, Random rng)
+        {
+            var thresholds = new float[Math.Max(0, count)];
+            for (int i = 0; i < thresholds.Length; i++)
+                thresholds[i] = NextOpenUnit(rng);
+            return thresholds;
+        }
+
+        /// <summary>Uniform sample in (0, 1].</summary>
+        public static float NextOpenUnit(Random rng)
+        {
+            if (rng == null)
+                return 1f;
+            return 1f - (float)rng.NextDouble();
+        }
+
+        public static bool ShouldWake(float threshold, float coverage)
+        {
+            return coverage >= threshold;
+        }
+
+        public static float GrowScale(float elapsed, float duration)
+        {
+            if (duration <= 0f)
+                return 1f;
+            if (elapsed <= 0f)
+                return 0f;
+            if (elapsed >= duration)
+                return 1f;
+            return elapsed / duration;
+        }
+
+        public static float RandomSpeed(Random rng)
+        {
+            if (rng == null)
+                return 1f;
+            return SpeedMin + (float)rng.NextDouble() * (SpeedMax - SpeedMin);
+        }
+    }
+}

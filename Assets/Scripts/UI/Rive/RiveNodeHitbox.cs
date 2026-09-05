@@ -122,11 +122,45 @@ namespace ManosLimpias.UI.Rive
             return ArtboardSpace.HasArea(world, 0.01f);
         }
 
+        /// <summary>
+        /// AABB in the root canvas's local units (authored pixel size). Falls
+        /// back to world axes when the hitbox is not under a Canvas.
+        /// </summary>
+        public bool TryGetOverlapRect(out Rect overlapRect)
+        {
+            overlapRect = default;
+            var child = RectTransform;
+            if (child == null)
+                return false;
+
+            var corners = new Vector3[4];
+            child.GetWorldCorners(corners);
+
+            var canvas = child.GetComponentInParent<Canvas>();
+            var space = canvas != null ? canvas.transform : null;
+            if (space == null)
+                return TryGetWorldRect(out overlapRect);
+
+            var p = space.InverseTransformPoint(corners[0]);
+            float minX = p.x, maxX = p.x, minY = p.y, maxY = p.y;
+            for (int i = 1; i < 4; i++)
+            {
+                p = space.InverseTransformPoint(corners[i]);
+                minX = Mathf.Min(minX, p.x);
+                maxX = Mathf.Max(maxX, p.x);
+                minY = Mathf.Min(minY, p.y);
+                maxY = Mathf.Max(maxY, p.y);
+            }
+
+            overlapRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
+            return ArtboardSpace.HasArea(overlapRect, 0.01f);
+        }
+
         public static bool Overlaps(RiveNodeHitbox a, RiveNodeHitbox b)
         {
             if (a == null || b == null)
                 return false;
-            if (!a.TryGetWorldRect(out var ar) || !b.TryGetWorldRect(out var br))
+            if (!a.TryGetOverlapRect(out var ar) || !b.TryGetOverlapRect(out var br))
                 return false;
 
             float x = Mathf.Min(ar.xMax, br.xMax) - Mathf.Max(ar.xMin, br.xMin);

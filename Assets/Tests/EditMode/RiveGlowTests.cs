@@ -249,6 +249,26 @@ namespace ManosLimpias.Tests
             glow = panelGo.AddComponent<RiveGlow>();
         }
 
+        [Test]
+        public void NestedWidget_DoesNotBreakHandsIsolation()
+        {
+            CreateHintTarget("HandsFoam", out var root, out var widget, out _);
+            var panel = widget.GetComponentInParent<RivePanel>();
+            var nestedGo = new GameObject("GameBubbles_nested", typeof(RectTransform));
+            nestedGo.transform.SetParent(widget.transform, false);
+            nestedGo.AddComponent<RiveWidget>();
+
+            try
+            {
+                Assert.That(RiveGlow.IsIsolated(widget), Is.True);
+                Assert.That(RiveGlow.LayoutRect(widget), Is.EqualTo(panel.WidgetContainer));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
         static Vector2 ParentLocalOf(RectTransform child, Vector2 normalizedInChild)
         {
             var rect = child.rect;

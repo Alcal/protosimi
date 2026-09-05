@@ -29,6 +29,7 @@ namespace ManosLimpias.Core
         public Faucet faucet;
         public Hands hands;
         public Soap soap;
+        public SoapBubbles soapBubbles;
         public AudioPlaceholderPlayer audioPlayer;
         public WafController waf;
         public AssistHijack assist;
@@ -108,6 +109,7 @@ namespace ManosLimpias.Core
             cameraFocus?.EaseToStage(0);
             playfield?.SetActiveStage(-1);
             germs?.ResetGerms();
+            _services?.SoapFoam?.ResetFoam();
             _services?.StepIcon?.SetState(1, active: false, completed: false);
             _services?.ProgressBar?.SetProgress(0f);
         }
@@ -256,6 +258,7 @@ namespace ManosLimpias.Core
             readonly IStepIconControl _fallbackStepIcon;
             readonly NullHands _nullHands = new();
             readonly NullSoap _nullSoap = new();
+            readonly NullSoapFoam _nullFoam = new();
 
             public FlowServices(GameFlowController flow)
             {
@@ -268,6 +271,7 @@ namespace ManosLimpias.Core
             public IHandsControl Hands => _flow.hands != null ? _flow.hands : _nullHands;
             public IWaterContactControl WaterContact => _flow.hands != null ? _flow.hands : _nullHands;
             public ISoapControl Soap => _flow.soap != null ? _flow.soap : _nullSoap;
+            public ISoapFoamControl SoapFoam => _flow.soapBubbles != null ? _flow.soapBubbles : _nullFoam;
             public IProgressBarControl ProgressBar => _flow.riveHud ?? _fallbackProgress;
             public IStepIconControl StepIcon => _flow.riveHud ?? _fallbackStepIcon;
 
@@ -339,6 +343,13 @@ namespace ManosLimpias.Core
             }
 
             public void ReturnHome() { }
+        }
+
+        sealed class NullSoapFoam : ISoapFoamControl
+        {
+            public void SetCoverage(float progress01) { }
+            public void SetScrubbing(bool scrubbing) { }
+            public void ResetFoam() { }
         }
     }
 }

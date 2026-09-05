@@ -376,6 +376,72 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void ApplySoap_CoverageTracksFill_ScrubbingOnlyWhileOverlapping()
+        {
+            var stage = new ApplySoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+
+            _services.Soap.RaiseDragStarted();
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.Foam.IsScrubbing, Is.True);
+
+            _services.Soap.IsOverlapping = false;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(5f);
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(1f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ApplySoap_OnExit_KeepsCoverage_StopsScrubbing()
+        {
+            var stage = new ApplySoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+            _services.Soap.RaiseDragStarted();
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.Foam.IsScrubbing, Is.True);
+
+            stage.Exit();
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+        }
+
+        [Test]
+        public void Intro_ResetsFoamCoverage()
+        {
+            _flow.stageConfigurations = new List<GameStage> { new ApplySoapStage() };
+            _flow.StartSession();
+            Assert.That(_services.Foam.ResetCount, Is.GreaterThanOrEqualTo(1));
+
+            _services.Foam.SetCoverage(0.4f);
+            _services.Foam.SetScrubbing(true);
+            _flow.StartSession();
+            Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
+            Assert.That(_services.Foam.IsScrubbing, Is.False);
+        }
+
+        [Test]
         public void ApplySoap_FollowsOpenFaucet_InConfiguredOrder()
         {
             _flow.stageConfigurations = new List<GameStage>
@@ -523,6 +589,7 @@ namespace ManosLimpias.Tests
             public readonly FakeHands Hands = new();
             public readonly FakeWater Water = new();
             public readonly FakeSoap Soap = new();
+            public readonly FakeFoam Foam = new();
             public readonly FakeProgress Progress = new();
             public readonly FakeIcon Icon = new();
             public Action<GameStage> CompletionRequested;
@@ -532,6 +599,7 @@ namespace ManosLimpias.Tests
             IHandsControl IGameFlowServices.Hands => Hands;
             IWaterContactControl IGameFlowServices.WaterContact => Water;
             ISoapControl IGameFlowServices.Soap => Soap;
+            ISoapFoamControl IGameFlowServices.SoapFoam => Foam;
             IProgressBarControl IGameFlowServices.ProgressBar => Progress;
             IStepIconControl IGameFlowServices.StepIcon => Icon;
 
@@ -646,6 +714,30 @@ namespace ManosLimpias.Tests
             public void RaiseDragStarted()
             {
                 DragStarted?.Invoke();
+            }
+        }
+
+        sealed class FakeFoam : ISoapFoamControl
+        {
+            public float Coverage { get; private set; }
+            public bool IsScrubbing { get; private set; }
+            public int ResetCount { get; private set; }
+
+            public void SetCoverage(float progress01)
+            {
+                Coverage = Mathf.Clamp01(progress01);
+            }
+
+            public void SetScrubbing(bool scrubbing)
+            {
+                IsScrubbing = scrubbing;
+            }
+
+            public void ResetFoam()
+            {
+                Coverage = 0f;
+                IsScrubbing = false;
+                ResetCount++;
             }
         }
 

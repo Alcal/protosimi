@@ -36,6 +36,7 @@ namespace ManosLimpias.Core
             SubscribeSoap();
             Services.Soap.SetDraggable(true);
             Services.Soap.SetGlow(true);
+            Services.SoapFoam?.SetScrubbing(false);
         }
 
         protected override void OnTick(float deltaTime)
@@ -43,7 +44,10 @@ namespace ManosLimpias.Core
             if (_completed || !IsEntered)
                 return;
 
-            if (!_soapGrabbed || Services.Soap == null || !Services.Soap.IsOverlapping)
+            bool overlapping = _soapGrabbed && Services.Soap != null && Services.Soap.IsOverlapping;
+            Services.SoapFoam?.SetScrubbing(overlapping);
+
+            if (!overlapping)
             {
                 _fillTimer = 0f;
                 return;
@@ -56,6 +60,7 @@ namespace ManosLimpias.Core
                 _fillTimer -= FillInterval;
                 progress = Mathf.Min(1f, progress + FillStep);
                 Services.ProgressBar?.SetProgress(progress);
+                Services.SoapFoam?.SetCoverage(progress);
             }
 
             if (progress >= 1f)
@@ -65,6 +70,7 @@ namespace ManosLimpias.Core
         protected override void OnExit()
         {
             UnsubscribeSoap();
+            Services.SoapFoam?.SetScrubbing(false);
             Services.Soap?.SetGlow(false);
             Services.Soap?.SetDraggable(false);
             Services.Soap?.ReturnHome();
@@ -82,6 +88,8 @@ namespace ManosLimpias.Core
                 return;
             _completed = true;
             Services.ProgressBar?.SetProgress(1f);
+            Services.SoapFoam?.SetCoverage(1f);
+            Services.SoapFoam?.SetScrubbing(false);
             Services.StepIcon?.SetState(stepId, active: false, completed: true);
             Services.Soap?.SetGlow(false);
             Services.Soap?.SetDraggable(false);

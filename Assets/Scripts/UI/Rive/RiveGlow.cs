@@ -271,8 +271,25 @@ namespace ManosLimpias.UI.Rive
             if (panel == null || widget == null)
                 return false;
 
+            var container = panel.WidgetContainer;
+            if (container == null || widget.RectTransform == null || widget.RectTransform.parent != container)
+                return false;
+
+            RiveWidget found = null;
             var children = panel.GetComponentsInChildren<RiveWidget>(true);
-            return children.Length == 1 && children[0] == widget;
+            for (int i = 0; i < children.Length; i++)
+            {
+                var child = children[i];
+                if (child == null || child.RectTransform == null)
+                    continue;
+                if (child.RectTransform.parent != container)
+                    continue;
+                if (found != null && found != child)
+                    return false;
+                found = child;
+            }
+
+            return found == widget;
         }
 
         static void CopyWorldRect(RectTransform source, RectTransform dest, RectTransform host)

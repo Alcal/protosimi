@@ -1,7 +1,7 @@
 # Rive prototype discrepancies (simi_prototype.riv)
 
 **File:** `Assets/Art/Rive/simi_prototype.riv`  
-**Updated:** 2026-09-03 (background-anchor harness)  
+**Updated:** 2026-09-04 (soap foam + SoapRive ParticleSystem)  
 **Status:** Gameplay mounts `background` plus sibling widgets at `*-anchor` nodes. Leftover artboard `main` is not mounted.
 
 C# mirrors live under `Assets/Scripts/UI/Rive/`.
@@ -18,6 +18,8 @@ C# mirrors live under `Assets/Scripts/UI/Rive/`.
 | `FaucetRive` | `faucet` at `faucet-anchor` | `Translucent` only while `OpenFaucetStage` enables it; `None` after the 25% lock so it stays visually open |
 | `HandsRive` | `hands` at `hands-anchor` | `None` until the faucet is locked open, then `Translucent` and Unity-draggable; stays frozen after OpenFaucet exits |
 | `SoapRive` | `"soap "` at `soap-anchor` | Always `None` (Unity panel drag; Rive hits would fire `isDragged` and clip the bar off the artboard). Draggable during `ApplySoapStage`; snaps home on release. |
+| nested `GameBubbles_*` | `game_bubbles` under `hitbox_1` / `hitbox_2` | `None`. Dormant at scale 0; woken as soap coverage rises. Stay after ApplySoap. |
+| `SoapScrubParticles` | Unity `ParticleSystem` child of `SoapRive` | Sprite from embedded Rive image `bubble` (`Assets/Art/Rive/bubble.png`). Emits while soap is scrubbing; in-flight particles fade out on release. |
 | `TowelRive` / `CharacterRive` | matching artboards | `None` until later stages |
 | `StepIcon1Rive` … `StepIcon4Rive` | `stepIcon` at `stepN-anchor` | `None` |
 | `ProgressBarRive` | `progressBar` at `progressBar-anchor` | `None` |
@@ -58,7 +60,7 @@ Rive: independent L/R triggers (`faucet_L_On`, `faucet_L_Off`, `faucet_R_On`, `f
 
 Unity: `Faucet` polls those states in LateUpdate (plus bool/event fallbacks) and reports a `PointerHit` when a press lands in the faucet widget. Open Water locks the faucet at 25% from that pointer hit. Close Water remains future configuration and should not subscribe to `PointerHit`.
 
-Wet-hands fill uses authored Unity hitboxes: `hitbox_1` / `hitbox_2` children of `HandsRive`, and `water-sqspot` under `FaucetRive`. Soap fill uses `soap-hitbox` under `SoapRive` against those same hand boxes. They are RectTransforms + trigger `BoxCollider2D`s sized as a fraction of the parent widget (the playtime artboard box). They do **not** follow Rive node names. Adjust them in the Rect tool; cyan gizmos mark the boxes.
+Wet-hands fill uses authored Unity hitboxes: `hitbox_1` / `hitbox_2` children of `HandsRive`, and `water-sqspot` under `FaucetRive`. Soap fill uses `soap-hitbox` under `SoapRive` against those same hand boxes. On-hand foam is nested `game_bubbles` widgets inside those boxes (`SoapBubbles`). They are RectTransforms + trigger `BoxCollider2D`s sized as a fraction of the parent widget (the playtime artboard box). They do **not** follow Rive node names. Adjust them in the Rect tool; cyan gizmos mark the boxes.
 
 ---
 

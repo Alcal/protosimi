@@ -72,6 +72,10 @@ namespace ManosLimpias.Editor
                 stepWidgets[i] = FindOrRelocateWidget(canvasTf, hudPanel.transform, StepIcon.WidgetNames[i]);
             var progressWidget = FindOrRelocateWidget(canvasTf, hudPanel.transform, ProgressBar.WidgetName);
             var introWidget = FindOrRelocateWidget(canvasTf, introPanel.transform, Intro.WidgetName);
+            DestroyIfExists(canvasTf, SoapBubbles.OverlayName);
+            var bubbleSprite = RiveBubbleSpriteExtract.LoadOrExtract();
+            var bubbleMat = RiveBubbleSpriteExtract.EnsureMaterial(bubbleSprite);
+            EnsureCanvasCamera(canvas.GetComponent<Canvas>());
 
             ConfigureGlow(handsWidget.transform.parent.gameObject, handsWidget, glowTemplate);
             ConfigureGlow(soapWidget.transform.parent.gameObject, soapWidget, glowTemplate);
@@ -174,10 +178,15 @@ namespace ManosLimpias.Editor
             soap.Bind(soapWidget, hands);
             soap.SetDraggable(false);
 
+            var soapBubbles = handsWidget.GetComponent<SoapBubbles>();
+            if (soapBubbles == null)
+                soapBubbles = handsWidget.gameObject.AddComponent<SoapBubbles>();
+
             Canvas.ForceUpdateCanvases();
             mount.TryApply();
             AssignHitboxes(hands, handsWidget, faucetWidget);
             AssignSoapHitbox(soap, soapWidget, hands);
+            AssignSoapBubbles(soapBubbles, hands, soap, bubbleSprite, bubbleMat);
 
             var soPresenter = new SerializedObject(presenter);
             soPresenter.FindProperty("flow").objectReferenceValue = systems.GetComponent<GameFlowController>();
@@ -204,6 +213,7 @@ namespace ManosLimpias.Editor
             soFlow.FindProperty("faucet").objectReferenceValue = faucet;
             soFlow.FindProperty("hands").objectReferenceValue = hands;
             soFlow.FindProperty("soap").objectReferenceValue = soap;
+            soFlow.FindProperty("soapBubbles").objectReferenceValue = soapBubbles;
             soFlow.FindProperty("riveHud").objectReferenceValue = binder;
             EnsureStageConfigurations(soFlow);
             soFlow.ApplyModifiedPropertiesWithoutUndo();
@@ -245,6 +255,26 @@ namespace ManosLimpias.Editor
                     soap = soapGo.AddComponent<Soap>();
                 soap.Bind(soapWidget, hands);
                 AssignSoapHitbox(soap, soapWidget, hands);
+
+                var soapBubbles = handsGo.GetComponent<SoapBubbles>();
+                if (soapBubbles == null)
+                    soapBubbles = handsGo.AddComponent<SoapBubbles>();
+                var canvas = handsGo.GetComponentInParent<Canvas>();
+                if (canvas != null)
+                {
+                    DestroyIfExists(canvas.transform, SoapBubbles.OverlayName);
+                    EnsureCanvasCamera(canvas);
+                }
+                var bubbleSprite = RiveBubbleSpriteExtract.LoadOrExtract();
+                var bubbleMat = RiveBubbleSpriteExtract.EnsureMaterial(bubbleSprite);
+                AssignSoapBubbles(soapBubbles, hands, soap, bubbleSprite, bubbleMat);
+                var flow = GameObject.Find("Systems")?.GetComponent<GameFlowController>();
+                if (flow != null)
+                {
+                    var soFlow = new SerializedObject(flow);
+                    soFlow.FindProperty("soapBubbles").objectReferenceValue = soapBubbles;
+                    soFlow.ApplyModifiedPropertiesWithoutUndo();
+                }
             }
 
             EditorSceneManager.MarkSceneDirty(handsGo.scene);
@@ -275,6 +305,27 @@ namespace ManosLimpias.Editor
             soSoap.FindProperty("widget").objectReferenceValue = soapWidget;
             soSoap.FindProperty("hands").objectReferenceValue = hands;
             soSoap.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void AssignSoapBubbles(
+            SoapBubbles foam,
+            Hands hands,
+            Soap soap,
+            Sprite bubbleSprite,
+            Material particleMaterial)
+        {
+            if (foam == null)
+                return;
+            foam.bubbleSprite = bubbleSprite;
+            foam.particleMaterial = particleMaterial;
+            foam.Bind(hands, soap);
+            var soFoam = new SerializedObject(foam);
+            soFoam.FindProperty("hands").objectReferenceValue = hands;
+            soFoam.FindProperty("soap").objectReferenceValue = soap;
+            soFoam.FindProperty("bubbleSprite").objectReferenceValue = bubbleSprite;
+            soFoam.FindProperty("particleMaterial").objectReferenceValue = particleMaterial;
+            soFoam.FindProperty("scrubParticles").objectReferenceValue = foam.scrubParticles;
+            soFoam.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void EnsureStageConfigurations(SerializedObject soFlow)
@@ -370,6 +421,25 @@ namespace ManosLimpias.Editor
         static Transform IsolatedPanel(Transform canvas, string widgetName)
         {
             return FindOrCreatePanel(canvas, RiveGlow.PanelNameFor(widgetName), stretch: false).transform;
+        }
+
+        static void DestroyIfExists(Transform canvas, string name)
+        {
+            var existing = FindDeep(canvas, name);
+            if (existing != null)
+                UnityEngine.Object.DestroyImmediate(existing.gameObject);
+        }
+
+        static void EnsureCanvasCamera(Canvas canvas)
+        {
+            if (canvas == null)
+                return;
+            var cam = Camera.main;
+            if (cam == null)
+                return;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = cam;
+            canvas.planeDistance = 5f;
         }
 
         static GameObject FindOrCreatePanel(Transform canvas, string panelName, bool stretch)

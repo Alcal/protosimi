@@ -555,6 +555,42 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void RiveNodeHitbox_Overlaps_UsesCanvasLocalWhenCanvasIsScaled()
+        {
+            var canvasGo = new GameObject("M08 ScaledCanvas", typeof(RectTransform), typeof(Canvas));
+            var aGo = new GameObject("M08 Hitbox A", typeof(RectTransform));
+            var bGo = new GameObject("M08 Hitbox B", typeof(RectTransform));
+            try
+            {
+                canvasGo.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                aGo.transform.SetParent(canvasGo.transform, false);
+                bGo.transform.SetParent(canvasGo.transform, false);
+
+                var aRt = aGo.GetComponent<RectTransform>();
+                var bRt = bGo.GetComponent<RectTransform>();
+                aRt.anchorMin = aRt.anchorMax = new Vector2(0.5f, 0.5f);
+                bRt.anchorMin = bRt.anchorMax = new Vector2(0.5f, 0.5f);
+                aRt.pivot = bRt.pivot = new Vector2(0.5f, 0.5f);
+                aRt.sizeDelta = bRt.sizeDelta = new Vector2(100f, 100f);
+                aRt.anchoredPosition = Vector2.zero;
+                bRt.anchoredPosition = new Vector2(0f, 50f);
+
+                var a = aGo.AddComponent<RiveNodeHitbox>();
+                var b = bGo.AddComponent<RiveNodeHitbox>();
+                Canvas.ForceUpdateCanvases();
+
+                Assert.That(RiveNodeHitbox.Overlaps(a, b), Is.True);
+
+                bRt.anchoredPosition = new Vector2(0f, 99f);
+                Assert.That(RiveNodeHitbox.Overlaps(a, b), Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(canvasGo);
+            }
+        }
+
+        [Test]
         public void Soap_SetDraggable_TogglesHitTest()
         {
             var go = new GameObject("M08 Soap");

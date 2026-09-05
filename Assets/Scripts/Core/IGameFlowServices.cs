@@ -61,12 +61,20 @@ namespace ManosLimpias.Core
         void ReturnHome();
     }
 
+    public interface ISoapFoamControl
+    {
+        void SetCoverage(float progress01);
+        void SetScrubbing(bool scrubbing);
+        void ResetFoam();
+    }
+
     public interface IGameFlowServices
     {
         IFaucetControl Faucet { get; }
         IHandsControl Hands { get; }
         IWaterContactControl WaterContact { get; }
         ISoapControl Soap { get; }
+        ISoapFoamControl SoapFoam { get; }
         IProgressBarControl ProgressBar { get; }
         IStepIconControl StepIcon { get; }
         void RequestStageCompletion(GameStage stage);

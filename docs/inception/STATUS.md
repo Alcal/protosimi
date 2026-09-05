@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-04 — Step icons fire the `isCompleted` trigger (it is not a bool) and keep prior steps latched when the next stage starts. EditMode latch tests added.
-next_action: Play Gameplay, dismiss intro, complete Open Faucet; step 1 should stay on the complete animation while soap is active. Finish soap; step 2 should complete and stay completed through Outro.
+last_session: 2026-09-04 — Scrub bubbles are a ParticleSystem on SoapRive using extracted `bubble.png`; on-hand `game_bubbles` foam unchanged. Overlay Image pool removed. EditMode 61/61.
+next_action: Play Gameplay, open faucet, drag soap onto a hand. Foam should grow on the hands as the bar fills; soap-sprite particles should rise from the soap bar while scrubbing. Finish soap: foam stays, emission stops and leftover particles fade.
 
 ## Session log
 
@@ -34,3 +34,4 @@ next_action: Play Gameplay, dismiss intro, complete Open Faucet; step 1 should s
 | 2026-09-03 | implement | OpenFaucetStage completes from faucet artboard open state; progress 1 + step icon 1 completed |
 | 2026-09-03 | implement | OpenFaucetStage two-phase: 25% faucet lock then hands/water overlap fill |
 | 2026-09-04 | implement | Step icons fire `isCompleted` trigger once and latch prior steps |
+| 2026-09-04 | implement | Soap foam: `game_bubbles` on hands hitboxes + ParticleSystem on SoapRive (`bubble.png`) |
