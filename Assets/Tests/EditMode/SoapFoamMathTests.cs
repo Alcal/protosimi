@@ -47,5 +47,17 @@ namespace ManosLimpias.Tests
                 Assert.That(speed, Is.LessThanOrEqualTo(SoapFoamMath.SpeedMax));
             }
         }
+
+        [Test]
+        public void FoamArtboard_UsesClusterWhenItHasAStateMachine()
+        {
+            Assert.That(SoapFoamMath.FoamArtboard(true), Is.EqualTo(GameBubbles.Artboard));
+        }
+
+        [Test]
+        public void FoamArtboard_FallsBackToSingularWhenClusterHasNoStateMachine()
+        {
+            Assert.That(SoapFoamMath.FoamArtboard(false), Is.EqualTo(GameBubble.Artboard));
+        }
     }
 }

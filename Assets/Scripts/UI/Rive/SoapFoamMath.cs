@@ -49,5 +49,15 @@ namespace ManosLimpias.UI.Rive
                 return 1f;
             return SpeedMin + (float)rng.NextDouble() * (SpeedMax - SpeedMin);
         }
+
+        /// <summary>
+        /// <c>game_bubbles</c> in simi_prototype.riv has no state machine, and
+        /// RiveWidget.Load fails without one. Use the singular <c>game_bubble</c>
+        /// artboard until the cluster ships an SM.
+        /// </summary>
+        public static string FoamArtboard(bool gameBubblesHasStateMachine)
+        {
+            return gameBubblesHasStateMachine ? GameBubbles.Artboard : GameBubble.Artboard;
+        }
     }
 }

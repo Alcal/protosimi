@@ -138,7 +138,7 @@ namespace ManosLimpias.UI.Rive
                 return;
 
             int wanted = Mathf.Max(0, bubblesPerHitbox) * 2;
-            if (_poolReady && _slots.Length == wanted)
+            if (_poolReady && _slots.Length == wanted && !AnySlotLoadError())
                 return;
 
             ClearPool();
@@ -157,7 +157,7 @@ namespace ManosLimpias.UI.Rive
                 return;
             var file = SourceFile();
             var asset = SourceAsset();
-            string sm = ResolveStateMachine(file, GameBubbles.Artboard, GameBubbles.StateMachine);
+            ResolveFoam(file, out var artboard, out var sm, out var artSize);
             for (int n = 0; n < bubblesPerHitbox; n++)
             {
                 var go = new GameObject($"{SlotPrefix}{label}_{n}", typeof(RectTransform));
@@ -171,13 +171,14 @@ namespace ManosLimpias.UI.Rive
                 var widget = go.AddComponent<RiveWidget>();
                 widget.HitTestBehavior = HitTestBehavior.None;
                 widget.Fit = Fit.Contain;
-                LoadArtboard(widget, asset, file, GameBubbles.Artboard, sm);
+                LoadArtboard(widget, asset, file, artboard, sm);
 
                 _slots[index++] = new FoamSlot
                 {
                     transform = rt,
                     widget = widget,
-                    hitbox = hitbox
+                    hitbox = hitbox,
+                    artSize = artSize
                 };
             }
         }
@@ -244,7 +245,9 @@ namespace ManosLimpias.UI.Rive
                 return;
 
             var parentSize = parent.rect.size;
-            var art = SimiPrototypeArtboards.GameBubblesSize;
+            var art = slot.artSize.x > 0f && slot.artSize.y > 0f
+                ? slot.artSize
+                : SimiPrototypeArtboards.GameBubblesSize;
             float fit = Mathf.Max(0.05f, hitboxFit);
             float scale = 1f;
             if (art.x > 0f && art.y > 0f && parentSize.x > 0f && parentSize.y > 0f)
@@ -425,6 +428,47 @@ namespace ManosLimpias.UI.Rive
             return min + (float)_rng.NextDouble() * (max - min);
         }
 
+        bool AnySlotLoadError()
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                var widget = _slots[i]?.widget;
+                if (widget != null && widget.Status == WidgetStatus.Error)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static void ResolveFoam(File file, out string artboard, out string stateMachine, out Vector2 size)
+        {
+            bool hasSm = ArtboardHasStateMachine(file, GameBubbles.Artboard);
+            artboard = SoapFoamMath.FoamArtboard(hasSm);
+            size = artboard == GameBubble.Artboard
+                ? SimiPrototypeArtboards.GameBubbleSize
+                : SimiPrototypeArtboards.GameBubblesSize;
+            string preferred = artboard == GameBubble.Artboard
+                ? GameBubble.StateMachine
+                : GameBubbles.StateMachine;
+            stateMachine = ResolveStateMachine(file, artboard, preferred);
+        }
+
+        static bool ArtboardHasStateMachine(File file, string artboardName)
+        {
+            if (file == null || string.IsNullOrEmpty(artboardName))
+                return false;
+
+            for (uint i = 0; i < file.ArtboardCount; i++)
+            {
+                if (file.ArtboardName(i) != artboardName)
+                    continue;
+                var artboard = file.Artboard(i);
+                return artboard != null && artboard.StateMachineCount > 0;
+            }
+
+            return false;
+        }
+
         static string ResolveStateMachine(File file, string artboardName, string preferred)
         {
             if (file == null || string.IsNullOrEmpty(artboardName))
@@ -472,6 +516,7 @@ namespace ManosLimpias.UI.Rive
             public float growElapsed;
             public bool woken;
             public bool placed;
+            public Vector2 artSize;
         }
     }
 }
