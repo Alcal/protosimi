@@ -32,6 +32,11 @@ namespace ManosLimpias.UI.Rive
         public static readonly Vector2 IntroSize = new(1920f, 1080f);
         public static readonly Vector2 ButtonSize = new(500f, 400f);
         public static readonly Vector2 FaucetSize = new(748f, 468f);
+        /// <summary>
+        /// Extra artboard-space below <see cref="FaucetSize"/> so the water stream
+        /// (water1 is 128×276) is not clipped when the faucets turn on.
+        /// </summary>
+        public static readonly Vector2 FaucetOverflow = new(0f, 276f);
         public static readonly Vector2 StepIconSize = new(250f, 250f);
         public static readonly Vector2 CharacterSize = new(300f, 300f);
         public static readonly Vector2 HandsSize = new(1920f, 1080f);

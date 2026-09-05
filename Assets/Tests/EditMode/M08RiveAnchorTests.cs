@@ -76,6 +76,37 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void FaucetOverflow_ExtendsAabbDownwardWithoutMovingOrigin()
+        {
+            var overflow = BackgroundAnchors.OverflowFor(BackgroundAnchors.Faucet);
+            Assert.That(overflow.y, Is.EqualTo(SimiPrototypeArtboards.FaucetOverflow.y).Within(0.01f));
+            Assert.That(overflow.y, Is.GreaterThan(0f));
+            Assert.That(BackgroundAnchors.OverflowFor(BackgroundAnchors.Hands), Is.EqualTo(Vector2.zero));
+
+            Assert.That(BackgroundAnchors.TryGetArtboardAabb(
+                BackgroundAnchors.Faucet, SimiPrototypeArtboards.FaucetSize, out var faucetDesign), Is.True);
+            Assert.That(BackgroundAnchors.TryGetArtboardAabb(
+                BackgroundAnchors.Faucet,
+                SimiPrototypeArtboards.FaucetSize + SimiPrototypeArtboards.FaucetOverflow,
+                out var faucetVisual), Is.True);
+            Assert.That(faucetVisual.xMin, Is.EqualTo(faucetDesign.xMin).Within(0.01f));
+            Assert.That(faucetVisual.yMin, Is.EqualTo(faucetDesign.yMin).Within(0.01f));
+            Assert.That(faucetVisual.width, Is.EqualTo(faucetDesign.width).Within(0.01f));
+            Assert.That(faucetVisual.height, Is.EqualTo(faucetDesign.height + overflow.y).Within(0.01f));
+
+            var view = new Rect(0f, 0f, 1920f, 1080f);
+            var designMapped = ArtboardSpace.MapAabbToView(
+                faucetDesign.xMin, faucetDesign.yMin, faucetDesign.xMax, faucetDesign.yMax,
+                SimiPrototypeArtboards.BackgroundSize, view);
+            var visualMapped = ArtboardSpace.MapAabbToView(
+                faucetVisual.xMin, faucetVisual.yMin, faucetVisual.xMax, faucetVisual.yMax,
+                SimiPrototypeArtboards.BackgroundSize, view);
+            Assert.That(visualMapped.yMax, Is.EqualTo(designMapped.yMax).Within(0.01f));
+            Assert.That(visualMapped.yMin, Is.LessThan(designMapped.yMin - 1f));
+            Assert.That(visualMapped.height, Is.EqualTo(designMapped.height + overflow.y).Within(0.01f));
+        }
+
+        [Test]
         public void AC03_CatalogOrigins_MatchRivAndProduceNonZeroRects()
         {
             var bytes = System.IO.File.ReadAllBytes(

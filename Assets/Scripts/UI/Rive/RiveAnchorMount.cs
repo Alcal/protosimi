@@ -1,4 +1,5 @@
 using System;
+using Rive;
 using Rive.Components;
 using UnityEngine;
 
@@ -8,7 +9,9 @@ namespace ManosLimpias.UI.Rive
     /// Positions sibling Rive widgets from named nodes on the background artboard.
     /// Empty Rive groups have no drawable AABB, so placement uses Node x/y plus the
     /// component artboard size, shifted by that artboard's origin (0–1), then mapped
-    /// through Fit.Contain + Center with a Y-flip.
+    /// through Fit.Contain + Center with a Y-flip. Slots with overflow (faucet water)
+    /// grow downward from a top-left origin and expand the live artboard viewport so
+    /// Rive does not clip the extra draw.
     /// </summary>
     public sealed class RiveAnchorMount : MonoBehaviour
     {
@@ -51,6 +54,7 @@ namespace ManosLimpias.UI.Rive
 
         void LateUpdate()
         {
+            ExpandLoadedArtboards();
             TryApply(forceIfSizeChanged: true);
         }
 
@@ -150,12 +154,53 @@ namespace ManosLimpias.UI.Rive
 
         static bool TryResolveAabb(Slot slot, out Rect aabb)
         {
-            var size = BackgroundAnchors.SizeFor(slot.anchorName);
+            var size = VisualSizeFor(slot);
+            var artboard = slot.widget != null ? slot.widget.Artboard : null;
+            ExpandArtboardViewport(artboard, size);
+            return BackgroundAnchors.TryGetArtboardAabb(slot.anchorName, size, out aabb);
+        }
+
+        static Vector2 VisualSizeFor(Slot slot)
+        {
+            var design = BackgroundAnchors.SizeFor(slot.anchorName);
+            var overflow = BackgroundAnchors.OverflowFor(slot.anchorName);
+            var size = design;
             var artboard = slot.widget != null ? slot.widget.Artboard : null;
             if (artboard != null && artboard.Width > 1f && artboard.Height > 1f)
-                size = new Vector2(artboard.Width, artboard.Height);
+            {
+                float width = artboard.Width;
+                float height = artboard.Height;
+                if (overflow.x > 0f && width >= design.x + overflow.x - 1f)
+                    width -= overflow.x;
+                if (overflow.y > 0f && height >= design.y + overflow.y - 1f)
+                    height -= overflow.y;
+                size = new Vector2(width, height);
+            }
 
-            return BackgroundAnchors.TryGetArtboardAabb(slot.anchorName, size, out aabb);
+            return new Vector2(size.x + overflow.x, size.y + overflow.y);
+        }
+
+        static void ExpandArtboardViewport(Artboard artboard, Vector2 visualSize)
+        {
+            if (artboard == null || visualSize.x <= 1f || visualSize.y <= 1f)
+                return;
+            if (artboard.Width < visualSize.x)
+                artboard.Width = visualSize.x;
+            if (artboard.Height < visualSize.y)
+                artboard.Height = visualSize.y;
+        }
+
+        void ExpandLoadedArtboards()
+        {
+            if (slots == null)
+                return;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                var slot = slots[i];
+                if (slot == null || slot.widget == null)
+                    continue;
+                ExpandArtboardViewport(slot.widget.Artboard, VisualSizeFor(slot));
+            }
         }
 
         static Rect MapRectToHost(Rect mappedInBackground, Rect backgroundView, Rect hostView)

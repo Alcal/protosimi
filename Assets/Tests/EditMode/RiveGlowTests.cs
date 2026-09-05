@@ -136,6 +136,22 @@ namespace ManosLimpias.Tests
                 Assert.That(RiveGlow.LayoutRect(faucet), Is.EqualTo(panelRt));
                 Assert.That(panelRt.rect.width, Is.GreaterThan(1f));
                 Assert.That(panelRt.rect.height, Is.GreaterThan(1f));
+
+                var view = canvas.rect;
+                BackgroundAnchors.TryGetArtboardAabb(
+                    BackgroundAnchors.Faucet, SimiPrototypeArtboards.FaucetSize, out var designAabb);
+                BackgroundAnchors.TryGetArtboardAabb(
+                    BackgroundAnchors.Faucet,
+                    SimiPrototypeArtboards.FaucetSize + SimiPrototypeArtboards.FaucetOverflow,
+                    out var visualAabb);
+                var designMapped = ArtboardSpace.MapAabbToView(
+                    designAabb.xMin, designAabb.yMin, designAabb.xMax, designAabb.yMax,
+                    SimiPrototypeArtboards.BackgroundSize, view);
+                var visualMapped = ArtboardSpace.MapAabbToView(
+                    visualAabb.xMin, visualAabb.yMin, visualAabb.xMax, visualAabb.yMax,
+                    SimiPrototypeArtboards.BackgroundSize, view);
+                Assert.That(panelRt.rect.height, Is.EqualTo(visualMapped.height).Within(0.5f));
+                Assert.That(panelRt.rect.height, Is.GreaterThan(designMapped.height + 1f));
                 Assert.That(faucetRt.anchorMin, Is.EqualTo(Vector2.zero));
                 Assert.That(faucetRt.anchorMax, Is.EqualTo(Vector2.one));
             }
