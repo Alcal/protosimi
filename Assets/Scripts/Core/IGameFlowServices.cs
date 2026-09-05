@@ -52,11 +52,21 @@ namespace ManosLimpias.Core
         bool IsOverlapping { get; }
     }
 
+    public interface ISoapControl : IGlowHint
+    {
+        event Action DragStarted;
+        bool IsDraggable { get; }
+        bool IsOverlapping { get; }
+        void SetDraggable(bool draggable);
+        void ReturnHome();
+    }
+
     public interface IGameFlowServices
     {
         IFaucetControl Faucet { get; }
         IHandsControl Hands { get; }
         IWaterContactControl WaterContact { get; }
+        ISoapControl Soap { get; }
         IProgressBarControl ProgressBar { get; }
         IStepIconControl StepIcon { get; }
         void RequestStageCompletion(GameStage stage);

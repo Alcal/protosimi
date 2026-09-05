@@ -167,9 +167,17 @@ namespace ManosLimpias.Editor
                 hands = handsWidget.gameObject.AddComponent<Hands>();
             hands.Bind(handsWidget, faucetWidget);
             hands.SetDraggable(false);
+
+            var soap = soapWidget.GetComponent<Soap>();
+            if (soap == null)
+                soap = soapWidget.gameObject.AddComponent<Soap>();
+            soap.Bind(soapWidget, hands);
+            soap.SetDraggable(false);
+
             Canvas.ForceUpdateCanvases();
             mount.TryApply();
             AssignHitboxes(hands, handsWidget, faucetWidget);
+            AssignSoapHitbox(soap, soapWidget, hands);
 
             var soPresenter = new SerializedObject(presenter);
             soPresenter.FindProperty("flow").objectReferenceValue = systems.GetComponent<GameFlowController>();
@@ -195,7 +203,9 @@ namespace ManosLimpias.Editor
             var soFlow = new SerializedObject(flow);
             soFlow.FindProperty("faucet").objectReferenceValue = faucet;
             soFlow.FindProperty("hands").objectReferenceValue = hands;
+            soFlow.FindProperty("soap").objectReferenceValue = soap;
             soFlow.FindProperty("riveHud").objectReferenceValue = binder;
+            EnsureStageConfigurations(soFlow);
             soFlow.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
@@ -226,6 +236,17 @@ namespace ManosLimpias.Editor
             hands.Bind(handsWidget, faucetWidget);
             AssignHitboxes(hands, handsWidget, faucetWidget);
 
+            var soapGo = GameObject.Find("SoapRive");
+            if (soapGo != null)
+            {
+                var soapWidget = soapGo.GetComponent<RiveWidget>();
+                var soap = soapGo.GetComponent<Soap>();
+                if (soap == null)
+                    soap = soapGo.AddComponent<Soap>();
+                soap.Bind(soapWidget, hands);
+                AssignSoapHitbox(soap, soapWidget, hands);
+            }
+
             EditorSceneManager.MarkSceneDirty(handsGo.scene);
             EditorSceneManager.SaveScene(handsGo.scene);
             Debug.Log("[RivePrototypeMount] Baked Hands/Faucet layout and authored hitbox children.");
@@ -244,6 +265,48 @@ namespace ManosLimpias.Editor
             soHands.FindProperty("widget").objectReferenceValue = handsWidget;
             soHands.FindProperty("faucetWidget").objectReferenceValue = faucetWidget;
             soHands.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void AssignSoapHitbox(Soap soap, RiveWidget soapWidget, Hands hands)
+        {
+            var hitbox = RiveNodeHitbox.FindOrCreate(soapWidget, Soap.Hitbox, Soap.HitboxNormalized);
+            var soSoap = new SerializedObject(soap);
+            soSoap.FindProperty("hitbox").objectReferenceValue = hitbox;
+            soSoap.FindProperty("widget").objectReferenceValue = soapWidget;
+            soSoap.FindProperty("hands").objectReferenceValue = hands;
+            soSoap.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void EnsureStageConfigurations(SerializedObject soFlow)
+        {
+            var stages = soFlow.FindProperty("stageConfigurations");
+            if (stages == null || !stages.isArray)
+                return;
+
+            bool hasOpen = false;
+            bool hasSoap = false;
+            for (int i = 0; i < stages.arraySize; i++)
+            {
+                var value = stages.GetArrayElementAtIndex(i).managedReferenceValue;
+                if (value is OpenFaucetStage)
+                    hasOpen = true;
+                else if (value is ApplySoapStage)
+                    hasSoap = true;
+            }
+
+            if (!hasOpen)
+            {
+                stages.arraySize++;
+                stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
+                    new OpenFaucetStage { stepId = 1 };
+            }
+
+            if (!hasSoap)
+            {
+                stages.arraySize++;
+                stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
+                    new ApplySoapStage { stepId = 2 };
+            }
         }
 
         static void LogFileInventory(Asset asset)

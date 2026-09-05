@@ -316,6 +316,27 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void Hands_SetDraggableFalse_KeepsFreezePlacementAfterGrab()
+        {
+            var mapped = new Rect(-400f, -200f, 800f, 500f);
+            CreateStretchHands(mapped, out var parent, out var child, out var hands);
+            try
+            {
+                var grab = ParentLocalPoint(child, new Vector2(0.25f, 0.75f));
+                hands.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                Assert.That(hands.FreezePlacement, Is.True);
+
+                hands.SetDraggable(false);
+                Assert.That(hands.IsDraggable, Is.False);
+                Assert.That(hands.FreezePlacement, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
         public void Hands_BeginDrag_DoesNotJumpFromTopLeftPivot()
         {
             var mapped = new Rect(-400f, -200f, 800f, 500f);
@@ -449,6 +470,33 @@ namespace ManosLimpias.Tests
             hands.SetDraggable(true);
         }
 
+        static void CreateStretchSoap(
+            Rect mapped,
+            out RectTransform parent,
+            out RectTransform child,
+            out Soap soap)
+        {
+            var parentGo = new GameObject("M08 Soap Drag Parent", typeof(RectTransform));
+            parent = parentGo.GetComponent<RectTransform>();
+            parent.anchorMin = parent.anchorMax = new Vector2(0.5f, 0.5f);
+            parent.pivot = new Vector2(0.5f, 0.5f);
+            parent.sizeDelta = new Vector2(1920f, 1080f);
+
+            var childGo = new GameObject("M08 SoapRive", typeof(RectTransform));
+            child = childGo.GetComponent<RectTransform>();
+            child.SetParent(parent, false);
+            ArtboardSpace.ApplyNormalizedAnchors(
+                child,
+                parent,
+                mapped,
+                ArtboardSpace.UnityPivotFromRiveOrigin(SimiPrototypeArtboards.SoapOrigin));
+
+            var widget = childGo.AddComponent<RiveWidget>();
+            soap = childGo.AddComponent<Soap>();
+            soap.Bind(widget);
+            soap.SetDraggable(true);
+        }
+
         static Vector3[] WorldCorners(RectTransform rect)
         {
             var corners = new Vector3[4];
@@ -503,6 +551,75 @@ namespace ManosLimpias.Tests
             {
                 Object.DestroyImmediate(aGo);
                 Object.DestroyImmediate(bGo);
+            }
+        }
+
+        [Test]
+        public void Soap_SetDraggable_TogglesHitTest()
+        {
+            var go = new GameObject("M08 Soap");
+            var widgetGo = new GameObject("M08 Soap Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var soap = go.AddComponent<Soap>();
+            soap.Bind(widget);
+
+            Assert.That(soap.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            soap.SetDraggable(true);
+            Assert.That(soap.IsDraggable, Is.True);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            soap.SetDraggable(false);
+            Assert.That(soap.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
+        public void Soap_ReturnHome_RestoresLayoutAfterDrag()
+        {
+            var mapped = new Rect(-350f, -180f, 400f, 400f);
+            CreateStretchSoap(mapped, out var parent, out var child, out var soap);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.4f, 0.6f));
+                soap.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                soap.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: true);
+                Assert.That(soap.FreezePlacement, Is.True);
+
+                soap.ReturnHome();
+                Assert.That(soap.FreezePlacement, Is.False);
+                AssertCornersEqual(before, WorldCorners(child));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
+        public void Soap_Release_ReturnsHome()
+        {
+            var mapped = new Rect(-350f, -180f, 400f, 400f);
+            CreateStretchSoap(mapped, out var parent, out var child, out var soap);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.4f, 0.6f));
+                soap.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                soap.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: true);
+                soap.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: false);
+
+                Assert.That(soap.FreezePlacement, Is.False);
+                AssertCornersEqual(before, WorldCorners(child));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
             }
         }
 

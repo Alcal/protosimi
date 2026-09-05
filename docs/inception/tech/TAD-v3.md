@@ -12,7 +12,7 @@ Unity 2D orthographic minigame at fixed **1920×1080**, WebGL-first. Session flo
 - **Scene strategy:** `Title` + `Gameplay` (intro / ordered stages / assist / win as states inside Gameplay)
 - **Core systems:**
   - `GameFlowController` — composition root: Title → Intro → ordered `GameStage` instances → Outro; injects `IGameFlowServices`
-  - `GameStage` — one stage’s behavior and subscriptions (`OpenFaucetStage` is the only concrete gameplay stage today)
+  - `GameStage` — one stage’s behavior and subscriptions (`OpenFaucetStage` then `ApplySoapStage`)
   - `InputFamilies` — `TapOpenClose`, `HandsUnderWater`, `RubOnHands` (intent-tolerant); `IntentInputRouter` is a continuous non-Rive adapter only
   - `AssistHijack` — WAF3 host demo driving the same progress pipeline
   - `CameraFocus` — ease toward active stage focus
@@ -32,15 +32,20 @@ flowchart TD
     services --> faucet[IFaucetControl]
     services --> hands[IHandsControl]
     services --> water[IWaterContact]
+    services --> soap[ISoapControl]
     services --> progress[IProgressBar]
     services --> icon[IStepIcon]
     services --> camera[ICameraFocus]
     services --> host[IHostPresentation]
     stages --> open[OpenFaucetStage]
+    stages --> applySoap[ApplySoapStage]
     open -->|SetEnabled| faucet
     open -->|SetDraggable| hands
+    applySoap -->|SetDraggable| soap
     open -->|SetProgress| progress
+    applySoap -->|SetProgress| progress
     open -->|requests advance| flow
+    applySoap -->|requests advance| flow
     flow --> introState[Intro]
     flow --> outroState[Outro]
     flow --> assist[AssistHijack]
@@ -75,6 +80,7 @@ The interface is supplied by `GameFlowController` and exposes narrow capabilitie
 
 - Faucet enable/disable/reset state and left/right activation event;
 - Hands drag enable/disable and water-contact overlap;
+- Soap drag enable/disable, glow, overlap with hands hitboxes, and return-home;
 - current-stage progress value and progress reset/fill operations;
 - active `StepIcon` selection and completion state;
 - camera focus and host presentation commands where needed;
@@ -96,7 +102,7 @@ The controller owns an ordered serialized list of stage factories/configurations
 
 The controller may reject completion requests from inactive or already-exited stages. It must not use stage-index switches to determine behavior.
 
-Use Unity-serializable stage assets/factories so designers can reorder or replace stages without editing flow code. The serialized list currently contains one `OpenFaucetStage`. Later stage classes can be added without changing `GameFlowController` sequencing code.
+Use Unity-serializable stage assets/factories so designers can reorder or replace stages without editing flow code. The serialized list currently contains `OpenFaucetStage` then `ApplySoapStage`.
 
 ## Rive integration
 
@@ -107,10 +113,12 @@ Use Unity-serializable stage assets/factories so designers can reorder or replac
 - Leftover artboard `main` is not mounted.
 - `RiveHudBinder` writes progress to the overlay `progressBar` widget and drives four `stepIcon` widgets by id.
 - `Faucet` binds to the dedicated faucet widget. `SetEnabled` toggles that widget’s `HitTestBehavior` (`Translucent` when enabled, `None` when disabled). Components stay visible; only the active stage’s interactable receives hits. The adapter exposes `LeftIsOpen` / `RightIsOpen` / `IsOpen` from faucet artboard state when Unity can see it, fires `Activated` on the rising edge, and fires `PointerHit` when a press lands in the faucet widget.
-- `Hands` binds to the dedicated hands widget. `SetDraggable` toggles that widget’s `HitTestBehavior` and Unity RectTransform drag. After the first drag, `RiveAnchorMount` skips remounting that slot so a view resize does not snap the hands back.
+- `Hands` binds to the dedicated hands widget. `SetDraggable` toggles that widget’s `HitTestBehavior` and Unity RectTransform drag. After the first drag, `RiveAnchorMount` skips remounting that slot so a view resize does not snap the hands back. Disabling drag leaves `FreezePlacement` so the wet-hands pose survives into ApplySoap.
 - Wet-hands overlap uses authored child RectTransforms (`hitbox_1` / `hitbox_2` on Hands, `water-sqspot` on Faucet) plus trigger `BoxCollider2D`s. Starting size is a fraction of the parent widget’s playtime box; designers move them in the Rect tool. Overlap is canvas-space AABB, not Physics2D and not Rive node lookup.
-- Hands, soap, towel, and character start at `HitTestBehavior.None`. `OpenFaucetStage` enables Hands drag after the faucet is locked open.
+- `Soap` binds to the dedicated soap widget. Unity RectTransform-drags the isolated soap panel; the widget stays `HitTestBehavior.None` so the soap SM cannot run `isDragged` (that pose draws outside the artboard and clips). Release or `ReturnHome` restores the pre-drag layout. A child `soap-hitbox` RectTransform + trigger `BoxCollider2D` (center ~50% of the widget) is the contact box.
+- Hands, soap, towel, and character start at `HitTestBehavior.None`. `OpenFaucetStage` enables Hands drag after the faucet is locked open. `ApplySoapStage` enables Soap drag and leaves Hands undraggable.
 - `OpenFaucetStage` enables the Faucet and locks it open from `PointerHit` (this stage only) or from `IsOpen` / `Activated`. It sets progress to `0.25`, disables faucet hits, enables Hands drag, then fills `+0.02` every `0.1s` while either hands hitbox overlaps `water-sqspot`. At `1` it marks its StepIcon completed and requests completion once.
+- `ApplySoapStage` resets progress to `0`, glows the soap, and enables soap drag. Glow stops on the first grab. After that grab, fill is `+0.02` every `0.1s` while `soap-hitbox` overlaps `hitbox_1` or `hitbox_2`. At `1` it snaps soap home, disables soap, marks step 2 completed, and requests completion once.
 - Rive state-machine names: [`../design/RIVE_INTERFACES.md`](../design/RIVE_INTERFACES.md) and [`../design/RIVE_PROTOTYPE_DISCREPANCIES.md`](../design/RIVE_PROTOTYPE_DISCREPANCIES.md).
 - No stage class resolves Rive node names, widgets, or input paths.
 
@@ -181,8 +189,8 @@ MVP implementation: `AnalyticsStub` logs to console; no external SDK.
 
 ## Testing
 
-**EditMode:** AABB → view-rect mapping including Fit.Fill; disabled Faucet ignores activation and `PointerHit` and sets `HitTestBehavior.None`; Hands `SetDraggable` toggles hit testing; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, locks the faucet at progress `0.25` from `PointerHit` (this stage only) or either Faucet side / `IsOpen` on tick, enables Hands drag, fills `+0.02` per `0.1s` only while overlapping, marks the StepIcon completed at `1`, requests completion once, and unsubscribes on exit.
+**EditMode:** AABB → view-rect mapping including Fit.Fill; disabled Faucet ignores activation and `PointerHit` and sets `HitTestBehavior.None`; Hands and Soap `SetDraggable` toggle hit testing; Soap `ReturnHome` restores pre-drag layout; flow with fake service adapters verifies ordered entry, exit-before-next-entry, inactive-stage rejection, and final-stage Outro; `OpenFaucetStage` subscribes on entry, locks the faucet at progress `0.25` from `PointerHit` (this stage only) or either Faucet side / `IsOpen` on tick, enables Hands drag, fills `+0.02` per `0.1s` only while overlapping, marks the StepIcon completed at `1`, requests completion once, and unsubscribes on exit; `ApplySoapStage` glows and enables soap on entry, fills only after grab while overlapping a hands hitbox, then returns soap home and completes once.
 
-**PlayMode:** background widget is present (not artboard `main`); intro still dismisses into the first `GameStage`. Faucet activate / pointer hit leaves the session in Stage with the faucet disabled.
+**PlayMode:** background widget is present (not artboard `main`); intro still dismisses into the first `GameStage`. Faucet activate / pointer hit leaves the session in Stage with the faucet disabled. A two-stage list enters `OpenFaucetStage` then `ApplySoapStage`.
 
-**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Click the faucet widget; expect overlay progress at 25%, faucet no longer clickable but still open, and Hands draggable. Drag a hands hitbox over the water spot; expect the bar to climb ~2% every 100ms while overlapping, pause when leaving, then step 1 completed and Outro at 100%. Nodes `hitbox_1`, `hitbox_2` (hands) and `water-sqspot` (faucet) must exist in the `.riv` export.
+**Playtest:** Unity Editor, Vulkan on Linux (Rive 0.4.3). Open `Assets/Scenes/Gameplay.unity`, press Play, confirm the intro overlay and `background` playfield with sibling widgets at faucet/hands/soap/towel/character/step/progressBar anchors. Press `Jugar`; expect intro to dismiss and `OpenFaucetStage` to enable only the Faucet. Click the faucet widget; expect overlay progress at 25%, faucet no longer clickable but still open, and Hands draggable. Drag a hands hitbox over the water spot; expect the bar to climb ~2% every 100ms while overlapping, pause when leaving, then step 1 completed. Soap then glows and is draggable; drag it onto a hand hitbox until the bar fills, then soap snaps home, step 2 completes, and Outro. Nodes `hitbox_1`, `hitbox_2` (hands), `water-sqspot` (faucet), and `soap-hitbox` (soap) are authored Unity children.

@@ -9,7 +9,8 @@ namespace ManosLimpias.UI.Rive
     /// <summary>
     /// Binds the dedicated hands artboard widget. OpenFaucetStage enables drag
     /// after the faucet is locked open, then fills only after a grab while a
-    /// hands hitbox overlaps the faucet water spot.
+    /// hands hitbox overlaps the faucet water spot. Disabling drag leaves
+    /// FreezePlacement so later stages keep the wet-hands position.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public sealed class Hands : MonoBehaviour, IHandsControl, IWaterContactControl
@@ -63,10 +64,7 @@ namespace ManosLimpias.UI.Rive
         {
             IsDraggable = draggable;
             if (!draggable)
-            {
                 EndDrag();
-                FreezePlacement = false;
-            }
 
             ApplyHitTest();
         }

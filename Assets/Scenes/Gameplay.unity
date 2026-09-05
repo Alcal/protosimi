@@ -2079,6 +2079,7 @@ GameObject:
   - component: {fileID: 936479391}
   - component: {fileID: 936479393}
   - component: {fileID: 936479394}
+  - component: {fileID: 936479395}
   m_Layer: 0
   m_Name: hitbox_1
   m_TagString: Untagged
@@ -2102,7 +2103,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.32, y: 0.22}
   m_AnchorMax: {x: 0.46, y: 0.48}
-  m_AnchoredPosition: {x: -101.1001, y: 26.599854}
+  m_AnchoredPosition: {x: -91, y: 280}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &936479393
@@ -2153,6 +2154,52 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 150
+--- !u!61 &936479395
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 936479390}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 268.80005, y: 406.12003}
+  m_EdgeRadius: 0
 --- !u!1 &940385650
 GameObject:
   m_ObjectHideFlags: 0
@@ -2985,6 +3032,7 @@ MonoBehaviour:
   riveHud: {fileID: 1259954864}
   faucet: {fileID: 1402236051}
   hands: {fileID: 940385653}
+  soap: {fileID: 1844413678}
   audioPlayer: {fileID: 1259954862}
   waf: {fileID: 1259954861}
   assist: {fileID: 1259954860}
@@ -2996,6 +3044,7 @@ MonoBehaviour:
   titleSceneName: Title
   stageConfigurations:
   - rid: 5103114543314763934
+  - rid: 7719671250427838746
   references:
     version: 2
     RefIds:
@@ -3003,6 +3052,10 @@ MonoBehaviour:
       type: {class: OpenFaucetStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
       data:
         stepId: 1
+    - rid: 7719671250427838746
+      type: {class: ApplySoapStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
+      data:
+        stepId: 2
 --- !u!114 &1259954859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3426,7 +3479,7 @@ MonoBehaviour:
   m_asset: {fileID: -4516626237390682484, guid: 13045d4a80e6890128a5cfbbbd6f198b, type: 3}
   m_artboardName: faucet
   m_stateMachineName: faucet_StateMachine
-  m_fit: 3
+  m_fit: 0
   m_alignment:
     m_x: 0
     m_y: -1
@@ -4555,6 +4608,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1844413676}
   - component: {fileID: 1844413677}
+  - component: {fileID: 1844413678}
   m_Layer: 0
   m_Name: SoapRive
   m_TagString: Untagged
@@ -4573,7 +4627,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2119770956}
   m_Father: {fileID: 1588612154}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4611,6 +4666,21 @@ MonoBehaviour:
   m_dataBindingMode: 2
   m_viewModelInstanceName: 
   m_customAudioProvider: {fileID: 0}
+--- !u!114 &1844413678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1844413675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667ef992a7bb0287ba7dcb74787f968f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.Soap
+  widget: {fileID: 1844413677}
+  hands: {fileID: 940385653}
+  hitbox: {fileID: 2119770958}
 --- !u!1 &1857962774
 GameObject:
   m_ObjectHideFlags: 0
@@ -4756,6 +4826,7 @@ GameObject:
   - component: {fileID: 1934587704}
   - component: {fileID: 1934587706}
   - component: {fileID: 1934587707}
+  - component: {fileID: 1934587708}
   m_Layer: 0
   m_Name: hitbox_2
   m_TagString: Untagged
@@ -4779,7 +4850,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.54, y: 0.22}
   m_AnchorMax: {x: 0.68, y: 0.48}
-  m_AnchoredPosition: {x: -95.3999, y: 18.5}
+  m_AnchoredPosition: {x: -85.299805, y: 271.90015}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1934587706
@@ -4830,6 +4901,52 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 150.54
+--- !u!61 &1934587708
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934587703}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 268.79993, y: 406.12003}
+  m_EdgeRadius: 0
 --- !u!1 &2036002445
 GameObject:
   m_ObjectHideFlags: 0
@@ -5212,6 +5329,101 @@ MonoBehaviour:
   m_dataBindingMode: 0
   m_viewModelInstanceName: 
   m_customAudioProvider: {fileID: 0}
+--- !u!1 &2119770955
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2119770956}
+  - component: {fileID: 2119770958}
+  - component: {fileID: 2119770957}
+  m_Layer: 0
+  m_Name: soap-hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2119770956
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119770955}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1844413676}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.25, y: 0.25}
+  m_AnchorMax: {x: 0.75, y: 0.75}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!61 &2119770957
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119770955}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 200, y: 200}
+  m_EdgeRadius: 0
+--- !u!114 &2119770958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119770955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -16,8 +16,9 @@ C# mirrors live under `Assets/Scripts/UI/Rive/`.
 |--------|----------|-------------|
 | `BackgroundRive` | `background` | `None` (shell only) |
 | `FaucetRive` | `faucet` at `faucet-anchor` | `Translucent` only while `OpenFaucetStage` enables it; `None` after the 25% lock so it stays visually open |
-| `HandsRive` | `hands` at `hands-anchor` | `None` until the faucet is locked open, then `Translucent` and Unity-draggable |
-| `SoapRive` / `TowelRive` / `CharacterRive` | matching artboards | `None` until later stages |
+| `HandsRive` | `hands` at `hands-anchor` | `None` until the faucet is locked open, then `Translucent` and Unity-draggable; stays frozen after OpenFaucet exits |
+| `SoapRive` | `"soap "` at `soap-anchor` | Always `None` (Unity panel drag; Rive hits would fire `isDragged` and clip the bar off the artboard). Draggable during `ApplySoapStage`; snaps home on release. |
+| `TowelRive` / `CharacterRive` | matching artboards | `None` until later stages |
 | `StepIcon1Rive` … `StepIcon4Rive` | `stepIcon` at `stepN-anchor` | `None` |
 | `ProgressBarRive` | `progressBar` at `progressBar-anchor` | `None` |
 | `IntroRive` | `intro` | `Opaque` until dismissed |
@@ -57,7 +58,7 @@ Rive: independent L/R triggers (`faucet_L_On`, `faucet_L_Off`, `faucet_R_On`, `f
 
 Unity: `Faucet` polls those states in LateUpdate (plus bool/event fallbacks) and reports a `PointerHit` when a press lands in the faucet widget. Open Water locks the faucet at 25% from that pointer hit. Close Water remains future configuration and should not subscribe to `PointerHit`.
 
-Wet-hands fill uses authored Unity hitboxes: `hitbox_1` / `hitbox_2` children of `HandsRive`, and `water-sqspot` under `FaucetRive`. They are RectTransforms + trigger `BoxCollider2D`s sized as a fraction of the parent widget (the playtime artboard box). They do **not** follow Rive node names. Adjust them in the Rect tool; cyan gizmos mark the boxes.
+Wet-hands fill uses authored Unity hitboxes: `hitbox_1` / `hitbox_2` children of `HandsRive`, and `water-sqspot` under `FaucetRive`. Soap fill uses `soap-hitbox` under `SoapRive` against those same hand boxes. They are RectTransforms + trigger `BoxCollider2D`s sized as a fraction of the parent widget (the playtime artboard box). They do **not** follow Rive node names. Adjust them in the Rect tool; cyan gizmos mark the boxes.
 
 ---
 
@@ -69,7 +70,7 @@ The artboard is named `"soap "` (trailing space). Unity artboard dropdowns and `
 
 ## Drag vs Unity input
 
-Hands drag is Unity RectTransform motion on `HandsRive` after the faucet lock. Soap and towel expose `isDragged` for later stages. Unity uses world-space `IntentInputRouter` only for leftover non-Rive input families.
+Hands drag is Unity RectTransform motion on `HandsRive` after the faucet lock. Soap drag is the same family on `SoapRive` during `ApplySoapStage`, but the soap widget stays `HitTestBehavior.None` so the SM never sees the pointer (`isDragged` lift pose draws outside the 400×400 artboard and clips). Release snaps the panel home. Towel still exposes `isDragged` for later stages. Unity uses world-space `IntentInputRouter` only for leftover non-Rive input families.
 
 ---
 

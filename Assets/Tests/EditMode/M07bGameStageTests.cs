@@ -281,6 +281,123 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void ApplySoap_OnEnter_GlowsAndEnablesDrag()
+        {
+            var stage = new ApplySoapStage();
+            stage.Initialize(_services);
+            _services.Hands.SetDraggable(true);
+            stage.Enter();
+
+            Assert.That(_services.Icon.StepId, Is.EqualTo(2));
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.Icon.Completed, Is.False);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
+            Assert.That(_services.Soap.IsDraggable, Is.True);
+            Assert.That(_services.Soap.IsGlowing, Is.True);
+            Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
+        }
+
+        [Test]
+        public void ApplySoap_DragStarted_StopsGlow()
+        {
+            var stage = new ApplySoapStage();
+            stage.Initialize(_services);
+            stage.Enter();
+
+            Assert.That(_services.Soap.IsGlowing, Is.True);
+            _services.Soap.RaiseDragStarted();
+            Assert.That(_services.Soap.IsGlowing, Is.False);
+            Assert.That(_services.Soap.IsDraggable, Is.True);
+        }
+
+        [Test]
+        public void ApplySoap_DoesNotFill_UntilDragStarted()
+        {
+            var stage = new ApplySoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
+
+            _services.Soap.RaiseDragStarted();
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+        }
+
+        [Test]
+        public void ApplySoap_FillsWhileOverlapping_ThenCompletes()
+        {
+            var stage = new ApplySoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+            _services.Soap.RaiseDragStarted();
+
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+
+            _services.Soap.IsOverlapping = false;
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+
+            _services.Soap.IsOverlapping = true;
+            stage.Tick(5f);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
+            Assert.That(_services.Icon.Active, Is.False);
+            Assert.That(_services.Icon.Completed, Is.True);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.Soap.IsDraggable, Is.False);
+            Assert.That(_services.Soap.IsGlowing, Is.False);
+            Assert.That(_services.Soap.ReturnHomeCount, Is.EqualTo(1));
+
+            stage.Tick(ApplySoapStage.FillInterval);
+            Assert.That(_services.CompletionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ApplySoap_OnExit_ReturnsHomeAndDisables()
+        {
+            var stage = new ApplySoapStage();
+            stage.Initialize(_services);
+            stage.Enter();
+            stage.Exit();
+
+            Assert.That(_services.Soap.IsDraggable, Is.False);
+            Assert.That(_services.Soap.IsGlowing, Is.False);
+            Assert.That(_services.Soap.ReturnHomeCount, Is.EqualTo(1));
+            _services.Soap.RaiseDragStarted();
+            Assert.That(_services.CompletionCount, Is.Zero);
+        }
+
+        [Test]
+        public void ApplySoap_FollowsOpenFaucet_InConfiguredOrder()
+        {
+            _flow.stageConfigurations = new List<GameStage>
+            {
+                new OpenFaucetStage(),
+                new ApplySoapStage()
+            };
+            _services.CompletionRequested = stage => _flow.RequestStageCompletion(stage);
+
+            _flow.StartSession();
+            _flow.DismissIntro();
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
+
+            _flow.RequestStageCompletion(_flow.ActiveStage);
+
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage, Is.InstanceOf<ApplySoapStage>());
+            Assert.That(_flow.ActiveStage.IsEntered, Is.True);
+        }
+
+        [Test]
         public void AC07_ReplayResetsStageLifecycle()
         {
             _flow.stageConfigurations = new List<GameStage> { new RecordingStage("first") };
@@ -370,6 +487,7 @@ namespace ManosLimpias.Tests
             public readonly FakeFaucet Faucet = new();
             public readonly FakeHands Hands = new();
             public readonly FakeWater Water = new();
+            public readonly FakeSoap Soap = new();
             public readonly FakeProgress Progress = new();
             public readonly FakeIcon Icon = new();
             public Action<GameStage> CompletionRequested;
@@ -378,6 +496,7 @@ namespace ManosLimpias.Tests
             IFaucetControl IGameFlowServices.Faucet => Faucet;
             IHandsControl IGameFlowServices.Hands => Hands;
             IWaterContactControl IGameFlowServices.WaterContact => Water;
+            ISoapControl IGameFlowServices.Soap => Soap;
             IProgressBarControl IGameFlowServices.ProgressBar => Progress;
             IStepIconControl IGameFlowServices.StepIcon => Icon;
 
@@ -458,6 +577,35 @@ namespace ManosLimpias.Tests
             public void SetGlow(bool on)
             {
                 IsGlowing = on;
+            }
+
+            public void RaiseDragStarted()
+            {
+                DragStarted?.Invoke();
+            }
+        }
+
+        sealed class FakeSoap : ISoapControl
+        {
+            public event Action DragStarted;
+            public bool IsDraggable { get; private set; }
+            public bool IsGlowing { get; private set; }
+            public bool IsOverlapping { get; set; }
+            public int ReturnHomeCount { get; private set; }
+
+            public void SetDraggable(bool draggable)
+            {
+                IsDraggable = draggable;
+            }
+
+            public void SetGlow(bool on)
+            {
+                IsGlowing = on;
+            }
+
+            public void ReturnHome()
+            {
+                ReturnHomeCount++;
             }
 
             public void RaiseDragStarted()

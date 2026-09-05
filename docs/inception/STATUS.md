@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-03 — OpenFaucet two-phase; wet-hands overlap uses authored Unity hitboxes (hitbox_1/hitbox_2 on HandsRive, water-sqspot on FaucetRive) sized from the parent widget playtime box, not Rive node names.
-next_action: Play Gameplay, dismiss intro, click the faucet (25%, faucet stuck open, hands draggable); drag a hands hitbox into the water spot until the bar fills, then Outro.
+last_session: 2026-09-04 — ApplySoapStage after OpenFaucet; SoapRive draggable with soap-hitbox; glow until grab; overlap fill; snap home. EditMode 48 (ApplySoap + Soap drag) pass; PlayMode ApplySoap order ran without assertion errors.
+next_action: Play Gameplay, dismiss intro, click faucet, drag hands through water to 100%; soap glows — drag it onto a hand hitbox until the bar fills, then soap snaps back and Outro.
 
 ## Session log
 
@@ -33,3 +33,4 @@ next_action: Play Gameplay, dismiss intro, click the faucet (25%, faucet stuck o
 | 2026-09-03 | docs | Retired milestone-driven inception; TAD-v3 is the standalone current TAD |
 | 2026-09-03 | implement | OpenFaucetStage completes from faucet artboard open state; progress 1 + step icon 1 completed |
 | 2026-09-03 | implement | OpenFaucetStage two-phase: 25% faucet lock then hands/water overlap fill |
+| 2026-09-04 | implement | ApplySoapStage: soap glow/drag, soap-hitbox vs hands, snap home, then Outro |

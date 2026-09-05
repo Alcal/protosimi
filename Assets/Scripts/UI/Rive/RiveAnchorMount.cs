@@ -112,8 +112,7 @@ namespace ManosLimpias.UI.Rive
                 if (child == null)
                     continue;
 
-                var hands = slot.widget.GetComponent<Hands>();
-                if (hands != null && hands.FreezePlacement)
+                if (IsFrozen(slot.widget))
                 {
                     placed++;
                     continue;
@@ -155,6 +154,17 @@ namespace ManosLimpias.UI.Rive
             if (_applied)
                 Debug.Log($"[RiveAnchorMount] Placed {placed}/{slots.Length} widgets from background anchors.");
             return _applied;
+        }
+
+        static bool IsFrozen(RiveWidget widget)
+        {
+            if (widget == null)
+                return false;
+            var hands = widget.GetComponent<Hands>();
+            if (hands != null && hands.FreezePlacement)
+                return true;
+            var soap = widget.GetComponent<Soap>();
+            return soap != null && soap.FreezePlacement;
         }
 
         static bool TryResolveAabb(Slot slot, out Rect aabb)

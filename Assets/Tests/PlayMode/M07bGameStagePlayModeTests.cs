@@ -74,5 +74,30 @@ namespace ManosLimpias.Tests
 
             Object.DestroyImmediate(flowObject);
         }
+
+        [Test]
+        public void ApplySoap_FollowsOpenFaucet_InConfiguredOrder()
+        {
+            var flowObject = new GameObject("ApplySoap PlayMode Flow");
+            var flow = flowObject.AddComponent<GameFlowController>();
+            flow.stageConfigurations = new List<GameStage>
+            {
+                new OpenFaucetStage(),
+                new ApplySoapStage()
+            };
+
+            flow.StartSession();
+            flow.DismissIntro();
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
+
+            flow.RequestStageCompletion(flow.ActiveStage);
+
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(flow.ActiveStage, Is.InstanceOf<ApplySoapStage>());
+            Assert.That(flow.ActiveStage.IsEntered, Is.True);
+
+            Object.DestroyImmediate(flowObject);
+        }
     }
 }

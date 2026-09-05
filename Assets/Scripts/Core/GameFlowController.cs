@@ -28,6 +28,7 @@ namespace ManosLimpias.Core
         public RiveHudBinder riveHud;
         public Faucet faucet;
         public Hands hands;
+        public Soap soap;
         public AudioPlaceholderPlayer audioPlayer;
         public WafController waf;
         public AssistHijack assist;
@@ -254,6 +255,7 @@ namespace ManosLimpias.Core
             readonly IProgressBarControl _fallbackProgress;
             readonly IStepIconControl _fallbackStepIcon;
             readonly NullHands _nullHands = new();
+            readonly NullSoap _nullSoap = new();
 
             public FlowServices(GameFlowController flow)
             {
@@ -265,6 +267,7 @@ namespace ManosLimpias.Core
             public IFaucetControl Faucet => _flow.faucet;
             public IHandsControl Hands => _flow.hands != null ? _flow.hands : _nullHands;
             public IWaterContactControl WaterContact => _flow.hands != null ? _flow.hands : _nullHands;
+            public ISoapControl Soap => _flow.soap != null ? _flow.soap : _nullSoap;
             public IProgressBarControl ProgressBar => _flow.riveHud ?? _fallbackProgress;
             public IStepIconControl StepIcon => _flow.riveHud ?? _fallbackStepIcon;
 
@@ -314,6 +317,28 @@ namespace ManosLimpias.Core
             {
                 IsGlowing = on;
             }
+        }
+
+        sealed class NullSoap : ISoapControl
+        {
+#pragma warning disable CS0067
+            public event Action DragStarted;
+#pragma warning restore CS0067
+            public bool IsDraggable { get; private set; }
+            public bool IsGlowing { get; private set; }
+            public bool IsOverlapping => false;
+
+            public void SetDraggable(bool draggable)
+            {
+                IsDraggable = draggable;
+            }
+
+            public void SetGlow(bool on)
+            {
+                IsGlowing = on;
+            }
+
+            public void ReturnHome() { }
         }
     }
 }
