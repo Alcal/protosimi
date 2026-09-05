@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-04 — ApplySoapStage after OpenFaucet; SoapRive draggable with soap-hitbox; glow until grab; overlap fill; snap home. EditMode 48 (ApplySoap + Soap drag) pass; PlayMode ApplySoap order ran without assertion errors.
-next_action: Play Gameplay, dismiss intro, click faucet, drag hands through water to 100%; soap glows — drag it onto a hand hitbox until the bar fills, then soap snaps back and Outro.
+last_session: 2026-09-04 — Step icons fire the `isCompleted` trigger (it is not a bool) and keep prior steps latched when the next stage starts. EditMode latch tests added.
+next_action: Play Gameplay, dismiss intro, complete Open Faucet; step 1 should stay on the complete animation while soap is active. Finish soap; step 2 should complete and stay completed through Outro.
 
 ## Session log
 
@@ -33,4 +33,4 @@ next_action: Play Gameplay, dismiss intro, click faucet, drag hands through wate
 | 2026-09-03 | docs | Retired milestone-driven inception; TAD-v3 is the standalone current TAD |
 | 2026-09-03 | implement | OpenFaucetStage completes from faucet artboard open state; progress 1 + step icon 1 completed |
 | 2026-09-03 | implement | OpenFaucetStage two-phase: 25% faucet lock then hands/water overlap fill |
-| 2026-09-04 | implement | ApplySoapStage: soap glow/drag, soap-hitbox vs hands, snap home, then Outro |
+| 2026-09-04 | implement | Step icons fire `isCompleted` trigger once and latch prior steps |

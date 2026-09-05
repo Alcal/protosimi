@@ -14,7 +14,17 @@ namespace ManosLimpias.UI.Rive
         public const string StepId = "icon_ID";
         public const string StepIdLegacy = "step_ID";
 
+        /// <summary>
+        /// simi_prototype.riv wires this as a trigger (not a bool). Firing it
+        /// plays <see cref="AnimComplete"/>; leaving it unfired just drops
+        /// <see cref="IsActive"/> and the icon returns to standby.
+        /// </summary>
         public const string EventIsCompleted = "isCompleted";
+
+        public static bool IsLatchedComplete(int stepId, int currentStepId, bool currentCompleted)
+        {
+            return stepId < currentStepId || (stepId == currentStepId && currentCompleted);
+        }
 
         public static readonly string[] AnchorNames =
         {

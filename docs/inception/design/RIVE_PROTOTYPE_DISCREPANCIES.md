@@ -44,7 +44,7 @@ Empty `*-anchor` groups have no drawable AABB (`ComputeBounds()` is always 0 in 
 | Unity / GDD | Rive file |
 |-------------|-----------|
 | `stageProgress` | overlay `progressBar` `progressNum` (fallback `progress_num`) |
-| `iconNState` 0–2 | four `stepIcon` widgets: `isActive`, `isCompleted`, `icon_ID` (fallback `step_ID`) 1–4 |
+| `iconNState` 0–2 | four `stepIcon` widgets: `isActive` (bool), `isCompleted` (**trigger**), `icon_ID` (fallback `step_ID`) 1–4. Unity fires `isCompleted` once per completed step; writing it as a bool is a no-op and the icon falls back to standby. |
 | 6 wash stages | 4 step icons |
 | `hostVisible` / `hostAssistMode` | `character` `popUp` / `popOut` / `wafID` / `isTalking` / `complete` |
 

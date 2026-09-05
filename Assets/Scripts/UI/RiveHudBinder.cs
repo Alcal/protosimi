@@ -33,6 +33,8 @@ namespace ManosLimpias.UI
         bool _progressInputMissing;
         bool _pushing;
         RiveWidget[] _subscribedIcons;
+        bool[] _firedComplete;
+        WidgetStatus[] _widgetStatus;
 
         public void Bind(RiveWidget progressBar, params RiveWidget[] stepIcons)
         {
@@ -60,6 +62,11 @@ namespace ManosLimpias.UI
             _stepCompleted = completed;
             _hasStepState = true;
             PushStepIcon();
+        }
+
+        public bool IsStepCompleted(int stepId)
+        {
+            return _hasStepState && StepIcon.IsLatchedComplete(stepId, _stepId, _stepCompleted);
         }
 
         void OnEnable()
@@ -114,6 +121,7 @@ namespace ManosLimpias.UI
         void OnStepIconStatusChanged()
         {
             _pushedStepId = int.MinValue;
+            RearmCompletedTriggersForReloadedWidgets();
             PushStepIcon();
         }
 
@@ -189,9 +197,6 @@ namespace ManosLimpias.UI
                     _pushedStepId = _stepId;
                     _pushedActive = _stepActive;
                     _pushedCompleted = _stepCompleted;
-                    var target = WidgetForStep(_stepId);
-                    target?.StateMachine?.Advance(0f);
-                    target?.RivePanel?.Tick(0f);
                 }
             }
             finally
@@ -200,11 +205,13 @@ namespace ManosLimpias.UI
             }
         }
 
-        void PushStepWidgets()
+        bool PushStepWidgets()
         {
             if (stepIconWidgets == null)
-                return;
+                return false;
 
+            EnsureStepTracking(stepIconWidgets.Length);
+            bool wrote = false;
             for (int i = 0; i < stepIconWidgets.Length; i++)
             {
                 var widget = stepIconWidgets[i];
@@ -212,33 +219,97 @@ namespace ManosLimpias.UI
                     continue;
 
                 int id = i + 1;
-                bool isTarget = id == _stepId;
-                SetNumberInput(widget, StepIcon.StepId, id, StepIcon.StepIdLegacy);
-                SetBoolInput(widget, StepIcon.IsActive, isTarget && _stepActive);
-                SetBoolInput(widget, StepIcon.IsCompleted, isTarget ? _stepCompleted : id < _stepId);
+                bool completed = StepIcon.IsLatchedComplete(id, _stepId, _stepCompleted);
+                bool active = id == _stepId && _stepActive && !completed;
+                bool widgetWrote = SetNumberInput(widget, StepIcon.StepId, id, StepIcon.StepIdLegacy);
+                bool firedComplete = SetCompleted(widget, i, completed);
+                if (firedComplete)
+                    widget.StateMachine.Advance(0f);
+                widgetWrote |= firedComplete;
+                widgetWrote |= SetBoolInput(widget, StepIcon.IsActive, active);
+                if (widgetWrote)
+                {
+                    widget.StateMachine.Advance(0f);
+                    widget.RivePanel?.Tick(0f);
+                    wrote = true;
+                }
+            }
+
+            return wrote;
+        }
+
+        void RearmCompletedTriggersForReloadedWidgets()
+        {
+            if (stepIconWidgets == null)
+                return;
+
+            EnsureStepTracking(stepIconWidgets.Length);
+            for (int i = 0; i < stepIconWidgets.Length; i++)
+            {
+                var widget = stepIconWidgets[i];
+                var status = widget != null ? widget.Status : WidgetStatus.Uninitialized;
+                if (status == WidgetStatus.Loaded && _widgetStatus[i] != WidgetStatus.Loaded)
+                    _firedComplete[i] = false;
+                _widgetStatus[i] = status;
             }
         }
 
-        RiveWidget WidgetForStep(int stepId)
+        void EnsureStepTracking(int count)
         {
-            int index = stepId - 1;
-            if (stepIconWidgets == null || index < 0 || index >= stepIconWidgets.Length)
-                return null;
-            return stepIconWidgets[index];
+            if (_firedComplete != null && _firedComplete.Length == count)
+                return;
+            _firedComplete = new bool[count];
+            _widgetStatus = new WidgetStatus[count];
         }
 
-        static void SetNumberInput(RiveWidget widget, string name, float value, string fallback)
+        static bool SetNumberInput(RiveWidget widget, string name, float value, string fallback)
         {
             var input = RiveStateMachineInputs.FindNumber(widget.StateMachine, name, fallback);
-            if (input != null)
-                input.Value = value;
+            if (input == null || Mathf.Approximately(input.Value, value))
+                return false;
+            input.Value = value;
+            return true;
         }
 
-        static void SetBoolInput(RiveWidget widget, string name, bool value)
+        static bool SetBoolInput(RiveWidget widget, string name, bool value)
         {
             var input = RiveStateMachineInputs.GetBool(widget.StateMachine, name);
-            if (input != null)
-                input.Value = value;
+            if (input == null || input.Value == value)
+                return false;
+            input.Value = value;
+            return true;
+        }
+
+        bool SetCompleted(RiveWidget widget, int index, bool completed)
+        {
+            var sm = widget.StateMachine;
+            var boolean = RiveStateMachineInputs.GetBool(sm, StepIcon.IsCompleted);
+            if (boolean != null)
+            {
+                _firedComplete[index] = false;
+                if (boolean.Value == completed)
+                    return false;
+                boolean.Value = completed;
+                return true;
+            }
+
+            var trigger = RiveStateMachineInputs.GetTrigger(sm, StepIcon.IsCompleted)
+                          ?? RiveStateMachineInputs.GetTrigger(sm, StepIcon.EventIsCompleted);
+            if (trigger == null)
+                return false;
+
+            if (!completed)
+            {
+                _firedComplete[index] = false;
+                return false;
+            }
+
+            if (_firedComplete[index])
+                return false;
+
+            trigger.Fire();
+            _firedComplete[index] = true;
+            return true;
         }
 
         static void LogMissing(ref bool logged, string inputName, string owner)

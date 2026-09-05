@@ -435,6 +435,41 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void StepIcon_LatchesPreviousComplete_WhenNextStageActivates()
+        {
+            var binderObject = new GameObject("M07b Hud Binder Latch");
+            var binder = binderObject.AddComponent<ManosLimpias.UI.RiveHudBinder>();
+
+            binder.SetState(1, active: true, completed: false);
+            Assert.That(binder.IsStepCompleted(1), Is.False);
+
+            binder.SetState(1, active: false, completed: true);
+            Assert.That(binder.IsStepCompleted(1), Is.True);
+
+            binder.SetState(2, active: true, completed: false);
+            Assert.That(binder.IsStepCompleted(1), Is.True);
+            Assert.That(binder.IsStepCompleted(2), Is.False);
+            Assert.That(binder.StepId, Is.EqualTo(2));
+            Assert.That(binder.StepActive, Is.True);
+            Assert.That(binder.StepCompleted, Is.False);
+
+            binder.SetState(1, active: false, completed: false);
+            Assert.That(binder.IsStepCompleted(1), Is.False);
+            Assert.That(binder.IsStepCompleted(2), Is.False);
+
+            UnityEngine.Object.DestroyImmediate(binderObject);
+        }
+
+        [Test]
+        public void StepIcon_IsLatchedComplete_CoversCurrentAndPriorIds()
+        {
+            Assert.That(ManosLimpias.UI.Rive.StepIcon.IsLatchedComplete(1, 2, false), Is.True);
+            Assert.That(ManosLimpias.UI.Rive.StepIcon.IsLatchedComplete(2, 2, false), Is.False);
+            Assert.That(ManosLimpias.UI.Rive.StepIcon.IsLatchedComplete(2, 2, true), Is.True);
+            Assert.That(ManosLimpias.UI.Rive.StepIcon.IsLatchedComplete(3, 2, true), Is.False);
+        }
+
+        [Test]
         public void NullStageConfig_DefaultsToOpenFaucet()
         {
             _flow.stageConfigurations = new List<GameStage> { null };
