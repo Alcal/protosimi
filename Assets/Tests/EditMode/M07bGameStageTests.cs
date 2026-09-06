@@ -520,6 +520,26 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void RinseSoap_OnEnter_DoesNotLockFromLeftoverOpenState()
+        {
+            var stage = new RinseSoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            _services.Faucet.SetEnabled(true);
+            _services.Faucet.SetOpen(FaucetSide.Left, true);
+            stage.Enter();
+
+            Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
+            Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.Faucet.IsEnabled, Is.True);
+
+            stage.Tick(0.016f);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
+            Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void RinseSoap_OpenFaucet_LocksAt20AndEnablesHands()
         {
             var stage = new RinseSoapStage();

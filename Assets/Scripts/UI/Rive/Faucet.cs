@@ -173,7 +173,7 @@ namespace ManosLimpias.UI.Rive
             if (!IsEnabled)
                 return;
 
-            if (widget?.StateMachine != null)
+            if (_rivePointerHits && widget?.StateMachine != null)
             {
                 ResolveInputs();
                 PollChangedStates();
@@ -184,8 +184,7 @@ namespace ManosLimpias.UI.Rive
                 PollReportedEvents();
             }
 
-            if (IsEnabled)
-                PollPointerHit();
+            PollPointerHit();
         }
 
         void PollPointerHit()
@@ -306,8 +305,8 @@ namespace ManosLimpias.UI.Rive
         void OnRiveEventReported(ReportedEvent report)
         {
             if (report == null) return;
-            Debug.Log($"[Faucet] Rive event '{report.Name}' enabled={IsEnabled}");
-            if (!IsEnabled) return;
+            Debug.Log($"[Faucet] Rive event '{report.Name}' enabled={IsEnabled} riveHits={_rivePointerHits}");
+            if (!IsEnabled || !_rivePointerHits) return;
             ApplyReportedName(report.Name);
         }
 

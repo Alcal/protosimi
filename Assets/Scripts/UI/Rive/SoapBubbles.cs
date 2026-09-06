@@ -24,7 +24,7 @@ namespace ManosLimpias.UI.Rive
         public Sprite bubbleSprite;
         public Material particleMaterial;
         public ParticleSystem scrubParticles;
-        public int bubblesPerHitbox = 4;
+        public int bubblesPerHitbox = 12;
         public float hitboxFit = 0.4f;
         public float growDuration = 0.5f;
         public float emitPerSecond = 8f;

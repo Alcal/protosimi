@@ -52,10 +52,8 @@ namespace ManosLimpias.Core
 
             Debug.Log("[RinseSoapStage] Entered; faucet glowing to open.");
             SubscribeFaucetOpen();
-            Services.Faucet.SetEnabled(true);
+            Services.Faucet.SetEnabled(true, rivePointerHits: false);
             Services.Faucet.SetGlow(true);
-            if (Services.Faucet.IsOpen)
-                LockFaucetOpen(OpenSide());
         }
 
         protected override void OnTick(float deltaTime)
@@ -64,11 +62,7 @@ namespace ManosLimpias.Core
                 return;
 
             if (!_faucetLocked)
-            {
-                if (Services.Faucet != null && Services.Faucet.IsOpen)
-                    LockFaucetOpen(OpenSide());
                 return;
-            }
 
             if (!_handsGrabbed || Services.WaterContact == null || !Services.WaterContact.IsOverlapping)
             {
@@ -108,12 +102,6 @@ namespace ManosLimpias.Core
         {
             _handsGrabbed = true;
             Services.Hands?.SetGlow(false);
-        }
-
-        void OnFaucetActivated(FaucetSide side)
-        {
-            Debug.Log($"[RinseSoapStage] Activated {side} entered={IsEntered}");
-            LockFaucetOpen(side);
         }
 
         void OnFaucetPointerHit(FaucetSide side)
@@ -178,13 +166,6 @@ namespace ManosLimpias.Core
             CompleteOnce();
         }
 
-        FaucetSide OpenSide()
-        {
-            if (Services.Faucet != null && Services.Faucet.RightIsOpen && !Services.Faucet.LeftIsOpen)
-                return FaucetSide.Right;
-            return FaucetSide.Left;
-        }
-
         void CompleteOnce()
         {
             if (_completed || !IsEntered)
@@ -214,8 +195,6 @@ namespace ManosLimpias.Core
         {
             if (Services.Faucet == null)
                 return;
-            Services.Faucet.Activated -= OnFaucetActivated;
-            Services.Faucet.Activated += OnFaucetActivated;
             Services.Faucet.PointerHit -= OnFaucetPointerHit;
             Services.Faucet.PointerHit += OnFaucetPointerHit;
         }
@@ -224,7 +203,6 @@ namespace ManosLimpias.Core
         {
             if (Services.Faucet == null)
                 return;
-            Services.Faucet.Activated -= OnFaucetActivated;
             Services.Faucet.PointerHit -= OnFaucetPointerHit;
             Services.Faucet.PointerHit += OnFaucetPointerHit;
         }
@@ -233,7 +211,6 @@ namespace ManosLimpias.Core
         {
             if (Services.Faucet == null)
                 return;
-            Services.Faucet.Activated -= OnFaucetActivated;
             Services.Faucet.PointerHit -= OnFaucetPointerHit;
         }
 

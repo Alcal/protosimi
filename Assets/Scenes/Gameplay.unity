@@ -2304,7 +2304,7 @@ MonoBehaviour:
   bubbleSprite: {fileID: -9136834448258697486, guid: 1abfbac11e51ea66580ed94cd7b61e2e, type: 3}
   particleMaterial: {fileID: 2100000, guid: c8e2f718d9aded9a2bfaccb761468f6c, type: 2}
   scrubParticles: {fileID: 1679639668}
-  bubblesPerHitbox: 4
+  bubblesPerHitbox: 12
   hitboxFit: 0.4
   growDuration: 0.5
   emitPerSecond: 8
