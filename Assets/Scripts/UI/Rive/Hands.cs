@@ -7,11 +7,10 @@ using UnityEngine.InputSystem;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Binds the dedicated hands artboard widget. OpenFaucetStage enables drag
-    /// after the faucet is locked open, then fills only after a grab while a
-    /// hands hitbox overlaps the faucet water spot. Disabling drag leaves
-    /// FreezePlacement so later stages keep the wet-hands position.
-    /// RinseSoapStage re-enables drag, then <see cref="ReturnHome"/> snaps the
+    /// Binds the dedicated hands artboard widget. OpenFaucetStage and
+    /// RinseSoapStage enable drag after the faucet is locked open, then fill
+    /// only after a grab while a hands hitbox overlaps the faucet water spot.
+    /// At 80% both stages disable drag and <see cref="ReturnHome"/> snaps the
     /// panel back before the faucet close tap.
     /// </summary>
     [DefaultExecutionOrder(100)]

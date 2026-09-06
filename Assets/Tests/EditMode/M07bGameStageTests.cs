@@ -118,6 +118,7 @@ namespace ManosLimpias.Tests
             Assert.That(_services.Faucet.IsGlowing, Is.False);
             Assert.That(_services.Hands.IsDraggable, Is.False);
             Assert.That(_services.Hands.IsGlowing, Is.False);
+            Assert.That(_services.Hands.ReturnHomeCount, Is.EqualTo(1));
             _services.Faucet.Raise(FaucetSide.Left);
             Assert.That(_services.CompletionCount, Is.Zero);
         }
@@ -251,7 +252,7 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void OpenFaucet_FillsWhileOverlapping_ThenCompletes()
+        public void OpenFaucet_FillsWhileOverlapping_StopsAt80AndEnablesFaucetClose()
         {
             var stage = new OpenFaucetStage();
             _services.CompletionRequested = _ => { };
@@ -271,13 +272,48 @@ namespace ManosLimpias.Tests
 
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.WetProgress));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+            Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
+            Assert.That(_services.Hands.ReturnHomeCount, Is.EqualTo(1));
+            Assert.That(_services.Faucet.IsEnabled, Is.True);
+            Assert.That(_services.Faucet.IsGlowing, Is.True);
+            Assert.That(_services.Icon.Active, Is.True);
+            Assert.That(_services.Icon.Completed, Is.False);
+
+            stage.Tick(OpenFaucetStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.WetProgress));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void OpenFaucet_PointerHit_AfterWet_ClosesAndCompletes()
+        {
+            var stage = new OpenFaucetStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+            _services.Faucet.RaisePointerHit();
+            _services.Hands.RaiseDragStarted();
+            _services.Water.IsOverlapping = true;
+            stage.Tick(3.8f);
+
+            _services.Faucet.RaisePointerHit(FaucetSide.Right);
+
+            Assert.That(_services.Faucet.LockClosedCount, Is.EqualTo(1));
+            Assert.That(_services.Faucet.IsOpen, Is.False);
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
             Assert.That(_services.Progress.Progress, Is.EqualTo(1f));
             Assert.That(_services.Icon.Active, Is.False);
             Assert.That(_services.Icon.Completed, Is.True);
             Assert.That(_services.CompletionCount, Is.EqualTo(1));
 
-            stage.Tick(OpenFaucetStage.FillInterval);
+            _services.Faucet.SetEnabled(true);
+            _services.Faucet.RaisePointerHit(FaucetSide.Left);
             Assert.That(_services.CompletionCount, Is.EqualTo(1));
+            Assert.That(_services.Faucet.LockClosedCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -464,24 +500,40 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void RinseSoap_OnEnter_GlowsAndEnablesHandsDrag()
+        public void RinseSoap_OnEnter_GlowsFaucetUntilOpen()
         {
             var stage = new RinseSoapStage();
             stage.Initialize(_services);
             _services.Soap.SetDraggable(true);
-            _services.Faucet.SetEnabled(true);
             stage.Enter();
 
             Assert.That(_services.Icon.StepId, Is.EqualTo(3));
             Assert.That(_services.Icon.Active, Is.True);
             Assert.That(_services.Icon.Completed, Is.False);
             Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
-            Assert.That(_services.Hands.IsDraggable, Is.True);
-            Assert.That(_services.Hands.IsGlowing, Is.True);
+            Assert.That(_services.Hands.IsDraggable, Is.False);
+            Assert.That(_services.Hands.IsGlowing, Is.False);
             Assert.That(_services.Soap.IsDraggable, Is.False);
             Assert.That(_services.Soap.IsGlowing, Is.False);
+            Assert.That(_services.Faucet.IsEnabled, Is.True);
+            Assert.That(_services.Faucet.IsGlowing, Is.True);
+        }
+
+        [Test]
+        public void RinseSoap_OpenFaucet_LocksAt20AndEnablesHands()
+        {
+            var stage = new RinseSoapStage();
+            _services.CompletionRequested = _ => { };
+            stage.Initialize(_services);
+            stage.Enter();
+
+            _services.Faucet.RaisePointerHit();
+            Assert.That(_services.Progress.Progress, Is.EqualTo(RinseSoapStage.OpenProgress));
+            Assert.That(_services.CompletionCount, Is.EqualTo(0));
             Assert.That(_services.Faucet.IsEnabled, Is.False);
             Assert.That(_services.Faucet.IsGlowing, Is.False);
+            Assert.That(_services.Hands.IsDraggable, Is.True);
+            Assert.That(_services.Hands.IsGlowing, Is.True);
         }
 
         [Test]
@@ -490,6 +542,7 @@ namespace ManosLimpias.Tests
             var stage = new RinseSoapStage();
             stage.Initialize(_services);
             stage.Enter();
+            _services.Faucet.RaisePointerHit();
 
             Assert.That(_services.Hands.IsGlowing, Is.True);
             _services.Hands.RaiseDragStarted();
@@ -509,28 +562,39 @@ namespace ManosLimpias.Tests
             stage.Tick(RinseSoapStage.FillInterval);
             Assert.That(_services.Progress.Progress, Is.EqualTo(0f));
 
+            _services.Faucet.RaisePointerHit();
+            stage.Tick(RinseSoapStage.FillInterval);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(RinseSoapStage.OpenProgress));
+
             _services.Hands.RaiseDragStarted();
             stage.Tick(RinseSoapStage.FillInterval);
-            Assert.That(_services.Progress.Progress, Is.EqualTo(RinseSoapStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Progress.Progress,
+                Is.EqualTo(RinseSoapStage.OpenProgress + RinseSoapStage.FillStep).Within(0.0001f));
         }
 
         [Test]
-        public void RinseSoap_FillsWhileOverlapping_StopsAt75AndEnablesFaucet()
+        public void RinseSoap_FillsWhileOverlapping_StopsAt80AndEnablesFaucetClose()
         {
             var stage = new RinseSoapStage();
             _services.CompletionRequested = _ => { };
             stage.Initialize(_services);
             stage.Enter();
+            _services.Faucet.RaisePointerHit();
             _services.Hands.RaiseDragStarted();
 
             _services.Water.IsOverlapping = true;
             stage.Tick(RinseSoapStage.FillInterval);
-            Assert.That(_services.Progress.Progress, Is.EqualTo(RinseSoapStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Progress.Progress,
+                Is.EqualTo(RinseSoapStage.OpenProgress + RinseSoapStage.FillStep).Within(0.0001f));
             Assert.That(_services.CompletionCount, Is.EqualTo(0));
 
             _services.Water.IsOverlapping = false;
             stage.Tick(RinseSoapStage.FillInterval);
-            Assert.That(_services.Progress.Progress, Is.EqualTo(RinseSoapStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Progress.Progress,
+                Is.EqualTo(RinseSoapStage.OpenProgress + RinseSoapStage.FillStep).Within(0.0001f));
 
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
@@ -568,20 +632,22 @@ namespace ManosLimpias.Tests
             stage.Initialize(_services);
             _services.Foam.SetCoverage(1f);
             stage.Enter();
+            _services.Faucet.RaisePointerHit();
             _services.Hands.RaiseDragStarted();
             _services.Water.IsOverlapping = true;
 
             stage.Tick(RinseSoapStage.FillInterval);
+            var afterFill = RinseSoapStage.OpenProgress + RinseSoapStage.FillStep;
             Assert.That(
                 _services.Foam.Coverage,
-                Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.FillStep)).Within(0.0001f));
+                Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(afterFill)).Within(0.0001f));
             Assert.That(_services.Foam.Coverage, Is.LessThan(1f));
 
             _services.Water.IsOverlapping = false;
             stage.Tick(RinseSoapStage.FillInterval);
             Assert.That(
                 _services.Foam.Coverage,
-                Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.FillStep)).Within(0.0001f));
+                Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(afterFill)).Within(0.0001f));
 
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
@@ -595,6 +661,7 @@ namespace ManosLimpias.Tests
             _services.CompletionRequested = _ => { };
             stage.Initialize(_services);
             stage.Enter();
+            _services.Faucet.RaisePointerHit();
             _services.Hands.RaiseDragStarted();
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
@@ -818,6 +885,12 @@ namespace ManosLimpias.Tests
 
             public void SetEnabled(bool enabled)
             {
+                SetEnabled(enabled, rivePointerHits: enabled);
+            }
+
+            public void SetEnabled(bool enabled, bool rivePointerHits)
+            {
+                _ = rivePointerHits;
                 IsEnabled = enabled;
                 if (!enabled)
                 {

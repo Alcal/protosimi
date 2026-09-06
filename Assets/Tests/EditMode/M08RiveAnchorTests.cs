@@ -261,6 +261,28 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void SetEnabled_WithoutRiveHits_KeepsHitTestNone()
+        {
+            var go = new GameObject("M08 Faucet TapOnly");
+            var widgetGo = new GameObject("M08 Faucet TapOnly Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var faucet = go.AddComponent<Faucet>();
+            int hits = 0;
+            faucet.PointerHit += _ => hits++;
+
+            faucet.Bind(widget);
+            faucet.SetEnabled(true, rivePointerHits: false);
+
+            Assert.That(faucet.IsEnabled, Is.True);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+            faucet.NotifyPointerHit(FaucetSide.Right);
+            Assert.That(hits, Is.EqualTo(1));
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
         public void LockOpen_DisablesHits_KeepsFaucetOpen()
         {
             var go = new GameObject("M08 Faucet LockOpen");

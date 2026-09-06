@@ -86,8 +86,11 @@ namespace ManosLimpias.Tests
         public void RinseFoamCoverage_IsOneMinusNormalizedProgress()
         {
             Assert.That(RinseSoapStage.FoamCoverageForProgress(0f), Is.EqualTo(1f));
+            Assert.That(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.OpenProgress), Is.EqualTo(1f));
+            var rinseMid = RinseSoapStage.OpenProgress +
+                           (RinseSoapStage.RinseProgress - RinseSoapStage.OpenProgress) * 0.5f;
             Assert.That(
-                RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.RinseProgress * 0.5f),
+                RinseSoapStage.FoamCoverageForProgress(rinseMid),
                 Is.EqualTo(0.5f).Within(0.0001f));
             Assert.That(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.RinseProgress), Is.EqualTo(0f));
             Assert.That(RinseSoapStage.FoamCoverageForProgress(1f), Is.EqualTo(0f));

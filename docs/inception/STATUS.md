@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-05 — RinseSoapStage after ApplySoap: drag hands under water to 75%, snap home, tap either faucet handle to close and finish. EditMode 73/73, PlayMode 7/7.
-next_action: Play Gameplay through soap, then rinse — drag HandsRive under the water until the bar hits 75%, hands snap home, faucet glows; tap either handle to close and fill to 100%.
+last_session: 2026-09-05 — OpenFaucet + RinseSoap share 20% open / 80% wet-or-rinse / close-to-100%. Hands ReturnHome at 80%; faucet must be opened again for rinse. M07b EditMode 38/38, SoapFoamMath 9/9, PlayMode 5/5.
+next_action: Play Gameplay — tap faucet (20%), drag HandsRive under water to 80% (snap home), tap to close (100%). After soap, rinse repeats: open (20%), rinse to 80%, snap home, close to 100%.
 
 ## Session log
 
@@ -36,3 +36,4 @@ next_action: Play Gameplay through soap, then rinse — drag HandsRive under the
 | 2026-09-04 | implement | Step icons fire `isCompleted` trigger once and latch prior steps |
 | 2026-09-04 | implement | Soap foam: `game_bubbles` on hands hitboxes + ParticleSystem on SoapRive (`bubble.png`) |
 | 2026-09-05 | implement | RinseSoapStage: hands-under-water to 75%, ReturnHome, either-handle faucet close to 100% |
+| 2026-09-05 | implement | OpenFaucet + RinseSoap: 20% open, 80% hands/water, ReturnHome, close faucet to 100% |

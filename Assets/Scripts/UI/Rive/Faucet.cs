@@ -9,8 +9,8 @@ using UnityEngine.InputSystem;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Binds the dedicated faucet artboard widget. OpenFaucetStage locks the faucet
-    /// open from a pointer press inside this widget. RinseSoapStage uses
+    /// Binds the dedicated faucet artboard widget. OpenFaucetStage and
+    /// RinseSoapStage lock the faucet open from a pointer press, then use
     /// <see cref="PointerHit"/> on either handle to <see cref="LockClosed"/>.
     /// </summary>
     [DefaultExecutionOrder(100)]
@@ -49,6 +49,8 @@ namespace ManosLimpias.UI.Rive
         bool _pendingOpenVisual;
         bool _pendingCloseVisual;
         int _pendingCloseFrames;
+        bool _rivePointerHits;
+        bool _ignoreUntilRelease;
         FaucetSide _pendingOpenSide;
         SMIInput _leftOnInput;
         SMIInput _rightOnInput;
@@ -58,25 +60,39 @@ namespace ManosLimpias.UI.Rive
 
         public void SetEnabled(bool enabled)
         {
+            SetEnabled(enabled, rivePointerHits: enabled);
+        }
+
+        public void SetEnabled(bool enabled, bool rivePointerHits)
+        {
             IsEnabled = enabled;
+            _rivePointerHits = enabled && rivePointerHits;
             ApplyHitTest();
             if (enabled)
             {
                 _pendingOpenVisual = false;
                 _pendingCloseVisual = false;
                 _pendingCloseFrames = 0;
+                _ignoreUntilRelease = IsPointerHeld();
             }
             else
+            {
+                _ignoreUntilRelease = false;
                 ClearOpenState();
+            }
         }
 
         public void LockOpen(FaucetSide side)
         {
             _pendingCloseVisual = false;
             _pendingCloseFrames = 0;
+            _rivePointerHits = false;
             IsEnabled = false;
             ApplyHitTest();
+            bool alreadyOpen = side == FaucetSide.Left ? LeftIsOpen : RightIsOpen;
             SetOpen(side, true);
+            if (alreadyOpen)
+                return;
             if (!TryFireOpenTrigger(side))
             {
                 _pendingOpenSide = side;
@@ -87,13 +103,16 @@ namespace ManosLimpias.UI.Rive
         public void LockClosed()
         {
             _pendingOpenVisual = false;
+            _rivePointerHits = false;
             IsEnabled = false;
             ApplyHitTest();
             SetOpen(FaucetSide.Left, false);
             SetOpen(FaucetSide.Right, false);
-            _pendingCloseFrames = 8;
             if (!TryFireCloseTriggers())
+            {
                 _pendingCloseVisual = true;
+                _pendingCloseFrames = 8;
+            }
         }
 
         public void SetGlow(bool on)
@@ -127,6 +146,8 @@ namespace ManosLimpias.UI.Rive
             _pendingOpenVisual = false;
             _pendingCloseVisual = false;
             _pendingCloseFrames = 0;
+            _rivePointerHits = false;
+            _ignoreUntilRelease = false;
             _leftOnInput = null;
             _rightOnInput = null;
             _leftOffInput = null;
@@ -141,8 +162,11 @@ namespace ManosLimpias.UI.Rive
             if (_pendingCloseVisual || _pendingCloseFrames > 0)
             {
                 if (TryFireCloseTriggers())
+                {
                     _pendingCloseVisual = false;
-                if (_pendingCloseFrames > 0)
+                    _pendingCloseFrames = 0;
+                }
+                else if (_pendingCloseFrames > 0)
                     _pendingCloseFrames--;
             }
 
@@ -166,6 +190,14 @@ namespace ManosLimpias.UI.Rive
 
         void PollPointerHit()
         {
+            if (_ignoreUntilRelease)
+            {
+                if (IsPointerHeld())
+                    return;
+                _ignoreUntilRelease = false;
+                return;
+            }
+
             if (!TryGetPressScreenPoint(out var screen))
                 return;
             if (!TryGetNormalizedPoint(screen, out var normalized))
@@ -431,7 +463,16 @@ namespace ManosLimpias.UI.Rive
         void ApplyHitTest()
         {
             if (widget != null)
-                widget.HitTestBehavior = IsEnabled ? HitTestBehavior.Translucent : HitTestBehavior.None;
+                widget.HitTestBehavior = IsEnabled && _rivePointerHits
+                    ? HitTestBehavior.Translucent
+                    : HitTestBehavior.None;
+        }
+
+        static bool IsPointerHeld()
+        {
+            if (Pointer.current != null && Pointer.current.press.isPressed)
+                return true;
+            return Mouse.current != null && Mouse.current.leftButton.isPressed;
         }
 
         void ClearOpenState()

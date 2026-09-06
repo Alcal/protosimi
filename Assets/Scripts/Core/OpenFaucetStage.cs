@@ -5,7 +5,8 @@ namespace ManosLimpias.Core
     [System.Serializable]
     public sealed class OpenFaucetStage : GameStage
     {
-        public const float OpenProgress = 0.25f;
+        public const float OpenProgress = 0.2f;
+        public const float WetProgress = 0.8f;
         public const float FillStep = 0.02f;
         public const float FillInterval = 0.1f;
 
@@ -13,6 +14,7 @@ namespace ManosLimpias.Core
 
         bool _completed;
         bool _faucetLocked;
+        bool _closePhase;
         bool _handsGrabbed;
         float _fillTimer;
 
@@ -22,6 +24,7 @@ namespace ManosLimpias.Core
         {
             _completed = false;
             _faucetLocked = false;
+            _closePhase = false;
             _handsGrabbed = false;
             _fillTimer = 0f;
             Services.ProgressBar?.SetProgress(0f);
@@ -36,7 +39,7 @@ namespace ManosLimpias.Core
             }
 
             Debug.Log("[OpenFaucetStage] Entered; subscribed to Faucet pointer hit.");
-            SubscribeFaucet();
+            SubscribeFaucetOpen();
             Services.Faucet.SetEnabled(true);
             Services.Faucet.SetGlow(true);
             if (Services.Faucet.IsOpen)
@@ -45,7 +48,7 @@ namespace ManosLimpias.Core
 
         protected override void OnTick(float deltaTime)
         {
-            if (_completed || !IsEntered)
+            if (_completed || !IsEntered || _closePhase)
                 return;
 
             if (!_faucetLocked)
@@ -63,15 +66,15 @@ namespace ManosLimpias.Core
 
             _fillTimer += deltaTime;
             var progress = Services.ProgressBar != null ? Services.ProgressBar.Progress : OpenProgress;
-            while (_fillTimer >= FillInterval && progress < 1f)
+            while (_fillTimer >= FillInterval && progress < WetProgress)
             {
                 _fillTimer -= FillInterval;
-                progress = Mathf.Min(1f, progress + FillStep);
+                progress = Mathf.Min(WetProgress, progress + FillStep);
                 Services.ProgressBar?.SetProgress(progress);
             }
 
-            if (progress >= 1f)
-                CompleteOnce();
+            if (progress >= WetProgress)
+                BeginClosePhase();
         }
 
         protected override void OnExit()
@@ -80,6 +83,7 @@ namespace ManosLimpias.Core
             UnsubscribeFaucet();
             Services.Hands?.SetGlow(false);
             Services.Hands?.SetDraggable(false);
+            Services.Hands?.ReturnHome();
             if (Services.Faucet != null)
             {
                 Services.Faucet.SetGlow(false);
@@ -101,13 +105,16 @@ namespace ManosLimpias.Core
 
         void OnFaucetPointerHit(FaucetSide side)
         {
-            Debug.Log($"[OpenFaucetStage] PointerHit {side} entered={IsEntered}");
-            LockFaucetOpen(side);
+            Debug.Log($"[OpenFaucetStage] PointerHit {side} closePhase={_closePhase} entered={IsEntered}");
+            if (_closePhase)
+                CloseFaucetAndComplete();
+            else
+                LockFaucetOpen(side);
         }
 
         void LockFaucetOpen(FaucetSide side)
         {
-            if (_faucetLocked || _completed || !IsEntered)
+            if (_faucetLocked || _closePhase || _completed || !IsEntered)
                 return;
 
             _faucetLocked = true;
@@ -118,7 +125,43 @@ namespace ManosLimpias.Core
             Services.Hands?.SetDraggable(true);
             Services.Hands?.SetGlow(true);
             SubscribeHands();
-            Debug.Log($"[OpenFaucetStage] Faucet locked open ({side}) at 25%; hands draggable.");
+            Debug.Log($"[OpenFaucetStage] Faucet locked open ({side}) at 20%; hands draggable.");
+        }
+
+        void BeginClosePhase()
+        {
+            if (_closePhase || _completed || !IsEntered)
+                return;
+
+            _closePhase = true;
+            _fillTimer = 0f;
+            UnsubscribeHands();
+            Services.ProgressBar?.SetProgress(WetProgress);
+            Services.Hands?.SetGlow(false);
+            Services.Hands?.SetDraggable(false);
+            Services.Hands?.ReturnHome();
+
+            if (Services.Faucet == null)
+            {
+                Debug.LogWarning("[OpenFaucetStage] No Faucet service; cannot enable close tap.");
+                return;
+            }
+
+            Debug.Log("[OpenFaucetStage] Hands wet to 80%; faucet glowing for close tap.");
+            SubscribeFaucetClose();
+            Services.Faucet.SetEnabled(true, rivePointerHits: false);
+            Services.Faucet.SetGlow(true);
+        }
+
+        void CloseFaucetAndComplete()
+        {
+            if (!_closePhase || _completed || !IsEntered)
+                return;
+
+            UnsubscribeFaucet();
+            Services.Faucet?.LockClosed();
+            Services.Faucet?.SetGlow(false);
+            CompleteOnce();
         }
 
         FaucetSide OpenSide()
@@ -138,11 +181,22 @@ namespace ManosLimpias.Core
             Services.RequestStageCompletion(this);
         }
 
-        void SubscribeFaucet()
+        void SubscribeFaucetOpen()
         {
             if (Services.Faucet == null)
                 return;
+            Services.Faucet.Activated -= OnFaucetActivated;
             Services.Faucet.Activated += OnFaucetActivated;
+            Services.Faucet.PointerHit -= OnFaucetPointerHit;
+            Services.Faucet.PointerHit += OnFaucetPointerHit;
+        }
+
+        void SubscribeFaucetClose()
+        {
+            if (Services.Faucet == null)
+                return;
+            Services.Faucet.Activated -= OnFaucetActivated;
+            Services.Faucet.PointerHit -= OnFaucetPointerHit;
             Services.Faucet.PointerHit += OnFaucetPointerHit;
         }
 

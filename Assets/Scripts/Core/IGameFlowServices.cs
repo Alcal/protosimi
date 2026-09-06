@@ -24,6 +24,11 @@ namespace ManosLimpias.Core
         bool IsOpen { get; }
         void SetEnabled(bool enabled);
         /// <summary>
+        /// Enables C# tap detection. Pass <paramref name="rivePointerHits"/> false
+        /// so the artboard listeners do not fire from hover or a held pointer.
+        /// </summary>
+        void SetEnabled(bool enabled, bool rivePointerHits);
+        /// <summary>
         /// Opens the chosen side visually and keeps it on while disabling further hits.
         /// </summary>
         void LockOpen(FaucetSide side);
