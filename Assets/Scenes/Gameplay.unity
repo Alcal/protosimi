@@ -3073,6 +3073,7 @@ MonoBehaviour:
   stageConfigurations:
   - rid: 5103114543314763934
   - rid: 7719671250427838746
+  - rid: 7719671270665617519
   references:
     version: 2
     RefIds:
@@ -3084,6 +3085,10 @@ MonoBehaviour:
       type: {class: ApplySoapStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
       data:
         stepId: 2
+    - rid: 7719671270665617519
+      type: {class: RinseSoapStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
+      data:
+        stepId: 3
 --- !u!114 &1259954859
 MonoBehaviour:
   m_ObjectHideFlags: 0

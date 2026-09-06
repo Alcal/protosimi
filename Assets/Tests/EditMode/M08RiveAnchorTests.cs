@@ -291,6 +291,37 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void LockClosed_DisablesHits_ClosesFaucet()
+        {
+            var go = new GameObject("M08 Faucet LockClosed");
+            var widgetGo = new GameObject("M08 Faucet LockClosed Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var faucet = go.AddComponent<Faucet>();
+            int hits = 0;
+            faucet.PointerHit += _ => hits++;
+
+            faucet.Bind(widget);
+            faucet.SetEnabled(true);
+            faucet.LockOpen(FaucetSide.Left);
+            faucet.SetEnabled(true);
+            faucet.LockClosed();
+
+            Assert.That(faucet.IsEnabled, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+            Assert.That(faucet.IsOpen, Is.False);
+            Assert.That(faucet.LeftIsOpen, Is.False);
+            Assert.That(faucet.RightIsOpen, Is.False);
+
+            faucet.Activate(FaucetSide.Right);
+            faucet.NotifyPointerHit(FaucetSide.Left);
+            Assert.That(hits, Is.EqualTo(0));
+            Assert.That(faucet.IsOpen, Is.False);
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
         public void Hands_SetDraggable_TogglesHitTest()
         {
             var go = new GameObject("M08 Hands");
@@ -329,6 +360,29 @@ namespace ManosLimpias.Tests
                 hands.SetDraggable(false);
                 Assert.That(hands.IsDraggable, Is.False);
                 Assert.That(hands.FreezePlacement, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
+        public void Hands_ReturnHome_RestoresLayoutAfterDrag()
+        {
+            var mapped = new Rect(-400f, -200f, 800f, 500f);
+            CreateStretchHands(mapped, out var parent, out var child, out var hands);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.25f, 0.75f));
+                hands.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                hands.NotifyParentLocalPointer(grab + new Vector2(60f, -30f), pressedThisFrame: false, held: true);
+                Assert.That(hands.FreezePlacement, Is.True);
+
+                hands.ReturnHome();
+                Assert.That(hands.FreezePlacement, Is.False);
+                AssertCornersEqual(before, WorldCorners(child));
             }
             finally
             {

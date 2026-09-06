@@ -11,6 +11,8 @@ namespace ManosLimpias.UI.Rive
     /// after the faucet is locked open, then fills only after a grab while a
     /// hands hitbox overlaps the faucet water spot. Disabling drag leaves
     /// FreezePlacement so later stages keep the wet-hands position.
+    /// RinseSoapStage re-enables drag, then <see cref="ReturnHome"/> snaps the
+    /// panel back before the faucet close tap.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public sealed class Hands : MonoBehaviour, IHandsControl, IWaterContactControl
@@ -49,6 +51,14 @@ namespace ManosLimpias.UI.Rive
         bool _dragging;
         Vector2 _lastLocal;
         bool _hasLastLocal;
+        bool _hasHome;
+        Vector2 _homeAnchorMin;
+        Vector2 _homeAnchorMax;
+        Vector2 _homePivot;
+        Vector2 _homeAnchoredPosition;
+        Vector2 _homeSizeDelta;
+        Vector2 _homeOffsetMin;
+        Vector2 _homeOffsetMax;
 
         public bool IsOverlapping
         {
@@ -73,6 +83,12 @@ namespace ManosLimpias.UI.Rive
         {
             IsGlowing = on;
             RiveGlow.SetForWidget(widget, on);
+        }
+
+        public void ReturnHome()
+        {
+            EndDrag();
+            RestoreHomeLayout();
         }
 
         public void Bind(RiveWidget handsWidget, RiveWidget waterWidget = null)
@@ -134,6 +150,7 @@ namespace ManosLimpias.UI.Rive
 
             if (pressedThisFrame && ContainsParentLocal(rectTransform, parentLocal))
             {
+                CaptureHome(rectTransform);
                 ConvertToFreeLayout(rectTransform);
                 FreezePlacement = true;
                 _dragging = true;
@@ -154,6 +171,37 @@ namespace ManosLimpias.UI.Rive
         {
             _dragging = false;
             _hasLastLocal = false;
+        }
+
+        void RestoreHomeLayout()
+        {
+            FreezePlacement = false;
+            var rectTransform = DragRect;
+            if (!_hasHome || rectTransform == null)
+                return;
+
+            rectTransform.anchorMin = _homeAnchorMin;
+            rectTransform.anchorMax = _homeAnchorMax;
+            rectTransform.pivot = _homePivot;
+            rectTransform.anchoredPosition = _homeAnchoredPosition;
+            rectTransform.sizeDelta = _homeSizeDelta;
+            rectTransform.offsetMin = _homeOffsetMin;
+            rectTransform.offsetMax = _homeOffsetMax;
+        }
+
+        void CaptureHome(RectTransform rect)
+        {
+            if (_hasHome || rect == null)
+                return;
+
+            _homeAnchorMin = rect.anchorMin;
+            _homeAnchorMax = rect.anchorMax;
+            _homePivot = rect.pivot;
+            _homeAnchoredPosition = rect.anchoredPosition;
+            _homeSizeDelta = rect.sizeDelta;
+            _homeOffsetMin = rect.offsetMin;
+            _homeOffsetMax = rect.offsetMax;
+            _hasHome = true;
         }
 
         void EnsureHitboxes()

@@ -1,4 +1,5 @@
 using System;
+using ManosLimpias.Core;
 using ManosLimpias.UI.Rive;
 using NUnit.Framework;
 
@@ -37,6 +38,27 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void ShrinkScale_IsInverseOfGrow()
+        {
+            Assert.That(SoapFoamMath.ShrinkScale(0f, 0.5f), Is.EqualTo(1f));
+            Assert.That(SoapFoamMath.ShrinkScale(0.25f, 0.5f), Is.EqualTo(0.5f).Within(0.0001f));
+            Assert.That(SoapFoamMath.ShrinkScale(0.5f, 0.5f), Is.EqualTo(0f));
+            Assert.That(SoapFoamMath.ShrinkScale(2f, 0.5f), Is.EqualTo(0f));
+            Assert.That(SoapFoamMath.ShrinkScale(1f, 0f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void ShrinkElapsedFromScale_ResumesFromCurrentSize()
+        {
+            Assert.That(SoapFoamMath.ShrinkElapsedFromScale(1f, 0.5f), Is.EqualTo(0f));
+            Assert.That(SoapFoamMath.ShrinkElapsedFromScale(0.5f, 0.5f), Is.EqualTo(0.25f).Within(0.0001f));
+            Assert.That(SoapFoamMath.ShrinkElapsedFromScale(0f, 0.5f), Is.EqualTo(0.5f));
+            Assert.That(
+                SoapFoamMath.ShrinkScale(SoapFoamMath.ShrinkElapsedFromScale(0.25f, 0.5f), 0.5f),
+                Is.EqualTo(0.25f).Within(0.0001f));
+        }
+
+        [Test]
         public void RandomSpeed_StaysInAuthoredRange()
         {
             var rng = new Random(3);
@@ -58,6 +80,17 @@ namespace ManosLimpias.Tests
         public void FoamArtboard_FallsBackToSingularWhenClusterHasNoStateMachine()
         {
             Assert.That(SoapFoamMath.FoamArtboard(false), Is.EqualTo(GameBubble.Artboard));
+        }
+
+        [Test]
+        public void RinseFoamCoverage_IsOneMinusNormalizedProgress()
+        {
+            Assert.That(RinseSoapStage.FoamCoverageForProgress(0f), Is.EqualTo(1f));
+            Assert.That(
+                RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.RinseProgress * 0.5f),
+                Is.EqualTo(0.5f).Within(0.0001f));
+            Assert.That(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.RinseProgress), Is.EqualTo(0f));
+            Assert.That(RinseSoapStage.FoamCoverageForProgress(1f), Is.EqualTo(0f));
         }
     }
 }

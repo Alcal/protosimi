@@ -1,8 +1,8 @@
 # Inception Status
 
 design_version: v3
-last_session: 2026-09-04 — Scrub bubbles are a ParticleSystem on SoapRive using extracted `bubble.png`; on-hand `game_bubbles` foam unchanged. Overlay Image pool removed. EditMode 61/61.
-next_action: Play Gameplay, open faucet, drag soap onto a hand. Foam should grow on the hands as the bar fills; soap-sprite particles should rise from the soap bar while scrubbing. Finish soap: foam stays, emission stops and leftover particles fade.
+last_session: 2026-09-05 — RinseSoapStage after ApplySoap: drag hands under water to 75%, snap home, tap either faucet handle to close and finish. EditMode 73/73, PlayMode 7/7.
+next_action: Play Gameplay through soap, then rinse — drag HandsRive under the water until the bar hits 75%, hands snap home, faucet glows; tap either handle to close and fill to 100%.
 
 ## Session log
 
@@ -35,3 +35,4 @@ next_action: Play Gameplay, open faucet, drag soap onto a hand. Foam should grow
 | 2026-09-03 | implement | OpenFaucetStage two-phase: 25% faucet lock then hands/water overlap fill |
 | 2026-09-04 | implement | Step icons fire `isCompleted` trigger once and latch prior steps |
 | 2026-09-04 | implement | Soap foam: `game_bubbles` on hands hitboxes + ParticleSystem on SoapRive (`bubble.png`) |
+| 2026-09-05 | implement | RinseSoapStage: hands-under-water to 75%, ReturnHome, either-handle faucet close to 100% |

@@ -9,7 +9,8 @@ namespace ManosLimpias.UI.Rive
 {
     /// <summary>
     /// Soap-progress foam on the Hands hitboxes plus a ParticleSystem on SoapRive.
-    /// Foam widgets stay parented to the hands after ApplySoap exits.
+    /// Foam widgets stay parented to the hands after ApplySoap exits. Rinse lowers
+    /// coverage so bubbles shrink in reverse wake order.
     /// </summary>
     [DefaultExecutionOrder(120)]
     public sealed class SoapBubbles : MonoBehaviour, ISoapFoamControl
@@ -57,6 +58,7 @@ namespace ManosLimpias.UI.Rive
         {
             Coverage = Mathf.Clamp01(progress01);
             WakeForCoverage();
+            SleepForCoverage();
         }
 
         public void SetScrubbing(bool scrubbing)
@@ -101,7 +103,7 @@ namespace ManosLimpias.UI.Rive
         {
             if (!_poolReady)
                 EnsurePool();
-            TickGrow(Time.deltaTime);
+            TickScale(Time.deltaTime);
         }
 
         void SubscribeHands()
@@ -149,6 +151,7 @@ namespace ManosLimpias.UI.Rive
             _poolReady = _slots.Length > 0;
             ReshuffleSlots();
             WakeForCoverage();
+            SleepForCoverage();
         }
 
         void AddSlots(RiveNodeHitbox hitbox, string label, ref int index)
@@ -211,7 +214,9 @@ namespace ManosLimpias.UI.Rive
                 slot.threshold = thresholds[i];
                 slot.speed = SoapFoamMath.RandomSpeed(_rng);
                 slot.woken = false;
+                slot.shrinking = false;
                 slot.growElapsed = 0f;
+                slot.shrinkElapsed = 0f;
                 slot.placed = false;
                 if (slot.widget != null)
                     slot.widget.Speed = slot.speed;
@@ -230,8 +235,25 @@ namespace ManosLimpias.UI.Rive
                 if (!SoapFoamMath.ShouldWake(slot.threshold, Coverage))
                     continue;
                 slot.woken = true;
+                slot.shrinking = false;
+                slot.shrinkElapsed = 0f;
                 slot.growElapsed = 0f;
                 PlaceOnce(slot);
+            }
+        }
+
+        void SleepForCoverage()
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                var slot = _slots[i];
+                if (slot == null || !slot.woken || slot.shrinking)
+                    continue;
+                if (SoapFoamMath.ShouldWake(slot.threshold, Coverage))
+                    continue;
+                slot.shrinking = true;
+                float current = SoapFoamMath.GrowScale(slot.growElapsed, growDuration);
+                slot.shrinkElapsed = SoapFoamMath.ShrinkElapsedFromScale(current, growDuration);
             }
         }
 
@@ -264,18 +286,37 @@ namespace ManosLimpias.UI.Rive
             slot.placed = true;
         }
 
-        void TickGrow(float deltaTime)
+        void TickScale(float deltaTime)
         {
             if (deltaTime <= 0f)
                 return;
             for (int i = 0; i < _slots.Length; i++)
             {
                 var slot = _slots[i];
-                if (slot == null || !slot.woken || slot.transform == null)
+                if (slot == null || slot.transform == null)
+                    continue;
+
+                if (slot.shrinking)
+                {
+                    slot.shrinkElapsed += deltaTime;
+                    float s = SoapFoamMath.ShrinkScale(slot.shrinkElapsed, growDuration);
+                    slot.transform.localScale = new Vector3(s, s, 1f);
+                    if (s <= 0f)
+                    {
+                        slot.shrinking = false;
+                        slot.woken = false;
+                        slot.growElapsed = 0f;
+                        slot.shrinkElapsed = 0f;
+                    }
+
+                    continue;
+                }
+
+                if (!slot.woken)
                     continue;
                 slot.growElapsed += deltaTime;
-                float s = SoapFoamMath.GrowScale(slot.growElapsed, growDuration);
-                slot.transform.localScale = new Vector3(s, s, 1f);
+                float g = SoapFoamMath.GrowScale(slot.growElapsed, growDuration);
+                slot.transform.localScale = new Vector3(g, g, 1f);
             }
         }
 
@@ -514,7 +555,9 @@ namespace ManosLimpias.UI.Rive
             public float threshold = 1f;
             public float speed = 1f;
             public float growElapsed;
+            public float shrinkElapsed;
             public bool woken;
+            public bool shrinking;
             public bool placed;
             public Vector2 artSize;
         }

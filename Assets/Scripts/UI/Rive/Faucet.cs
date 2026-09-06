@@ -10,8 +10,8 @@ namespace ManosLimpias.UI.Rive
 {
     /// <summary>
     /// Binds the dedicated faucet artboard widget. OpenFaucetStage locks the faucet
-    /// open from a pointer press inside this widget; Close Water should not subscribe
-    /// to <see cref="PointerHit"/>.
+    /// open from a pointer press inside this widget. RinseSoapStage uses
+    /// <see cref="PointerHit"/> on either handle to <see cref="LockClosed"/>.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public sealed class Faucet : MonoBehaviour, IFaucetControl
@@ -47,6 +47,8 @@ namespace ManosLimpias.UI.Rive
         bool _inputsResolved;
         bool _inputsLogged;
         bool _pendingOpenVisual;
+        bool _pendingCloseVisual;
+        int _pendingCloseFrames;
         FaucetSide _pendingOpenSide;
         SMIInput _leftOnInput;
         SMIInput _rightOnInput;
@@ -59,13 +61,19 @@ namespace ManosLimpias.UI.Rive
             IsEnabled = enabled;
             ApplyHitTest();
             if (enabled)
+            {
                 _pendingOpenVisual = false;
+                _pendingCloseVisual = false;
+                _pendingCloseFrames = 0;
+            }
             else
                 ClearOpenState();
         }
 
         public void LockOpen(FaucetSide side)
         {
+            _pendingCloseVisual = false;
+            _pendingCloseFrames = 0;
             IsEnabled = false;
             ApplyHitTest();
             SetOpen(side, true);
@@ -74,6 +82,18 @@ namespace ManosLimpias.UI.Rive
                 _pendingOpenSide = side;
                 _pendingOpenVisual = true;
             }
+        }
+
+        public void LockClosed()
+        {
+            _pendingOpenVisual = false;
+            IsEnabled = false;
+            ApplyHitTest();
+            SetOpen(FaucetSide.Left, false);
+            SetOpen(FaucetSide.Right, false);
+            _pendingCloseFrames = 8;
+            if (!TryFireCloseTriggers())
+                _pendingCloseVisual = true;
         }
 
         public void SetGlow(bool on)
@@ -105,6 +125,8 @@ namespace ManosLimpias.UI.Rive
             _inputsResolved = false;
             _inputsLogged = false;
             _pendingOpenVisual = false;
+            _pendingCloseVisual = false;
+            _pendingCloseFrames = 0;
             _leftOnInput = null;
             _rightOnInput = null;
             _leftOffInput = null;
@@ -116,6 +138,13 @@ namespace ManosLimpias.UI.Rive
         {
             if (_pendingOpenVisual && TryFireOpenTrigger(_pendingOpenSide))
                 _pendingOpenVisual = false;
+            if (_pendingCloseVisual || _pendingCloseFrames > 0)
+            {
+                if (TryFireCloseTriggers())
+                    _pendingCloseVisual = false;
+                if (_pendingCloseFrames > 0)
+                    _pendingCloseFrames--;
+            }
 
             if (!IsEnabled)
                 return;
@@ -329,6 +358,26 @@ namespace ManosLimpias.UI.Rive
             FireInput(side == FaucetSide.Left ? _leftOnInput : _rightOnInput);
         }
 
+        bool TryFireCloseTriggers()
+        {
+            ResolveInputs();
+            if (widget?.StateMachine == null)
+                return false;
+
+            FireCloseTriggers();
+            Debug.Log("[Faucet] LockClosed fired both off inputs.");
+            return true;
+        }
+
+        void FireCloseTriggers()
+        {
+            ResolveInputs();
+            SetBoolFalse(_leftOnInput);
+            SetBoolFalse(_rightOnInput);
+            FireInput(_leftOffInput);
+            FireInput(_rightOffInput);
+        }
+
         static void FireInput(SMIInput input)
         {
             if (input == null)
@@ -337,6 +386,12 @@ namespace ManosLimpias.UI.Rive
                 trigger.Fire();
             else if (input is SMIBool boolean)
                 boolean.Value = true;
+        }
+
+        static void SetBoolFalse(SMIInput input)
+        {
+            if (input is SMIBool boolean)
+                boolean.Value = false;
         }
 
         void ResolveInputs()

@@ -27,6 +27,10 @@ namespace ManosLimpias.Core
         /// Opens the chosen side visually and keeps it on while disabling further hits.
         /// </summary>
         void LockOpen(FaucetSide side);
+        /// <summary>
+        /// Closes whichever side is open and disables further hits.
+        /// </summary>
+        void LockClosed();
     }
 
     public interface IProgressBarControl
@@ -45,6 +49,7 @@ namespace ManosLimpias.Core
         event Action DragStarted;
         bool IsDraggable { get; }
         void SetDraggable(bool draggable);
+        void ReturnHome();
     }
 
     public interface IWaterContactControl

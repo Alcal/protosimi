@@ -3,8 +3,8 @@ using System;
 namespace ManosLimpias.UI.Rive
 {
     /// <summary>
-    /// Pure helpers for on-hand foam wake thresholds and grow. EditMode tests
-    /// cover this without a live .riv.
+    /// Pure helpers for on-hand foam wake thresholds, grow, and rinse shrink.
+    /// EditMode tests cover this without a live .riv.
     /// </summary>
     public static class SoapFoamMath
     {
@@ -41,6 +41,25 @@ namespace ManosLimpias.UI.Rive
             if (elapsed >= duration)
                 return 1f;
             return elapsed / duration;
+        }
+
+        public static float ShrinkScale(float elapsed, float duration)
+        {
+            return 1f - GrowScale(elapsed, duration);
+        }
+
+        /// <summary>
+        /// Elapsed shrink time whose <see cref="ShrinkScale"/> matches <paramref name="scale"/>.
+        /// </summary>
+        public static float ShrinkElapsedFromScale(float scale, float duration)
+        {
+            if (duration <= 0f)
+                return 0f;
+            if (scale >= 1f)
+                return 0f;
+            if (scale <= 0f)
+                return duration;
+            return (1f - scale) * duration;
         }
 
         public static float RandomSpeed(Random rng)

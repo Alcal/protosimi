@@ -336,6 +336,7 @@ namespace ManosLimpias.Editor
 
             bool hasOpen = false;
             bool hasSoap = false;
+            bool hasRinse = false;
             for (int i = 0; i < stages.arraySize; i++)
             {
                 var value = stages.GetArrayElementAtIndex(i).managedReferenceValue;
@@ -343,6 +344,8 @@ namespace ManosLimpias.Editor
                     hasOpen = true;
                 else if (value is ApplySoapStage)
                     hasSoap = true;
+                else if (value is RinseSoapStage)
+                    hasRinse = true;
             }
 
             if (!hasOpen)
@@ -357,6 +360,13 @@ namespace ManosLimpias.Editor
                 stages.arraySize++;
                 stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
                     new ApplySoapStage { stepId = 2 };
+            }
+
+            if (!hasRinse)
+            {
+                stages.arraySize++;
+                stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
+                    new RinseSoapStage { stepId = 3 };
             }
         }
 

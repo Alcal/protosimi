@@ -321,6 +321,8 @@ namespace ManosLimpias.Core
             {
                 IsGlowing = on;
             }
+
+            public void ReturnHome() { }
         }
 
         sealed class NullSoap : ISoapControl
