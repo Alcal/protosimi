@@ -31,9 +31,9 @@ namespace ManosLimpias.UI.Rive
 
         public static int OverlaySortingOffsetFor(string panelName)
         {
-            if (panelName == RiveGlow.PanelNameFor(Intro.WidgetName) || panelName == "WinRoot")
+            if (panelName == RiveGlow.PanelNameFor(Intro.WidgetName))
                 return ModalSortingOffset;
-            if (panelName == RiveGlow.HudPanelName || panelName == "PlayHudRoot")
+            if (panelName == RiveGlow.HudPanelName)
                 return HudSortingOffset;
             return OverlaySortingOffset;
         }

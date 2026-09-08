@@ -8,7 +8,6 @@ namespace ManosLimpias.Input
     {
         public FineTuningVariables tuning;
         public StageController stages;
-        public PlayfieldFoci playfield;
         public Camera worldCamera;
 
         Vector2 _lastPointerWorld;
@@ -47,17 +46,14 @@ namespace ManosLimpias.Input
             Vector3 world3 = worldCamera.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -worldCamera.transform.position.z));
             Vector2 world = world3;
 
-            var focus = playfield != null ? playfield.FocusForStage(stages.StageIndex) : null;
-            bool nearFocus = focus == null || Vector2.Distance(world, focus.transform.position) <= tuning.tapRadiusWorld;
-
             if (family == InputFamily.HandsUnderWater)
             {
-                if (down && nearFocus)
+                if (down)
                     stages.AddProgressFromFamily(family, Time.deltaTime);
             }
             else if (family == InputFamily.RubOnHands)
             {
-                if (down && nearFocus)
+                if (down)
                 {
                     if (_pointerDown)
                     {

@@ -35,10 +35,6 @@ namespace ManosLimpias.Core
         public WafController waf;
         public AssistHijack assist;
         public CameraFocus cameraFocus;
-        public PlayfieldFoci playfield;
-        public GermPop germs;
-        public GameObject winRoot;
-        public GameObject playRoot;
         public string titleSceneName = "Title";
 
         [SerializeField, SerializeReference]
@@ -100,7 +96,6 @@ namespace ManosLimpias.Core
             BuildRuntimeStages();
             State = GameFlowState.Intro;
             ActiveStageIndex = -1;
-            SetRoots(play: true, win: false);
             hud?.SetHudVisible(false);
             hud?.SetStageCount(_runtimeStages.Count);
             hud?.SetHost(true, false);
@@ -108,8 +103,6 @@ namespace ManosLimpias.Core
             audioPlayer?.Play("vo_welcome");
             hud?.PulseHostSpeak();
             cameraFocus?.EaseToStage(0);
-            playfield?.SetActiveStage(-1);
-            germs?.ResetGerms();
             _services?.SoapFoam?.ResetFoam();
             _services?.Wetness?.ResetWetness();
             _services?.StepIcon?.SetState(1, active: false, completed: false);
@@ -130,7 +123,6 @@ namespace ManosLimpias.Core
             hud?.SetHudVisible(true);
             hud?.SetHost(false, false);
             hud?.ApplyStage(index, 0f);
-            playfield?.SetActiveStage(index);
             cameraFocus?.EaseToStage(index);
             _runtimeStages[index].Initialize(_services);
             _runtimeStages[index].Enter();
@@ -180,13 +172,11 @@ namespace ManosLimpias.Core
             State = GameFlowState.Outro;
             waf?.StopTracking();
             assist?.Stop();
-            SetRoots(play: true, win: true);
             hud?.SetHudVisible(true);
             hud?.SetHost(true, false);
             audioPlayer?.Play("vo_complete");
             hud?.PulseHostSpeak();
             AnalyticsStub.SessionComplete(Time.time - _sessionStart);
-            playfield?.SetActiveStage(-1);
         }
 
         public void EnterAssist()
@@ -220,12 +210,6 @@ namespace ManosLimpias.Core
             }
             else if (level >= 3)
                 EnterAssist();
-        }
-
-        void SetRoots(bool play, bool win)
-        {
-            if (playRoot) playRoot.SetActive(play);
-            if (winRoot) winRoot.SetActive(win);
         }
 
         void BuildRuntimeStages()
