@@ -78,6 +78,13 @@ namespace ManosLimpias.Core
         void ResetFoam();
     }
 
+    public interface IWetnessControl
+    {
+        float Wetness { get; }
+        void SetWetness(float progress01);
+        void ResetWetness();
+    }
+
     public interface IGameFlowServices
     {
         IFaucetControl Faucet { get; }
@@ -85,6 +92,7 @@ namespace ManosLimpias.Core
         IWaterContactControl WaterContact { get; }
         ISoapControl Soap { get; }
         ISoapFoamControl SoapFoam { get; }
+        IWetnessControl Wetness { get; }
         IProgressBarControl ProgressBar { get; }
         IStepIconControl StepIcon { get; }
         void RequestStageCompletion(GameStage stage);

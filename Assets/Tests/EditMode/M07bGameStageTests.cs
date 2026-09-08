@@ -269,6 +269,15 @@ namespace ManosLimpias.Tests
             _services.Water.IsOverlapping = false;
             stage.Tick(OpenFaucetStage.FillInterval);
             Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.OpenProgress + OpenFaucetStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Hands.Wetness,
+                Is.EqualTo(OpenFaucetStage.WetnessForProgress(OpenFaucetStage.OpenProgress + OpenFaucetStage.FillStep))
+                    .Within(0.0001f));
+
+            _services.Water.IsOverlapping = true;
+            stage.Tick(3.8f);
+            Assert.That(_services.Progress.Progress, Is.EqualTo(OpenFaucetStage.WetProgress));
+            Assert.That(_services.Hands.Wetness, Is.EqualTo(1f).Within(0.0001f));
 
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
@@ -418,9 +427,11 @@ namespace ManosLimpias.Tests
             _services.CompletionRequested = _ => { };
             stage.Initialize(_services);
             stage.Enter();
+            _services.Hands.SetWetness(1f);
 
             Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
             Assert.That(_services.Foam.IsScrubbing, Is.False);
+            Assert.That(_services.Hands.Wetness, Is.EqualTo(1f));
 
             _services.Soap.IsOverlapping = true;
             stage.Tick(ApplySoapStage.FillInterval);
@@ -431,11 +442,17 @@ namespace ManosLimpias.Tests
             stage.Tick(ApplySoapStage.FillInterval);
             Assert.That(_services.Progress.Progress, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
             Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Hands.Wetness,
+                Is.EqualTo(ApplySoapStage.WetnessForCoverage(ApplySoapStage.FillStep)).Within(0.0001f));
             Assert.That(_services.Foam.IsScrubbing, Is.True);
 
             _services.Soap.IsOverlapping = false;
             stage.Tick(ApplySoapStage.FillInterval);
             Assert.That(_services.Foam.Coverage, Is.EqualTo(ApplySoapStage.FillStep).Within(0.0001f));
+            Assert.That(
+                _services.Hands.Wetness,
+                Is.EqualTo(ApplySoapStage.WetnessForCoverage(ApplySoapStage.FillStep)).Within(0.0001f));
             Assert.That(_services.Foam.IsScrubbing, Is.False);
 
             _services.Soap.IsOverlapping = true;
@@ -464,17 +481,20 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
-        public void Intro_ResetsFoamCoverage()
+        public void Intro_ResetsFoamAndWetness()
         {
             _flow.stageConfigurations = new List<GameStage> { new ApplySoapStage() };
             _flow.StartSession();
             Assert.That(_services.Foam.ResetCount, Is.GreaterThanOrEqualTo(1));
+            Assert.That(_services.Hands.ResetWetnessCount, Is.GreaterThanOrEqualTo(1));
 
             _services.Foam.SetCoverage(0.4f);
             _services.Foam.SetScrubbing(true);
+            _services.Hands.SetWetness(0.7f);
             _flow.StartSession();
             Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
             Assert.That(_services.Foam.IsScrubbing, Is.False);
+            Assert.That(_services.Hands.Wetness, Is.EqualTo(0f));
         }
 
         [Test]
@@ -651,6 +671,7 @@ namespace ManosLimpias.Tests
             _services.CompletionRequested = _ => { };
             stage.Initialize(_services);
             _services.Foam.SetCoverage(1f);
+            _services.Hands.SetWetness(0f);
             stage.Enter();
             _services.Faucet.RaisePointerHit();
             _services.Hands.RaiseDragStarted();
@@ -661,17 +682,25 @@ namespace ManosLimpias.Tests
             Assert.That(
                 _services.Foam.Coverage,
                 Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(afterFill)).Within(0.0001f));
+            Assert.That(
+                _services.Hands.Wetness,
+                Is.EqualTo(RinseSoapStage.WetnessForProgress(afterFill)).Within(0.0001f));
             Assert.That(_services.Foam.Coverage, Is.LessThan(1f));
+            Assert.That(_services.Hands.Wetness, Is.GreaterThan(0f));
 
             _services.Water.IsOverlapping = false;
             stage.Tick(RinseSoapStage.FillInterval);
             Assert.That(
                 _services.Foam.Coverage,
                 Is.EqualTo(RinseSoapStage.FoamCoverageForProgress(afterFill)).Within(0.0001f));
+            Assert.That(
+                _services.Hands.Wetness,
+                Is.EqualTo(RinseSoapStage.WetnessForProgress(afterFill)).Within(0.0001f));
 
             _services.Water.IsOverlapping = true;
             stage.Tick(3.8f);
             Assert.That(_services.Foam.Coverage, Is.EqualTo(0f));
+            Assert.That(_services.Hands.Wetness, Is.EqualTo(1f).Within(0.0001f));
         }
 
         [Test]
@@ -882,6 +911,7 @@ namespace ManosLimpias.Tests
             IWaterContactControl IGameFlowServices.WaterContact => Water;
             ISoapControl IGameFlowServices.Soap => Soap;
             ISoapFoamControl IGameFlowServices.SoapFoam => Foam;
+            IWetnessControl IGameFlowServices.Wetness => Hands;
             IProgressBarControl IGameFlowServices.ProgressBar => Progress;
             IStepIconControl IGameFlowServices.StepIcon => Icon;
 
@@ -963,12 +993,14 @@ namespace ManosLimpias.Tests
             }
         }
 
-        sealed class FakeHands : IHandsControl
+        sealed class FakeHands : IHandsControl, IWetnessControl
         {
             public event Action DragStarted;
             public bool IsDraggable { get; private set; }
             public bool IsGlowing { get; private set; }
+            public float Wetness { get; private set; }
             public int ReturnHomeCount { get; private set; }
+            public int ResetWetnessCount { get; private set; }
 
             public void SetDraggable(bool draggable)
             {
@@ -983,6 +1015,17 @@ namespace ManosLimpias.Tests
             public void ReturnHome()
             {
                 ReturnHomeCount++;
+            }
+
+            public void SetWetness(float progress01)
+            {
+                Wetness = Mathf.Clamp01(progress01);
+            }
+
+            public void ResetWetness()
+            {
+                Wetness = 0f;
+                ResetWetnessCount++;
             }
 
             public void RaiseDragStarted()

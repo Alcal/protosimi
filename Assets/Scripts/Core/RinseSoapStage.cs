@@ -30,6 +30,11 @@ namespace ManosLimpias.Core
             return Mathf.Clamp01(1f - (progress - OpenProgress) / span);
         }
 
+        public static float WetnessForProgress(float progress)
+        {
+            return Mathf.Clamp01(1f - FoamCoverageForProgress(progress));
+        }
+
         protected override void OnEnter()
         {
             _completed = false;
@@ -78,6 +83,7 @@ namespace ManosLimpias.Core
                 progress = Mathf.Min(RinseProgress, progress + FillStep);
                 Services.ProgressBar?.SetProgress(progress);
                 Services.SoapFoam?.SetCoverage(FoamCoverageForProgress(progress));
+                Services.Wetness?.SetWetness(WetnessForProgress(progress));
             }
 
             if (progress >= RinseProgress)
@@ -139,6 +145,7 @@ namespace ManosLimpias.Core
             UnsubscribeHands();
             Services.ProgressBar?.SetProgress(RinseProgress);
             Services.SoapFoam?.SetCoverage(0f);
+            Services.Wetness?.SetWetness(1f);
             Services.Hands?.SetGlow(false);
             Services.Hands?.SetDraggable(false);
             Services.Hands?.ReturnHome();

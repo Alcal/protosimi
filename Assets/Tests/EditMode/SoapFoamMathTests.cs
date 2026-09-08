@@ -95,5 +95,37 @@ namespace ManosLimpias.Tests
             Assert.That(RinseSoapStage.FoamCoverageForProgress(RinseSoapStage.RinseProgress), Is.EqualTo(0f));
             Assert.That(RinseSoapStage.FoamCoverageForProgress(1f), Is.EqualTo(0f));
         }
+
+        [Test]
+        public void OpenFaucetWetness_RisesWithWetFill()
+        {
+            Assert.That(OpenFaucetStage.WetnessForProgress(0f), Is.EqualTo(0f));
+            Assert.That(OpenFaucetStage.WetnessForProgress(OpenFaucetStage.OpenProgress), Is.EqualTo(0f));
+            var wetMid = OpenFaucetStage.OpenProgress +
+                         (OpenFaucetStage.WetProgress - OpenFaucetStage.OpenProgress) * 0.5f;
+            Assert.That(OpenFaucetStage.WetnessForProgress(wetMid), Is.EqualTo(0.5f).Within(0.0001f));
+            Assert.That(OpenFaucetStage.WetnessForProgress(OpenFaucetStage.WetProgress), Is.EqualTo(1f));
+            Assert.That(OpenFaucetStage.WetnessForProgress(1f), Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void ApplySoapWetness_GivesWayToCoverage()
+        {
+            Assert.That(ApplySoapStage.WetnessForCoverage(0f), Is.EqualTo(1f));
+            Assert.That(ApplySoapStage.WetnessForCoverage(0.25f), Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(ApplySoapStage.WetnessForCoverage(1f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void RinseWetness_IsOneMinusFoamCoverage()
+        {
+            Assert.That(RinseSoapStage.WetnessForProgress(RinseSoapStage.OpenProgress), Is.EqualTo(0f));
+            var rinseMid = RinseSoapStage.OpenProgress +
+                           (RinseSoapStage.RinseProgress - RinseSoapStage.OpenProgress) * 0.5f;
+            Assert.That(
+                RinseSoapStage.WetnessForProgress(rinseMid),
+                Is.EqualTo(1f - RinseSoapStage.FoamCoverageForProgress(rinseMid)).Within(0.0001f));
+            Assert.That(RinseSoapStage.WetnessForProgress(RinseSoapStage.RinseProgress), Is.EqualTo(1f));
+        }
     }
 }

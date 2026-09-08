@@ -20,6 +20,15 @@ namespace ManosLimpias.Core
 
         public override string Id => "OpenFaucet";
 
+        public static float WetnessForProgress(float progress)
+        {
+            if (progress >= WetProgress)
+                return 1f;
+            if (progress <= OpenProgress)
+                return 0f;
+            return Mathf.Clamp01((progress - OpenProgress) / (WetProgress - OpenProgress));
+        }
+
         protected override void OnEnter()
         {
             _completed = false;
@@ -71,6 +80,7 @@ namespace ManosLimpias.Core
                 _fillTimer -= FillInterval;
                 progress = Mathf.Min(WetProgress, progress + FillStep);
                 Services.ProgressBar?.SetProgress(progress);
+                RaiseWetness(WetnessForProgress(progress));
             }
 
             if (progress >= WetProgress)
@@ -137,6 +147,7 @@ namespace ManosLimpias.Core
             _fillTimer = 0f;
             UnsubscribeHands();
             Services.ProgressBar?.SetProgress(WetProgress);
+            RaiseWetness(1f);
             Services.Hands?.SetGlow(false);
             Services.Hands?.SetDraggable(false);
             Services.Hands?.ReturnHome();
@@ -221,6 +232,13 @@ namespace ManosLimpias.Core
             if (Services.Hands == null)
                 return;
             Services.Hands.DragStarted -= OnHandsDragStarted;
+        }
+
+        void RaiseWetness(float wetness)
+        {
+            if (Services.Wetness == null)
+                return;
+            Services.Wetness.SetWetness(Mathf.Max(Services.Wetness.Wetness, wetness));
         }
 
         public override GameStage CreateRuntime()

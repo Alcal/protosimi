@@ -2212,6 +2212,7 @@ GameObject:
   - component: {fileID: 940385652}
   - component: {fileID: 940385653}
   - component: {fileID: 940385654}
+  - component: {fileID: 940385655}
   m_Layer: 0
   m_Name: HandsRive
   m_TagString: Untagged
@@ -2313,6 +2314,32 @@ MonoBehaviour:
   particleRiseMax: 140
   particleDrift: 20
   particleSize: 56
+--- !u!114 &940385655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940385650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4f0b7c5e1a27f4b2c6d9e8f7051423b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveDrip
+  widget: {fileID: 940385652}
+  template: {fileID: 2100000, guid: b2d8f5a3c9e05d2f0a4b7c6d5e3f2019, type: 2}
+  emitterPrefab: {fileID: 4631879645331917984, guid: c448ff21d77dfb5e8b867e5533720c88, type: 3}
+  followWaterContact: 0
+  color: {r: 0.55, g: 0.85, b: 1, a: 0.85}
+  rimWidth: 4.01
+  dripWidth: 24
+  dripLoad: 4
+  intensity: 1
+  threshold: 0.05
+  wobbleAmp: 0.35
+  wobbleFreq: 52.23
+  wobbleSpeed: 2.5
+  gravity: {x: 0, y: -1}
 --- !u!1 &962942533
 GameObject:
   m_ObjectHideFlags: 0

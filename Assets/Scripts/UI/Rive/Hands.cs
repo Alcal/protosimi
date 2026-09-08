@@ -14,7 +14,7 @@ namespace ManosLimpias.UI.Rive
     /// panel back before the faucet close tap.
     /// </summary>
     [DefaultExecutionOrder(100)]
-    public sealed class Hands : MonoBehaviour, IHandsControl, IWaterContactControl
+    public sealed class Hands : MonoBehaviour, IHandsControl, IWaterContactControl, IWetnessControl
     {
         public const string Artboard = SimiPrototypeArtboards.Hands;
         public const string StateMachine = "main";
@@ -45,6 +45,7 @@ namespace ManosLimpias.UI.Rive
         public bool IsDraggable { get; private set; }
         public bool IsGlowing { get; private set; }
         public bool FreezePlacement { get; private set; }
+        public float Wetness { get; private set; }
 
         RectTransform DragRect => RiveGlow.LayoutRect(widget) ?? widget?.RectTransform;
         bool _dragging;
@@ -82,6 +83,18 @@ namespace ManosLimpias.UI.Rive
         {
             IsGlowing = on;
             RiveGlow.SetForWidget(widget, on);
+        }
+
+        public void SetWetness(float progress01)
+        {
+            Wetness = Mathf.Clamp01(progress01);
+            var drip = RiveDrip.ForWidget(widget) ?? GetComponent<RiveDrip>();
+            drip?.SetWetness(Wetness);
+        }
+
+        public void ResetWetness()
+        {
+            SetWetness(0f);
         }
 
         public void ReturnHome()

@@ -16,6 +16,11 @@ namespace ManosLimpias.Core
 
         public override string Id => "ApplySoap";
 
+        public static float WetnessForCoverage(float soapCoverage)
+        {
+            return Mathf.Clamp01(1f - soapCoverage);
+        }
+
         protected override void OnEnter()
         {
             _completed = false;
@@ -61,6 +66,7 @@ namespace ManosLimpias.Core
                 progress = Mathf.Min(1f, progress + FillStep);
                 Services.ProgressBar?.SetProgress(progress);
                 Services.SoapFoam?.SetCoverage(progress);
+                Services.Wetness?.SetWetness(WetnessForCoverage(progress));
             }
 
             if (progress >= 1f)
@@ -89,6 +95,7 @@ namespace ManosLimpias.Core
             _completed = true;
             Services.ProgressBar?.SetProgress(1f);
             Services.SoapFoam?.SetCoverage(1f);
+            Services.Wetness?.SetWetness(0f);
             Services.SoapFoam?.SetScrubbing(false);
             Services.StepIcon?.SetState(stepId, active: false, completed: true);
             Services.Soap?.SetGlow(false);

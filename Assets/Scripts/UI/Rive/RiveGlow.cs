@@ -220,6 +220,10 @@ namespace ManosLimpias.UI.Rive
 
         void ApplyMaterial(RivePanel panel)
         {
+            var drip = RiveDrip.ForWidget(widget) ?? GetComponent<RiveDrip>();
+            if (drip != null && drip.IsOn)
+                return;
+
             if (panel == null && widget != null)
                 panel = widget.GetComponentInParent<RivePanel>();
             var renderer = panel != null ? panel.GetComponent<RiveCanvasRenderer>() : null;

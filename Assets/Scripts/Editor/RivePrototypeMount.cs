@@ -53,6 +53,8 @@ namespace ManosLimpias.Editor
 
             var canvasTf = canvas.transform;
             var glowTemplate = AssetDatabase.LoadAssetAtPath<Material>(RiveGlow.TemplateAssetPath);
+            var dripTemplate = AssetDatabase.LoadAssetAtPath<Material>(RiveDrip.TemplateAssetPath);
+            var dripEmitterPrefab = RiveDripEmitterPrefab.LoadOrCreate();
 
             var panelObj = FindOrCreatePanel(canvasTf, "Rive Panel", stretch: true);
             var hudPanel = FindOrCreatePanel(canvasTf, RiveGlow.HudPanelName, stretch: true);
@@ -78,6 +80,11 @@ namespace ManosLimpias.Editor
             EnsureCanvasCamera(canvas.GetComponent<Canvas>());
 
             ConfigureGlow(handsWidget.transform.parent.gameObject, handsWidget, glowTemplate);
+            ConfigureDrip(
+                handsWidget.gameObject,
+                handsWidget,
+                dripTemplate,
+                dripEmitterPrefab != null ? dripEmitterPrefab.GetComponent<RiveDripEmitter>() : null);
             ConfigureGlow(soapWidget.transform.parent.gameObject, soapWidget, glowTemplate);
             ConfigureGlow(towelWidget.transform.parent.gameObject, towelWidget, glowTemplate);
             ConfigureGlow(faucetWidget.transform.parent.gameObject, faucetWidget, glowTemplate);
@@ -487,6 +494,25 @@ namespace ManosLimpias.Editor
             var initialPanel = so.FindProperty("m_initialRivePanel");
             if (initialPanel != null)
                 initialPanel.objectReferenceValue = panelGo.GetComponent<RivePanel>();
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void ConfigureDrip(
+            GameObject panelGo,
+            RiveWidget widget,
+            Material template,
+            RiveDripEmitter emitterPrefab)
+        {
+            if (panelGo == null || widget == null)
+                return;
+            var drip = panelGo.GetComponent<RiveDrip>();
+            if (drip == null)
+                drip = panelGo.AddComponent<RiveDrip>();
+            var so = new SerializedObject(drip);
+            so.FindProperty("widget").objectReferenceValue = widget;
+            so.FindProperty("template").objectReferenceValue = template;
+            so.FindProperty("emitterPrefab").objectReferenceValue = emitterPrefab;
+            so.FindProperty("followWaterContact").boolValue = false;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 

@@ -110,6 +110,7 @@ namespace ManosLimpias.Core
             playfield?.SetActiveStage(-1);
             germs?.ResetGerms();
             _services?.SoapFoam?.ResetFoam();
+            _services?.Wetness?.ResetWetness();
             _services?.StepIcon?.SetState(1, active: false, completed: false);
             _services?.ProgressBar?.SetProgress(0f);
         }
@@ -272,6 +273,7 @@ namespace ManosLimpias.Core
             public IWaterContactControl WaterContact => _flow.hands != null ? _flow.hands : _nullHands;
             public ISoapControl Soap => _flow.soap != null ? _flow.soap : _nullSoap;
             public ISoapFoamControl SoapFoam => _flow.soapBubbles != null ? _flow.soapBubbles : _nullFoam;
+            public IWetnessControl Wetness => _flow.hands != null ? _flow.hands : _nullHands;
             public IProgressBarControl ProgressBar => _flow.riveHud ?? _fallbackProgress;
             public IStepIconControl StepIcon => _flow.riveHud ?? _fallbackStepIcon;
 
@@ -303,7 +305,7 @@ namespace ManosLimpias.Core
             public void SetState(int stepId, bool active, bool completed) { }
         }
 
-        sealed class NullHands : IHandsControl, IWaterContactControl
+        sealed class NullHands : IHandsControl, IWaterContactControl, IWetnessControl
         {
 #pragma warning disable CS0067
             public event Action DragStarted;
@@ -311,6 +313,7 @@ namespace ManosLimpias.Core
             public bool IsDraggable { get; private set; }
             public bool IsGlowing { get; private set; }
             public bool IsOverlapping => false;
+            public float Wetness { get; private set; }
 
             public void SetDraggable(bool draggable)
             {
@@ -323,6 +326,16 @@ namespace ManosLimpias.Core
             }
 
             public void ReturnHome() { }
+
+            public void SetWetness(float progress01)
+            {
+                Wetness = Mathf.Clamp01(progress01);
+            }
+
+            public void ResetWetness()
+            {
+                Wetness = 0f;
+            }
         }
 
         sealed class NullSoap : ISoapControl
