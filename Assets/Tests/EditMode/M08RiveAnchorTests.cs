@@ -667,6 +667,49 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void RiveNodeHitbox_Overlaps_UsesRootCanvasAcrossNestedOverlayCanvases()
+        {
+            var rootGo = new GameObject("M08 RootCanvas", typeof(RectTransform), typeof(Canvas));
+            var handsPanel = new GameObject("HandsRivePanel", typeof(RectTransform), typeof(Canvas));
+            var faucetPanel = new GameObject("FaucetRivePanel", typeof(RectTransform), typeof(Canvas));
+            var aGo = new GameObject("hitbox_1", typeof(RectTransform));
+            var bGo = new GameObject("water-sqspot", typeof(RectTransform));
+            try
+            {
+                handsPanel.transform.SetParent(rootGo.transform, false);
+                faucetPanel.transform.SetParent(rootGo.transform, false);
+                var handsCanvas = handsPanel.GetComponent<Canvas>();
+                handsCanvas.overrideSorting = true;
+                handsCanvas.sortingOrder = 2;
+                var faucetCanvas = faucetPanel.GetComponent<Canvas>();
+                faucetCanvas.overrideSorting = true;
+                faucetCanvas.sortingOrder = 2;
+
+                aGo.transform.SetParent(handsPanel.transform, false);
+                bGo.transform.SetParent(faucetPanel.transform, false);
+
+                var aRt = aGo.GetComponent<RectTransform>();
+                var bRt = bGo.GetComponent<RectTransform>();
+                aRt.anchorMin = aRt.anchorMax = new Vector2(0.5f, 0.5f);
+                bRt.anchorMin = bRt.anchorMax = new Vector2(0.5f, 0.5f);
+                aRt.pivot = bRt.pivot = new Vector2(0.5f, 0.5f);
+                aRt.sizeDelta = bRt.sizeDelta = new Vector2(100f, 100f);
+                aRt.anchoredPosition = Vector2.zero;
+                bRt.anchoredPosition = new Vector2(0f, 50f);
+
+                var a = aGo.AddComponent<RiveNodeHitbox>();
+                var b = bGo.AddComponent<RiveNodeHitbox>();
+                Canvas.ForceUpdateCanvases();
+
+                Assert.That(RiveNodeHitbox.Overlaps(a, b), Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(rootGo);
+            }
+        }
+
+        [Test]
         public void Soap_SetDraggable_TogglesHitTest()
         {
             var go = new GameObject("M08 Soap");

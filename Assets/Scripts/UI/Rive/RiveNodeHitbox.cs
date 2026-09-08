@@ -136,8 +136,7 @@ namespace ManosLimpias.UI.Rive
             var corners = new Vector3[4];
             child.GetWorldCorners(corners);
 
-            var canvas = child.GetComponentInParent<Canvas>();
-            var space = canvas != null ? canvas.transform : null;
+            var space = RootCanvas(child)?.transform;
             if (space == null)
                 return TryGetWorldRect(out overlapRect);
 
@@ -166,6 +165,20 @@ namespace ManosLimpias.UI.Rive
             float x = Mathf.Min(ar.xMax, br.xMax) - Mathf.Max(ar.xMin, br.xMin);
             float y = Mathf.Min(ar.yMax, br.yMax) - Mathf.Max(ar.yMin, br.yMin);
             return x >= MinOverlap && y >= MinOverlap;
+        }
+
+        public static Canvas RootCanvas(Transform t)
+        {
+            var canvas = t != null ? t.GetComponentInParent<Canvas>() : null;
+            return canvas != null ? canvas.rootCanvas : null;
+        }
+
+        public static Camera EventCamera(Transform t)
+        {
+            var root = RootCanvas(t);
+            if (root == null || root.renderMode == RenderMode.ScreenSpaceOverlay)
+                return null;
+            return root.worldCamera;
         }
 
         void OnDrawGizmos()

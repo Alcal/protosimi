@@ -282,7 +282,69 @@ namespace ManosLimpias.UI.Rive
                 _spawned.Add(instance);
             }
 
+            if (Application.isPlaying)
+                EnsureDrawOrder();
+            else
+            {
+                for (int i = 0; i < _emitters.Count; i++)
+                {
+                    if (_emitters[i] != null)
+                        _emitters[i].SyncSorting();
+                }
+            }
+
             ApplyEmitterWetness();
+        }
+
+        public void EnsureDrawOrder()
+        {
+            var rootCanvas = GetComponentInParent<Canvas>();
+            if (rootCanvas != null)
+                rootCanvas = rootCanvas.rootCanvas;
+
+            var panel = widget != null
+                ? widget.GetComponentInParent<RivePanel>()
+                : GetComponentInParent<RivePanel>();
+            var overlayParent = panel != null ? panel.transform.parent : transform.parent;
+            int rootOrder = rootCanvas != null ? rootCanvas.sortingOrder : 0;
+
+            if (overlayParent != null)
+            {
+                for (int i = 0; i < overlayParent.childCount; i++)
+                {
+                    var child = overlayParent.GetChild(i);
+                    if (IsBackgroundLayer(child))
+                        continue;
+                    int order = rootOrder + RiveDripEmitter.OverlaySortingOffsetFor(child.name);
+                    RiveDripEmitter.EnsureOverlayCanvas(child.gameObject, order);
+                }
+            }
+            else if (panel != null)
+            {
+                int order = rootOrder + RiveDripEmitter.OverlaySortingOffsetFor(panel.name);
+                RiveDripEmitter.EnsureOverlayCanvas(panel.gameObject, order);
+            }
+
+            for (int i = 0; i < _emitters.Count; i++)
+            {
+                if (_emitters[i] != null)
+                    _emitters[i].SyncSorting();
+            }
+        }
+
+        static bool IsBackgroundLayer(Transform layer)
+        {
+            if (layer == null)
+                return false;
+            if (layer.name == "Rive Panel")
+                return true;
+            for (int i = 0; i < layer.childCount; i++)
+            {
+                if (layer.GetChild(i).name == Background.WidgetName)
+                    return true;
+            }
+
+            return false;
         }
 
         void ApplyEmitterWetness()

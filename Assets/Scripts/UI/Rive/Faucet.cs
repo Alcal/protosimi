@@ -231,10 +231,7 @@ namespace ManosLimpias.UI.Rive
             if (rectTransform == null)
                 return false;
 
-            var canvas = rectTransform.GetComponentInParent<Canvas>();
-            Camera camera = null;
-            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
-                camera = canvas.worldCamera;
+            Camera camera = RiveNodeHitbox.EventCamera(rectTransform);
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     rectTransform, screen, camera, out var local))

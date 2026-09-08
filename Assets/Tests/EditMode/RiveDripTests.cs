@@ -129,6 +129,61 @@ namespace ManosLimpias.Tests
         }
 
         [Test]
+        public void EnsureDrawOrder_PlacesParticlesBetweenBackgroundAndHands()
+        {
+            var rootGo = new GameObject("GameplayCanvas", typeof(RectTransform), typeof(Canvas));
+            var bg = new GameObject("Rive Panel", typeof(RectTransform));
+            bg.transform.SetParent(rootGo.transform, false);
+            var handsPanel = new GameObject("HandsRivePanel", typeof(RectTransform), typeof(RivePanel));
+            handsPanel.transform.SetParent(rootGo.transform, false);
+            var faucetPanel = new GameObject("FaucetRivePanel", typeof(RectTransform));
+            faucetPanel.transform.SetParent(rootGo.transform, false);
+            var introPanel = new GameObject(RiveGlow.PanelNameFor(Intro.WidgetName), typeof(RectTransform));
+            introPanel.transform.SetParent(rootGo.transform, false);
+            var hands = new GameObject(Hands.WidgetName, typeof(RectTransform));
+            hands.transform.SetParent(handsPanel.transform, false);
+            var hb = new GameObject(RiveNodeHitbox.Hitbox1, typeof(RectTransform));
+            hb.transform.SetParent(hands.transform, false);
+
+            try
+            {
+                var prefabGo = AssetDatabase.LoadAssetAtPath<GameObject>(RiveDrip.EmitterPrefabPath);
+                Assert.That(prefabGo, Is.Not.Null);
+                var drip = hands.AddComponent<RiveDrip>();
+                drip.followWaterContact = false;
+                drip.widget = hands.AddComponent<RiveWidget>();
+                drip.emitterPrefab = prefabGo.GetComponent<RiveDripEmitter>();
+                drip.SetWetness(1f);
+                drip.EnsureDrawOrder();
+
+                Assert.That(drip.Emitters.Count, Is.EqualTo(1));
+                var psr = drip.Emitters[0].GetComponent<ParticleSystemRenderer>();
+                Assert.That(psr.sortingOrder, Is.EqualTo(RiveDripEmitter.ParticleSortingOffset));
+
+                var handsCanvas = handsPanel.GetComponent<Canvas>();
+                Assert.That(handsCanvas, Is.Not.Null);
+                Assert.That(handsCanvas.overrideSorting, Is.True);
+                Assert.That(handsCanvas.sortingOrder, Is.EqualTo(RiveDripEmitter.OverlaySortingOffset));
+                Assert.That(handsCanvas.sortingOrder, Is.GreaterThan(psr.sortingOrder));
+                Assert.That(bg.GetComponent<Canvas>(), Is.Null);
+
+                var faucetCanvas = faucetPanel.GetComponent<Canvas>();
+                Assert.That(faucetCanvas, Is.Not.Null);
+                Assert.That(faucetCanvas.sortingOrder, Is.EqualTo(RiveDripEmitter.OverlaySortingOffset));
+
+                var introCanvas = introPanel.GetComponent<Canvas>();
+                Assert.That(introCanvas, Is.Not.Null);
+                Assert.That(introCanvas.overrideSorting, Is.True);
+                Assert.That(introCanvas.sortingOrder, Is.EqualTo(RiveDripEmitter.ModalSortingOffset));
+                Assert.That(introCanvas.sortingOrder, Is.GreaterThan(faucetCanvas.sortingOrder));
+            }
+            finally
+            {
+                Object.DestroyImmediate(rootGo);
+            }
+        }
+
+        [Test]
         public void SetOnFalse_RestoresGlowMaterialWhenGlowIsOn()
         {
             var root = new GameObject("RiveDrip Glow Restore", typeof(RectTransform), typeof(Canvas));

@@ -281,10 +281,7 @@ namespace ManosLimpias.UI.Rive
 
         static Camera CanvasCamera(RectTransform rectTransform)
         {
-            var canvas = rectTransform.GetComponentInParent<Canvas>();
-            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
-                return canvas.worldCamera;
-            return null;
+            return RiveNodeHitbox.EventCamera(rectTransform);
         }
 
         static bool TryGetPointerScreen(out Vector2 screen, out bool pressedThisFrame, out bool held)

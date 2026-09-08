@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ManosLimpias.UI.Rive
 {
@@ -6,6 +7,7 @@ namespace ManosLimpias.UI.Rive
     /// One drip ParticleSystem, typically parented behind a <c>hitbox_#</c>.
     /// Particle look is authored on the system; <see cref="Wetness"/> scales
     /// emission rate, start size, and start alpha from that baked full-wet state.
+    /// Drawn between the background canvas and the hands overlay canvas.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(ParticleSystem))]
@@ -14,6 +16,27 @@ namespace ManosLimpias.UI.Rive
     {
         public const string PrefabAssetPath = "Assets/Prefabs/RiveDripEmitter.prefab";
         public const string CircleTexturePath = "Assets/Art/Rive/drip-circle.png";
+
+        /// <summary>Sorting order relative to the root canvas: in front of background, behind hands.</summary>
+        public const int ParticleSortingOffset = 1;
+
+        /// <summary>Nested overlay canvases (hands, faucet, soap) sit above drip particles.</summary>
+        public const int OverlaySortingOffset = 2;
+
+        /// <summary>HUD sits above gameplay overlays.</summary>
+        public const int HudSortingOffset = 3;
+
+        /// <summary>Intro and win cover gameplay, HUD, and drip particles.</summary>
+        public const int ModalSortingOffset = 10;
+
+        public static int OverlaySortingOffsetFor(string panelName)
+        {
+            if (panelName == RiveGlow.PanelNameFor(Intro.WidgetName) || panelName == "WinRoot")
+                return ModalSortingOffset;
+            if (panelName == RiveGlow.HudPanelName || panelName == "PlayHudRoot")
+                return HudSortingOffset;
+            return OverlaySortingOffset;
+        }
 
         const float SizeAtDry = 0.55f;
 
@@ -85,6 +108,41 @@ namespace ManosLimpias.UI.Rive
         void LateUpdate()
         {
             FitBehindHitbox();
+            SyncSorting();
+        }
+
+        public void SyncSorting()
+        {
+            var renderer = GetComponent<ParticleSystemRenderer>();
+            if (renderer == null)
+                return;
+
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+                return;
+
+            var root = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
+            renderer.sortingLayerID = root.sortingLayerID;
+            renderer.sortingOrder = root.sortingOrder + ParticleSortingOffset;
+        }
+
+        public static Canvas EnsureOverlayCanvas(GameObject panel, int sortingOrder)
+        {
+            if (panel == null)
+                return null;
+
+            var inherited = panel.GetComponentInParent<Canvas>();
+            var overlay = panel.GetComponent<Canvas>();
+            if (overlay == null)
+                overlay = panel.AddComponent<Canvas>();
+
+            var root = inherited != null ? inherited.rootCanvas : overlay;
+            overlay.overrideSorting = true;
+            overlay.sortingLayerID = root.sortingLayerID;
+            overlay.sortingOrder = sortingOrder;
+            if (panel.GetComponent<GraphicRaycaster>() == null)
+                panel.AddComponent<GraphicRaycaster>();
+            return overlay;
         }
 
         void OnValidate()
@@ -130,20 +188,6 @@ namespace ManosLimpias.UI.Rive
                 particles.Play(true);
             else if (!on && particles.isPlaying)
                 particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-        }
-
-        void SyncSorting()
-        {
-            var renderer = GetComponent<ParticleSystemRenderer>();
-            if (renderer == null)
-                return;
-
-            var canvas = GetComponentInParent<Canvas>();
-            if (canvas == null)
-                return;
-
-            renderer.sortingLayerID = canvas.sortingLayerID;
-            renderer.sortingOrder = canvas.sortingOrder;
         }
 
         static float CurveMax(ParticleSystem.MinMaxCurve curve)

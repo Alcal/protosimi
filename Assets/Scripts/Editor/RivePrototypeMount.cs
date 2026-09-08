@@ -78,6 +78,14 @@ namespace ManosLimpias.Editor
             var bubbleSprite = RiveBubbleSpriteExtract.LoadOrExtract();
             var bubbleMat = RiveBubbleSpriteExtract.EnsureMaterial(bubbleSprite);
             EnsureCanvasCamera(canvas.GetComponent<Canvas>());
+            EnsureOverlaySorting(
+                hudPanel,
+                introPanel,
+                handsWidget.transform.parent.gameObject,
+                soapWidget.transform.parent.gameObject,
+                towelWidget.transform.parent.gameObject,
+                faucetWidget.transform.parent.gameObject,
+                characterWidget.transform.parent.gameObject);
 
             ConfigureGlow(handsWidget.transform.parent.gameObject, handsWidget, glowTemplate);
             ConfigureDrip(
@@ -457,6 +465,19 @@ namespace ManosLimpias.Editor
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = cam;
             canvas.planeDistance = 5f;
+        }
+
+        static void EnsureOverlaySorting(params GameObject[] panels)
+        {
+            var root = GameObject.Find("GameplayCanvas")?.GetComponent<Canvas>();
+            int rootOrder = root != null ? root.sortingOrder : 0;
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] == null)
+                    continue;
+                int order = rootOrder + RiveDripEmitter.OverlaySortingOffsetFor(panels[i].name);
+                RiveDripEmitter.EnsureOverlayCanvas(panels[i], order);
+            }
         }
 
         static GameObject FindOrCreatePanel(Transform canvas, string panelName, bool stretch)
