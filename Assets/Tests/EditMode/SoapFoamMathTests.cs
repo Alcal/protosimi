@@ -127,5 +127,13 @@ namespace ManosLimpias.Tests
                 Is.EqualTo(1f - RinseSoapStage.FoamCoverageForProgress(rinseMid)).Within(0.0001f));
             Assert.That(RinseSoapStage.WetnessForProgress(RinseSoapStage.RinseProgress), Is.EqualTo(1f));
         }
+
+        [Test]
+        public void DryHandsWetness_IsOneMinusProgress()
+        {
+            Assert.That(DryHandsStage.WetnessForProgress(0f), Is.EqualTo(1f));
+            Assert.That(DryHandsStage.WetnessForProgress(0.25f), Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(DryHandsStage.WetnessForProgress(1f), Is.EqualTo(0f));
+        }
     }
 }

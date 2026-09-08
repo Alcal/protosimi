@@ -71,6 +71,15 @@ namespace ManosLimpias.Core
         void ReturnHome();
     }
 
+    public interface ITowelControl : IGlowHint
+    {
+        event Action DragStarted;
+        bool IsDraggable { get; }
+        bool IsOverlapping { get; }
+        void SetDraggable(bool draggable);
+        void ReturnHome();
+    }
+
     public interface ISoapFoamControl
     {
         void SetCoverage(float progress01);
@@ -91,6 +100,7 @@ namespace ManosLimpias.Core
         IHandsControl Hands { get; }
         IWaterContactControl WaterContact { get; }
         ISoapControl Soap { get; }
+        ITowelControl Towel { get; }
         ISoapFoamControl SoapFoam { get; }
         IWetnessControl Wetness { get; }
         IProgressBarControl ProgressBar { get; }

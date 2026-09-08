@@ -573,6 +573,33 @@ namespace ManosLimpias.Tests
             soap.SetDraggable(true);
         }
 
+        static void CreateStretchTowel(
+            Rect mapped,
+            out RectTransform parent,
+            out RectTransform child,
+            out Towel towel)
+        {
+            var parentGo = new GameObject("M08 Towel Drag Parent", typeof(RectTransform));
+            parent = parentGo.GetComponent<RectTransform>();
+            parent.anchorMin = parent.anchorMax = new Vector2(0.5f, 0.5f);
+            parent.pivot = new Vector2(0.5f, 0.5f);
+            parent.sizeDelta = new Vector2(1920f, 1080f);
+
+            var childGo = new GameObject("M08 TowelRive", typeof(RectTransform));
+            child = childGo.GetComponent<RectTransform>();
+            child.SetParent(parent, false);
+            ArtboardSpace.ApplyNormalizedAnchors(
+                child,
+                parent,
+                mapped,
+                ArtboardSpace.UnityPivotFromRiveOrigin(SimiPrototypeArtboards.TowelOrigin));
+
+            var widget = childGo.AddComponent<RiveWidget>();
+            towel = childGo.AddComponent<Towel>();
+            towel.Bind(widget);
+            towel.SetDraggable(true);
+        }
+
         static Vector3[] WorldCorners(RectTransform rect)
         {
             var corners = new Vector3[4];
@@ -770,6 +797,75 @@ namespace ManosLimpias.Tests
                 soap.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: false);
 
                 Assert.That(soap.FreezePlacement, Is.False);
+                AssertCornersEqual(before, WorldCorners(child));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
+        public void Towel_SetDraggable_KeepsHitTestOff()
+        {
+            var go = new GameObject("M08 Towel");
+            var widgetGo = new GameObject("M08 Towel Widget", typeof(RectTransform));
+            var widget = widgetGo.AddComponent<RiveWidget>();
+            var towel = go.AddComponent<Towel>();
+            towel.Bind(widget);
+
+            Assert.That(towel.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            towel.SetDraggable(true);
+            Assert.That(towel.IsDraggable, Is.True);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            towel.SetDraggable(false);
+            Assert.That(towel.IsDraggable, Is.False);
+            Assert.That(widget.HitTestBehavior, Is.EqualTo(HitTestBehavior.None));
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(widgetGo);
+        }
+
+        [Test]
+        public void Towel_ReturnHome_RestoresLayoutAfterDrag()
+        {
+            var mapped = new Rect(480f, -180f, 300f, 340f);
+            CreateStretchTowel(mapped, out var parent, out var child, out var towel);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.4f, 0.6f));
+                towel.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                towel.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: true);
+                Assert.That(towel.FreezePlacement, Is.True);
+
+                towel.ReturnHome();
+                Assert.That(towel.FreezePlacement, Is.False);
+                AssertCornersEqual(before, WorldCorners(child));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent.gameObject);
+            }
+        }
+
+        [Test]
+        public void Towel_Release_ReturnsHome()
+        {
+            var mapped = new Rect(480f, -180f, 300f, 340f);
+            CreateStretchTowel(mapped, out var parent, out var child, out var towel);
+            try
+            {
+                var before = WorldCorners(child);
+                var grab = ParentLocalPoint(child, new Vector2(0.4f, 0.6f));
+                towel.NotifyParentLocalPointer(grab, pressedThisFrame: true, held: true);
+                towel.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: true);
+                towel.NotifyParentLocalPointer(grab + new Vector2(80f, -40f), pressedThisFrame: false, held: false);
+
+                Assert.That(towel.FreezePlacement, Is.False);
                 AssertCornersEqual(before, WorldCorners(child));
             }
             finally

@@ -861,7 +861,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.85078126, y: 0.050925925}
+  m_AnchorMin: {x: 0.8507812, y: 0.050925925}
   m_AnchorMax: {x: 0.9809896, y: 0.2824074}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -1045,7 +1045,7 @@ RectTransform:
   - {fileID: 940385651}
   m_Father: {fileID: 751682363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: -0.52731484}
+  m_AnchorMin: {x: 0.000000031789142, y: -0.52731484}
   m_AnchorMax: {x: 1, y: 0.9189815}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -1572,6 +1572,7 @@ GameObject:
   m_Component:
   - component: {fileID: 711110846}
   - component: {fileID: 711110847}
+  - component: {fileID: 711110848}
   m_Layer: 0
   m_Name: TowelRive
   m_TagString: Untagged
@@ -1590,7 +1591,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2061322798}
   m_Father: {fileID: 919598250}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1628,6 +1630,21 @@ MonoBehaviour:
   m_dataBindingMode: 2
   m_viewModelInstanceName: 
   m_customAudioProvider: {fileID: 0}
+--- !u!114 &711110848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 711110845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a10967b0ebb83c05ae9e422d508ddba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.Towel
+  widget: {fileID: 711110847}
+  hands: {fileID: 940385653}
+  hitbox: {fileID: 2061322800}
 --- !u!1 &751682359
 GameObject:
   m_ObjectHideFlags: 0
@@ -3346,6 +3363,7 @@ MonoBehaviour:
   hands: {fileID: 940385653}
   soap: {fileID: 1844413678}
   soapBubbles: {fileID: 940385654}
+  towel: {fileID: 711110848}
   audioPlayer: {fileID: 1259954862}
   waf: {fileID: 1259954861}
   assist: {fileID: 1259954860}
@@ -3359,6 +3377,7 @@ MonoBehaviour:
   - rid: 5103114543314763934
   - rid: 7719671250427838746
   - rid: 7719671270665617519
+  - rid: 7719671320641798279
   references:
     version: 2
     RefIds:
@@ -3374,6 +3393,10 @@ MonoBehaviour:
       type: {class: RinseSoapStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
       data:
         stepId: 3
+    - rid: 7719671320641798279
+      type: {class: DryHandsStage, ns: ManosLimpias.Core, asm: ManosLimpias.Runtime}
+      data:
+        stepId: 4
 --- !u!114 &1259954859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3566,7 +3589,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.85078126, y: 0.49537036}
+  m_AnchorMin: {x: 0.8507812, y: 0.49537036}
   m_AnchorMax: {x: 0.9809896, y: 0.7268519}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -4657,7 +4680,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.85078126, y: 0.27314815}
+  m_AnchorMin: {x: 0.8507812, y: 0.27314815}
   m_AnchorMax: {x: 0.9809896, y: 0.5046296}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -4776,7 +4799,7 @@ ParticleSystemRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -5386,8 +5409,8 @@ ParticleSystem:
     rotation3D: 0
     gravityModifier:
       serializedVersion: 2
-      minMaxState: 3
-      scalar: -0.5
+      minMaxState: 0
+      scalar: -0.1
       minScalar: -0.1
       maxCurve:
         serializedVersion: 2
@@ -6851,7 +6874,7 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    inWorldSpace: 0
+    inWorldSpace: 1
   InheritVelocityModule:
     enabled: 0
     m_Mode: 0
@@ -10298,6 +10321,101 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2036002445}
   m_CullTransparentMesh: 1
+--- !u!1 &2061322797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2061322798}
+  - component: {fileID: 2061322800}
+  - component: {fileID: 2061322799}
+  m_Layer: 0
+  m_Name: towel-hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2061322798
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061322797}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 711110846}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.25, y: 0.25}
+  m_AnchorMax: {x: 0.75, y: 0.75}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!61 &2061322799
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061322797}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 150.00006, y: 170}
+  m_EdgeRadius: 0
+--- !u!114 &2061322800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061322797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3b6b693dfe4cc8adfafc928ca91696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.RiveNodeHitbox
 --- !u!1 &2062004187
 GameObject:
   m_ObjectHideFlags: 0
@@ -10337,7 +10455,7 @@ RectTransform:
   - {fileID: 44757936}
   m_Father: {fileID: 751682363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.02578125, y: 0.07731482}
+  m_AnchorMin: {x: 0.02578128, y: 0.07731482}
   m_AnchorMax: {x: 0.18203124, y: 0.35509259}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -10516,7 +10634,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.85078126, y: 0.7175926}
+  m_AnchorMin: {x: 0.8507812, y: 0.7175926}
   m_AnchorMax: {x: 0.9809896, y: 0.9490741}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -10582,7 +10700,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 760785377}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.18340689, y: 0.810574}
+  m_AnchorMin: {x: 0.18340692, y: 0.810574}
   m_AnchorMax: {x: 0.7459069, y: 0.9957592}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}

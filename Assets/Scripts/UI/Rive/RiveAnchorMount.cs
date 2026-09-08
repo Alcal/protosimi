@@ -164,7 +164,10 @@ namespace ManosLimpias.UI.Rive
             if (hands != null && hands.FreezePlacement)
                 return true;
             var soap = widget.GetComponent<Soap>();
-            return soap != null && soap.FreezePlacement;
+            if (soap != null && soap.FreezePlacement)
+                return true;
+            var towel = widget.GetComponent<Towel>();
+            return towel != null && towel.FreezePlacement;
         }
 
         static bool TryResolveAabb(Slot slot, out Rect aabb)

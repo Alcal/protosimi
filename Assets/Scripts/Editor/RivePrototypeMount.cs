@@ -193,6 +193,12 @@ namespace ManosLimpias.Editor
             soap.Bind(soapWidget, hands);
             soap.SetDraggable(false);
 
+            var towel = towelWidget.GetComponent<Towel>();
+            if (towel == null)
+                towel = towelWidget.gameObject.AddComponent<Towel>();
+            towel.Bind(towelWidget, hands);
+            towel.SetDraggable(false);
+
             var soapBubbles = handsWidget.GetComponent<SoapBubbles>();
             if (soapBubbles == null)
                 soapBubbles = handsWidget.gameObject.AddComponent<SoapBubbles>();
@@ -201,6 +207,7 @@ namespace ManosLimpias.Editor
             mount.TryApply();
             AssignHitboxes(hands, handsWidget, faucetWidget);
             AssignSoapHitbox(soap, soapWidget, hands);
+            AssignTowelHitbox(towel, towelWidget, hands);
             AssignSoapBubbles(soapBubbles, hands, soap, bubbleSprite, bubbleMat);
 
             var soPresenter = new SerializedObject(presenter);
@@ -229,6 +236,7 @@ namespace ManosLimpias.Editor
             soFlow.FindProperty("hands").objectReferenceValue = hands;
             soFlow.FindProperty("soap").objectReferenceValue = soap;
             soFlow.FindProperty("soapBubbles").objectReferenceValue = soapBubbles;
+            soFlow.FindProperty("towel").objectReferenceValue = towel;
             soFlow.FindProperty("riveHud").objectReferenceValue = binder;
             EnsureStageConfigurations(soFlow);
             soFlow.ApplyModifiedPropertiesWithoutUndo();
@@ -292,6 +300,24 @@ namespace ManosLimpias.Editor
                 }
             }
 
+            var towelGo = GameObject.Find("TowelRive");
+            if (towelGo != null)
+            {
+                var towelWidget = towelGo.GetComponent<RiveWidget>();
+                var towel = towelGo.GetComponent<Towel>();
+                if (towel == null)
+                    towel = towelGo.AddComponent<Towel>();
+                towel.Bind(towelWidget, hands);
+                AssignTowelHitbox(towel, towelWidget, hands);
+                var flow = GameObject.Find("Systems")?.GetComponent<GameFlowController>();
+                if (flow != null)
+                {
+                    var soFlow = new SerializedObject(flow);
+                    soFlow.FindProperty("towel").objectReferenceValue = towel;
+                    soFlow.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+
             EditorSceneManager.MarkSceneDirty(handsGo.scene);
             EditorSceneManager.SaveScene(handsGo.scene);
             Debug.Log("[RivePrototypeMount] Baked Hands/Faucet layout and authored hitbox children.");
@@ -320,6 +346,16 @@ namespace ManosLimpias.Editor
             soSoap.FindProperty("widget").objectReferenceValue = soapWidget;
             soSoap.FindProperty("hands").objectReferenceValue = hands;
             soSoap.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void AssignTowelHitbox(Towel towel, RiveWidget towelWidget, Hands hands)
+        {
+            var hitbox = RiveNodeHitbox.FindOrCreate(towelWidget, Towel.Hitbox, Towel.HitboxNormalized);
+            var soTowel = new SerializedObject(towel);
+            soTowel.FindProperty("hitbox").objectReferenceValue = hitbox;
+            soTowel.FindProperty("widget").objectReferenceValue = towelWidget;
+            soTowel.FindProperty("hands").objectReferenceValue = hands;
+            soTowel.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void AssignSoapBubbles(
@@ -352,6 +388,7 @@ namespace ManosLimpias.Editor
             bool hasOpen = false;
             bool hasSoap = false;
             bool hasRinse = false;
+            bool hasDry = false;
             for (int i = 0; i < stages.arraySize; i++)
             {
                 var value = stages.GetArrayElementAtIndex(i).managedReferenceValue;
@@ -361,6 +398,8 @@ namespace ManosLimpias.Editor
                     hasSoap = true;
                 else if (value is RinseSoapStage)
                     hasRinse = true;
+                else if (value is DryHandsStage)
+                    hasDry = true;
             }
 
             if (!hasOpen)
@@ -382,6 +421,13 @@ namespace ManosLimpias.Editor
                 stages.arraySize++;
                 stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
                     new RinseSoapStage { stepId = 3 };
+            }
+
+            if (!hasDry)
+            {
+                stages.arraySize++;
+                stages.GetArrayElementAtIndex(stages.arraySize - 1).managedReferenceValue =
+                    new DryHandsStage { stepId = 4 };
             }
         }
 
