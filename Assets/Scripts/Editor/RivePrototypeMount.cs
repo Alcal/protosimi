@@ -181,6 +181,11 @@ namespace ManosLimpias.Editor
             faucet.Bind(faucetWidget);
             faucet.SetEnabled(false);
 
+            var character = characterWidget.GetComponent<Character>();
+            if (character == null)
+                character = characterWidget.gameObject.AddComponent<Character>();
+            character.Bind(characterWidget);
+
             var hands = handsWidget.GetComponent<Hands>();
             if (hands == null)
                 hands = handsWidget.gameObject.AddComponent<Hands>();
@@ -217,9 +222,11 @@ namespace ManosLimpias.Editor
             soPresenter.FindProperty("progressBarWidget").objectReferenceValue = progressWidget;
             soPresenter.FindProperty("faucetWidget").objectReferenceValue = faucetWidget;
             soPresenter.FindProperty("handsWidget").objectReferenceValue = handsWidget;
+            soPresenter.FindProperty("characterWidget").objectReferenceValue = characterWidget;
             soPresenter.FindProperty("hudBinder").objectReferenceValue = binder;
             soPresenter.FindProperty("faucet").objectReferenceValue = faucet;
             soPresenter.FindProperty("hands").objectReferenceValue = hands;
+            soPresenter.FindProperty("character").objectReferenceValue = character;
             soPresenter.FindProperty("anchorMount").objectReferenceValue = mount;
             AssignWidgetArray(soPresenter.FindProperty("stepIconWidgets"), stepWidgets);
             soPresenter.ApplyModifiedPropertiesWithoutUndo();
@@ -237,6 +244,7 @@ namespace ManosLimpias.Editor
             soFlow.FindProperty("soap").objectReferenceValue = soap;
             soFlow.FindProperty("soapBubbles").objectReferenceValue = soapBubbles;
             soFlow.FindProperty("towel").objectReferenceValue = towel;
+            soFlow.FindProperty("character").objectReferenceValue = character;
             soFlow.FindProperty("riveHud").objectReferenceValue = binder;
             EnsureStageConfigurations(soFlow);
             soFlow.ApplyModifiedPropertiesWithoutUndo();

@@ -161,5 +161,28 @@ namespace ManosLimpias.Tests
 
             Object.DestroyImmediate(flowObject);
         }
+
+        [Test]
+        public void CharacterBriefing_DelaysStageEnterUntilPopOut()
+        {
+            var flowObject = new GameObject("Character Briefing PlayMode Flow");
+            var host = flowObject.AddComponent<ManosLimpias.UI.Rive.Character>();
+            var flow = flowObject.AddComponent<GameFlowController>();
+            flow.character = host;
+            flow.stageConfigurations = new List<GameStage> { new OpenFaucetStage() };
+
+            flow.StartSession();
+            flow.DismissIntro();
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Briefing));
+            Assert.That(flow.ActiveStage.IsEntered, Is.False);
+
+            host.Tick(host.talkDurationSeconds);
+            host.Tick(host.popOutDurationSeconds);
+
+            Assert.That(flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(flow.ActiveStage.IsEntered, Is.True);
+
+            Object.DestroyImmediate(flowObject);
+        }
     }
 }

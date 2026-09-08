@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 44757936}
   - component: {fileID: 44757937}
+  - component: {fileID: 44757938}
   m_Layer: 0
   m_Name: CharacterRive
   m_TagString: Untagged
@@ -185,6 +186,21 @@ MonoBehaviour:
   m_dataBindingMode: 2
   m_viewModelInstanceName: 
   m_customAudioProvider: {fileID: 0}
+--- !u!114 &44757938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44757935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fa834ba5dedb770ade3b13ce2671a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ManosLimpias.Runtime::ManosLimpias.UI.Rive.Character
+  widget: {fileID: 44757937}
+  talkDurationSeconds: 3
+  popOutDurationSeconds: 0.5
 --- !u!1 &107557878
 GameObject:
   m_ObjectHideFlags: 0
@@ -2104,6 +2120,7 @@ MonoBehaviour:
   soap: {fileID: 1844413678}
   soapBubbles: {fileID: 940385654}
   towel: {fileID: 711110848}
+  character: {fileID: 44757938}
   audioPlayer: {fileID: 1259954862}
   waf: {fileID: 1259954861}
   assist: {fileID: 1259954860}
@@ -2278,6 +2295,7 @@ MonoBehaviour:
   progressBarWidget: {fileID: 2102819946}
   faucetWidget: {fileID: 1402236052}
   handsWidget: {fileID: 940385652}
+  characterWidget: {fileID: 44757937}
   stepIconWidgets:
   - {fileID: 2070010003}
   - {fileID: 1288794979}
@@ -2286,6 +2304,7 @@ MonoBehaviour:
   hudBinder: {fileID: 1259954864}
   faucet: {fileID: 1402236051}
   hands: {fileID: 940385653}
+  character: {fileID: 44757938}
   anchorMount: {fileID: 107557885}
 --- !u!1 &1288794977
 GameObject:

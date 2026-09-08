@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ManosLimpias.Core;
+using ManosLimpias.UI.Rive;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -994,6 +995,99 @@ namespace ManosLimpias.Tests
             Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
             Assert.That(_flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
             Assert.That(_services.Icon.Active, Is.True);
+        }
+
+        [Test]
+        public void CharacterBriefing_BlocksStageEnter_UntilTalkAndPopOutComplete()
+        {
+            var host = _flowObject.AddComponent<Character>();
+            _flow.character = host;
+            _flow.stageConfigurations = new List<GameStage> { new RecordingStage("first") };
+
+            _flow.StartSession();
+            _flow.DismissIntro();
+
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Briefing));
+            Assert.That(_flow.ActiveStage.IsEntered, Is.False);
+            Assert.That(host.IsBriefing, Is.True);
+            Assert.That(host.IsTalkingDesired, Is.True);
+            Assert.That(host.PopUpCount, Is.EqualTo(1));
+            Assert.That(host.PopOutCount, Is.EqualTo(0));
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
+
+            host.Tick(Character.DefaultTalkDurationSeconds);
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Briefing));
+            Assert.That(_flow.ActiveStage.IsEntered, Is.False);
+            Assert.That(host.IsTalkingDesired, Is.False);
+            Assert.That(host.PopOutCount, Is.EqualTo(1));
+
+            host.Tick(Character.DefaultPopOutDurationSeconds);
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage.IsEntered, Is.True);
+            Assert.That(host.IsBriefing, Is.False);
+            var runtimeStage = (RecordingStage)_flow.ActiveStage;
+            Assert.That(runtimeStage.Entered, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CharacterBriefing_PlaysBeforeEachStage()
+        {
+            var host = _flowObject.AddComponent<Character>();
+            _flow.character = host;
+            _flow.stageConfigurations = new List<GameStage>
+            {
+                new RecordingStage("first"),
+                new RecordingStage("second")
+            };
+            _services.CompletionRequested = stage => _flow.RequestStageCompletion(stage);
+
+            _flow.StartSession();
+            _flow.DismissIntro();
+            FinishBriefing(host);
+
+            Assert.That(_flow.ActiveStage.Id, Is.EqualTo("first"));
+            Assert.That(host.PopUpCount, Is.EqualTo(1));
+
+            ((RecordingStage)_flow.ActiveStage).Complete();
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Briefing));
+            Assert.That(_flow.ActiveStage.Id, Is.EqualTo("second"));
+            Assert.That(_flow.ActiveStage.IsEntered, Is.False);
+            Assert.That(host.PopUpCount, Is.EqualTo(2));
+
+            FinishBriefing(host);
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage.IsEntered, Is.True);
+            Assert.That(_flow.ActiveStage.Id, Is.EqualTo("second"));
+        }
+
+        [Test]
+        public void CharacterBriefing_OpenFaucetEnablesAfterPopOut()
+        {
+            var host = _flowObject.AddComponent<Character>();
+            _flow.character = host;
+            _flow.stageConfigurations = new List<GameStage> { new OpenFaucetStage() };
+
+            _flow.StartSession();
+            _flow.DismissIntro();
+
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Briefing));
+            Assert.That(_services.Faucet.IsEnabled, Is.False);
+            Assert.That(_services.Faucet.IsGlowing, Is.False);
+            Assert.That(_services.Icon.Active, Is.False);
+
+            FinishBriefing(host);
+
+            Assert.That(_flow.State, Is.EqualTo(GameFlowState.Stage));
+            Assert.That(_flow.ActiveStage, Is.InstanceOf<OpenFaucetStage>());
+            Assert.That(_services.Faucet.IsEnabled, Is.True);
+            Assert.That(_services.Faucet.IsGlowing, Is.True);
+            Assert.That(_services.Icon.Active, Is.True);
+        }
+
+        static void FinishBriefing(Character host)
+        {
+            host.Tick(host.talkDurationSeconds);
+            host.Tick(host.popOutDurationSeconds);
         }
 
         sealed class RecordingStage : GameStage

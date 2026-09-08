@@ -5,7 +5,7 @@ namespace ManosLimpias.Core
     [System.Serializable]
     public sealed class DryHandsStage : GameStage
     {
-        public const float FillStep = 0.02f;
+        public const float FillStep = 0.03f;
         public const float FillInterval = 0.1f;
 
         public int stepId = 4;

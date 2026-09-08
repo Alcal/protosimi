@@ -13,6 +13,7 @@ namespace ManosLimpias.Core
     {
         Title,
         Intro,
+        Briefing,
         Stage,
         Assist,
         Outro,
@@ -31,6 +32,7 @@ namespace ManosLimpias.Core
         public Soap soap;
         public SoapBubbles soapBubbles;
         public Towel towel;
+        public Character character;
         public AudioPlaceholderPlayer audioPlayer;
         public WafController waf;
         public AssistHijack assist;
@@ -117,18 +119,54 @@ namespace ManosLimpias.Core
                 return;
             }
 
-            State = GameFlowState.Stage;
             ActiveStageIndex = index;
-            _stageStart = Time.time;
             hud?.SetHudVisible(true);
-            hud?.SetHost(false, false);
             hud?.ApplyStage(index, 0f);
             cameraFocus?.EaseToStage(index);
             _runtimeStages[index].Initialize(_services);
-            _runtimeStages[index].Enter();
-            AnalyticsStub.StageStart(index);
-            audioPlayer?.Play($"vo_stage_{index}");
-            hud?.PulseHostSpeak();
+
+            if (character != null)
+            {
+                State = GameFlowState.Briefing;
+                hud?.SetHost(true, false);
+                audioPlayer?.Play($"vo_stage_{index}");
+                hud?.PulseHostSpeak();
+                character.BriefingCompleted -= OnCharacterBriefingCompleted;
+                character.BriefingCompleted += OnCharacterBriefingCompleted;
+                character.BeginBriefing();
+                return;
+            }
+
+            BeginActiveStage();
+        }
+
+        void OnCharacterBriefingCompleted()
+        {
+            if (State != GameFlowState.Briefing)
+                return;
+            if (character != null)
+                character.BriefingCompleted -= OnCharacterBriefingCompleted;
+            BeginActiveStage();
+        }
+
+        void BeginActiveStage()
+        {
+            if (ActiveStageIndex < 0 || ActiveStageIndex >= _runtimeStages.Count)
+            {
+                EnterOutro();
+                return;
+            }
+
+            State = GameFlowState.Stage;
+            _stageStart = Time.time;
+            hud?.SetHost(false, false);
+            _runtimeStages[ActiveStageIndex].Enter();
+            AnalyticsStub.StageStart(ActiveStageIndex);
+            if (character == null)
+            {
+                audioPlayer?.Play($"vo_stage_{ActiveStageIndex}");
+                hud?.PulseHostSpeak();
+            }
         }
 
         void Update()
@@ -137,8 +175,17 @@ namespace ManosLimpias.Core
                 ActiveStage?.Tick(Time.deltaTime);
         }
 
+        void StopBriefing()
+        {
+            if (character == null)
+                return;
+            character.BriefingCompleted -= OnCharacterBriefingCompleted;
+            character.Cancel();
+        }
+
         void StopActiveStage()
         {
+            StopBriefing();
             ActiveStage?.Exit();
             ActiveStageIndex = -1;
         }
